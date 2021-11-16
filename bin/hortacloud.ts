@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
-import { HortacloudStack } from '../lib/hortacloud-stack';
+import { HortaCloudStack } from '../lib/hortacloud-stack';
+import { App, Stack, Tags } from '@aws-cdk/core';
 
 const app = new cdk.App();
-new HortacloudStack(app, 'HortacloudStack', {
+const stack = new HortaCloudStack(app, 'HortaCloudStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
@@ -19,3 +20,8 @@ new HortacloudStack(app, 'HortacloudStack', {
 
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
+
+Tags.of(stack).add('PROJECT', 'MouseLight');
+Tags.of(stack).add('DEVELOPER', process.env.USER || "unknown");
+Tags.of(stack).add('STAGE', 'dev');
+Tags.of(stack).add('VERSION', '0.0.1');
