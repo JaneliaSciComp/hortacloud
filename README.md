@@ -1,17 +1,18 @@
 # HortaCloud
 
-This is a blank project for TypeScript development with CDK.
+Deploy the janeliaHortaCloud stack to AWS.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Getting started
+
+After cloning this repo, run `npm install` to download dependencies.
+
+Then you can run `npm run build` to build the code and `cdk deploy` to deploy it.
 
 ## Useful commands
 
-Note: be sure to run ```npm install``` after inital clone of the repo
-
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
-
+* `npm run build`   compile typescript to js
+* `npm run watch`   watch for changes and compile
+* `npm run test`    perform the jest unit tests
+* `cdk deploy`      deploy this stack to your default AWS account/region
+* `cdk diff`        compare deployed stack with current state
+* `cdk synth`       emits the synthesized CloudFormation template

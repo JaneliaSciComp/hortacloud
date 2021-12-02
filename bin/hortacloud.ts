@@ -4,8 +4,11 @@ import * as cdk from '@aws-cdk/core';
 import { HortaCloudStack } from '../lib/hortacloud-stack';
 import { App, Stack, Tags } from '@aws-cdk/core';
 
+// TODO: add a way to do non-dev deployments using STAGE env var
+const stack_id = `janelia-hortacloud-${process.env.USER}`
+
 const app = new cdk.App();
-const stack = new HortaCloudStack(app, 'HortaCloudStack', {
+const stack = new HortaCloudStack(app, stack_id, {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
