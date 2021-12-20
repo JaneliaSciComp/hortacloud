@@ -6,6 +6,7 @@
     "lib": [
       "es2018"
     ],
+    "allowJs": true,
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -19,11 +20,16 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "experimentalDecorators": true,
+    "resolveJsonModule": false,
+    "rootDir": "src",
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types"
     ]
   },
+  "include": [
+    "src/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "cdk.out"
