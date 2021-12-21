@@ -6,7 +6,8 @@
     "postbuild": "cpy '**/*' '!**/*.ts' '../build/' --cwd=src --parents",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "clean": "del build cdk.out"
   },
   "peerDependencies": {
     "aws-cdk-lib": "~2.2.0",
@@ -16,6 +17,7 @@
     "aws-cdk-lib": "~2.2.0",
     "constructs": "~10.0.13",
     "cpy-cli": "^3.1.1",
+    "del-cli": "^4.0.1",
     "jest": "^26.4.2",
     "ts-jest": "^26.2.0",
     "ts-node": "^9.0.0",

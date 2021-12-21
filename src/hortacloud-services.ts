@@ -6,7 +6,6 @@ import { HortaCloudVPC } from './hortacloud-vpc';
 
 
 export interface HortaCloudServicesProps extends StackProps {
-  jacsInstanceType: string;
 }
 
 
@@ -21,8 +20,7 @@ export class HortaCloudServicesStack extends Stack {
     this.vpc = new HortaCloudVPC(this, 'VPC');
 
     this.server = new HortaCloudJACS(this, 'JACS', {
-      vpc: this.vpc,
-      jacsInstanceType: props ? props.jacsInstanceType : 't2.micro'
+      vpc: this.vpc
     });
 
   }

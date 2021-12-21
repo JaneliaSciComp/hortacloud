@@ -4,11 +4,16 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as path from 'path';
 import { HortaCloudVPC } from './hortacloud-vpc';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
-import { Duration } from 'aws-cdk-lib';
+import { getHortaConfig, HortaCloudConfig } from './hortacloud-config';
 
 export interface HortaCloudJACSProps {
   vpc: HortaCloudVPC;
-  jacsInstanceType: string;
+}
+
+interface HortaCloudMachine {
+  readonly instanceType: ec2.InstanceType,
+  readonly machineImage: ec2.IMachineImage;
+  readonly keyName?: string;
 }
 
 export class HortaCloudJACS extends Construct {
@@ -17,6 +22,11 @@ export class HortaCloudJACS extends Construct {
 
   constructor(scope: Construct, id: string, props: HortaCloudJACSProps) {
     super(scope, id);
+
+    const hortaConfig = getHortaConfig();
+ 
+    // create Security Group for the Instance
+    const serverSG = createSecurityGroup(this, props.vpc.vpc, hortaConfig.withPublicAccess);
 
     // create a Role for the EC2 Instance
     const serverRole = new iam.Role(this, 'webserver-role', {
@@ -27,80 +37,106 @@ export class HortaCloudJACS extends Construct {
       ],
     });
 
-    const jacsMachineImage = createJacsMachineImage(props);
-
-    // 👇 create Security Group for the Instance
-    const serverSG = new ec2.SecurityGroup(this, 'server-sg', {
-        vpc: props.vpc.vpc,
-        allowAllOutbound: true,
-    });
-    
-    serverSG.addIngressRule(
-        ec2.Peer.anyIpv4(),
-        ec2.Port.tcp(80),
-        'allow HTTP traffic from anywhere',
-    );
-  
-    serverSG.addIngressRule(
-        ec2.Peer.anyIpv4(),
-        ec2.Port.tcp(443),
-        'allow HTTPS traffic from anywhere',
-    );
-  
-      serverSG.addIngressRule(
-        ec2.Peer.anyIpv4(),
-        ec2.Port.tcp(9881),
-        'allow JADE traffic from anywhere',
-      );
-  
-      serverSG.addIngressRule(
-        ec2.Peer.anyIpv4(),
-        ec2.Port.tcp(5672),
-        'allow RabbitMQ traffic from anywhere',
-      );
-  
-      serverSG.addIngressRule(
-        ec2.Peer.anyIpv4(),
-        ec2.Port.tcp(15672),
-        'allow RabbitMQ traffic from anywhere',
-      );
-
+    const jacsMachineImage = createJacsMachineImage(hortaConfig);
       
-    const server = new ec2.Instance(this, 'Instance', {
+    this.server = new ec2.Instance(this, 'Instance', {
       vpc : props.vpc.vpc,
       vpcSubnets : {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_NAT
+        subnetType: hortaConfig.withPublicAccess 
+                      ? ec2.SubnetType.PUBLIC
+                      : ec2.SubnetType.PRIVATE_WITH_NAT
       },
       role: serverRole,
       securityGroup: serverSG,
+      instanceName: createHortaServerInstanceName(hortaConfig),
+      blockDevices: [
+        {
+          deviceName: '/dev/sdb',
+          volume: ec2.BlockDeviceVolume.ebs(hortaConfig.hortaDataVolumeSizeGB)
+        }
+      ],
       ...jacsMachineImage
     });
-    
+
     // Create an asset that will be used as part of User Data to run on first load
-    const asset = new Asset(this, 'Asset', { path: path.join(__dirname, 'jacs/server-node-init.sh') });
-    const localPath = server.userData.addS3DownloadCommand({
+    const asset = new Asset(this, 'Asset', {
+      path: path.join(__dirname, 'jacs/server-node-init.sh')
+    });
+    const localPath = this.server.userData.addS3DownloadCommand({
       bucket: asset.bucket,
       bucketKey: asset.s3ObjectKey,
     });
 
-    server.userData.addExecuteFileCommand({
+    this.server.userData.addExecuteFileCommand({
       filePath: localPath
     });
-    asset.grantRead(server.role);
+    asset.grantRead(this.server.role);
 
   }
 }
 
-function createJacsMachineImage(jacsProps: HortaCloudJACSProps) {
-  const jacsMachineImage = ec2.MachineImage.fromSsmParameter(
-    '/aws/service/canonical/ubuntu/server/focal/stable/current/amd64/hvm/ebs-gp2/ami-id',
-    {
-      os: ec2.OperatingSystemType.LINUX
-    }    
-  )
+function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, withSSH?: boolean) :ec2.ISecurityGroup {
+  const serverSG = new ec2.SecurityGroup(scope, 'server-sg', {
+    vpc: vpc,
+    allowAllOutbound: true,
+  });
+
+  if (withSSH)
+    serverSG.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(22),
+      'allow SSH access from anywhere',
+    );
+
+  serverSG.addIngressRule(
+    ec2.Peer.anyIpv4(),
+    ec2.Port.tcp(80),
+    'allow HTTP traffic from anywhere',
+  );
+
+  serverSG.addIngressRule(
+    ec2.Peer.anyIpv4(),
+    ec2.Port.tcp(443),
+    'allow HTTPS traffic from anywhere',
+  );
+
+  serverSG.addIngressRule(
+    ec2.Peer.anyIpv4(),
+    ec2.Port.tcp(9881),
+    'allow JADE traffic from anywhere',
+  );
+
+  serverSG.addIngressRule(
+    ec2.Peer.anyIpv4(),
+    ec2.Port.tcp(5672),
+    'allow RabbitMQ traffic from anywhere',
+  );
+
+  serverSG.addIngressRule(
+    ec2.Peer.anyIpv4(),
+    ec2.Port.tcp(15672),
+    'allow RabbitMQ traffic from anywhere',
+  );
+
+  return serverSG;
+}
+
+function createJacsMachineImage(cfg: HortaCloudConfig) : HortaCloudMachine {
+  const jacsMachineImage = ec2.MachineImage.latestAmazonLinux({
+    generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+    edition: ec2.AmazonLinuxEdition.STANDARD,
+    virtualization: ec2.AmazonLinuxVirt.HVM,
+    storage: ec2.AmazonLinuxStorage.GENERAL_PURPOSE,
+    cpuType: ec2.AmazonLinuxCpuType.X86_64,
+  });
 
   return {
-    instanceType: new ec2.InstanceType(jacsProps.jacsInstanceType),
-    machineImage: jacsMachineImage
-  }
+    instanceType: new ec2.InstanceType(cfg.hortaServerInstanceType),
+    machineImage: jacsMachineImage,
+    keyName: cfg.hortaServerKeyPairName
+  };
+}
+
+function createHortaServerInstanceName(cfg: HortaCloudConfig):string {
+  return `${cfg.hortaCloudOrg}-hortacloud-jacs-${cfg.hortaStage}`
 }
