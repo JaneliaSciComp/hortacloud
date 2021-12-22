@@ -9,6 +9,8 @@ echo "Installing JACS Stack (install-jacs-stack.sh)... $@"
 
 JWT_KEY=$1
 MONGO_KEY=$2
+MONGO_ROOT_PASS=$3
+MONGO_APP_PASS=$MONGO_ROOT_PASS
 
 # Install jacs-cm
 DEPLOY_DIR=/data/deploy/jacs-stack
@@ -44,6 +46,8 @@ cat > /tmp/scmd <<- EOF
     s/HOST1=/HOST1=${localip}/
     s/JWT_SECRET_KEY=/JWT_SECRET_KEY=${JWT_KEY}/
     s/MONGODB_SECRET_KEY=/MONGODB_SECRET_KEY=${MONGO_KEY}/
+    s/MONGODB_INIT_ROOT_PASSWORD=/MONGODB_INIT_ROOT_PASSWORD=${MONGO_ROOT_PASS}/
+    s/MONGODB_APP_PASSWORD=/MONGODB_APP_PASSWORD=${MONGO_APP_PASS}/
 EOF
 
 echo "Create env config from .env.template using /tmp/scmd"

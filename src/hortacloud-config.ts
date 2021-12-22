@@ -19,6 +19,9 @@ const jwtKey = process.env.JACS_JWT_KEY
 const mongoKey = process.env.JACS_MONGO_KEY
     ? process.env.JACS_MONGO_KEY
     : crypto.randomBytes(32).toString('hex');
+const appPassword = process.env.JACS_APP_PASSWD
+    ? process.env.JACS_APP_PASSWD
+    : crypto.randomBytes(10).toString('hex');
 
 export interface HortaCloudConfig {
     hortaStage: string;
@@ -31,6 +34,7 @@ export interface HortaCloudConfig {
     withPublicAccess?: true;
     jwtKey: string;
     mongoKey: string;
+    appPassword: string;
 }
 
 export function getHortaConfig() : HortaCloudConfig {
@@ -44,6 +48,7 @@ export function getHortaConfig() : HortaCloudConfig {
         hortaDataVolumeSizeGB: 30,
         withPublicAccess: true,
         jwtKey: jwtKey,
-        mongoKey: mongoKey
+        mongoKey: mongoKey,
+        appPassword: appPassword
     };
 }
