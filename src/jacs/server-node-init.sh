@@ -22,7 +22,7 @@ chmod 777 /s3data
 
 if [ -n "${dataBucketName}" ] ; then
     # if the data bucket name is set mount it using s3fs
-    echo -e "${dataBucketName}\t/s3data\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,use_path_request_style\t0\t0" | tee -a /etc/fstab
+    echo -e "${dataBucketName}\t/s3data\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,use_path_request_style,umask=0000\t0\t0" | tee -a /etc/fstab
 else
     echo "No databucket name"
 fi
