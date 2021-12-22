@@ -5,22 +5,31 @@
 #
 # Output is logged to /var/log/cloud-init-output.log
 
-echo "Initializing server (server-init.sh)..."
+echo "Initializing server (server-init.sh)... $@"
+
+dataBucketName=$1
 
 # Install dependencies
 yum update -y
+amazon-linux-extras install -y epel
 yum install -y docker git fuse-devel s3fs-fuse
 
-# Enable Docker at Boot, and allow user to run Docker without sudo
-service docker start
-systemctl enable docker
-usermod -aG docker ec2-user
-
-mkfs -t ext4 /dev/sdb
+mkfs -t ext4 /dev/xvdb
 mkdir /data
-echo -e '/dev/sdb\t/data\text4\tdefaults\t0\t0' | tee -a /etc/fstab
+echo -e '/dev/xvdb\t/data\text4\tdefaults\t0\t0' | tee -a /etc/fstab
+mkdir /s3data
+chmod 777 /s3data
 
-mount –a
+if [ -n "${dataBucketName}" ] ; then
+    # if the data bucket name is set mount it using s3fs
+    echo -e "${dataBucketName}\t/s3data\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,use_path_request_style\t0\t0" | tee -a /etc/fstab
+else
+    echo "No databucket name"
+fi
+
+mount -a
+
+usermod -aG docker ec2-user
 
 # Create Docker user 
 groupadd -g 4444 docker-nobody
@@ -29,15 +38,12 @@ useradd --uid 4444 --gid 4444 --shell /sbin/nologin docker-nobody
 # Install Docker Compose
 curl -L "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose ; chmod +x /usr/local/bin/docker-compose
 
-# Install jacs-cm
-DEPLOY_DIR=/data/deploy/jacs-stack
-CONFIG_DIR=/opt/jacs/config
-JACS_STACK_BRANCH=docker20
+cp /etc/sysconfig/docker-storage /etc/sysconfig/docker-storage.bak
+sed s/^DOCKER_STORAGE_OPTIONS=.*/DOCKER_STORAGE_OPTIONS="\"-g \\/data\\/docker\""/ \
+    /etc/sysconfig/docker-storage.bak > /etc/sysconfig/docker-storage
 
-mkdir -p $DEPLOY_DIR
-mkdir -p $CONFIG_DIR
-
-cd $DEPLOY_DIR
-git clone --branch $JACS_STACK_BRANCH https://github.com/JaneliaSciComp/jacs-cm.git .
+# Enable Docker at Boot, and allow user to run Docker without sudo
+systemctl enable docker
+systemctl start docker
 
 echo "Completed initialization (server-init.sh)"
