@@ -7,7 +7,6 @@ import * as path from 'path';
 import { HortaCloudVPC } from './hortacloud-vpc';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { getHortaConfig, HortaCloudConfig } from './hortacloud-config';
-import { InstanceClass } from 'aws-cdk-lib/aws-ec2';
 
 export interface HortaCloudJACSProps {
   vpc: HortaCloudVPC;
@@ -81,7 +80,7 @@ export class HortaCloudJACS extends Construct {
       {
         name: 'InitJacsStackAsset',
         path: 'jacs/install-jacs-stack.sh',
-        arguments: `${hortaConfig.jwtKey} ${hortaConfig.mongoKey} ${hortaConfig.appPassword}`
+        arguments: `${hortaConfig.jwtKey} ${hortaConfig.mongoKey} ${hortaConfig.appPassword} ${hortaConfig.rabbitMQPassword} ${hortaConfig.jacsAPIKey} ${hortaConfig.jadeAPIKey}`
       },
       {
         name: 'CleanupAsset',

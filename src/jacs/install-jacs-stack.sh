@@ -11,9 +11,12 @@ JWT_KEY=$1
 MONGO_KEY=$2
 MONGO_ROOT_PASS=$3
 MONGO_APP_PASS=$MONGO_ROOT_PASS
+RABBITMQ_PASS=$4
+JACS_API_KEY=$5
+JADE_API_KEY=$6
 
 # Install jacs-cm
-DEPLOY_DIR=/data/deploy/jacs-stack
+DEPLOY_DIR=/opt/jacs/deploy
 CONFIG_DIR=/opt/jacs/config
 JACS_STACK_BRANCH=docker20
 
@@ -35,9 +38,6 @@ done
 cd $DEPLOY_DIR
 git clone --branch $JACS_STACK_BRANCH https://github.com/JaneliaSciComp/jacs-cm.git .
 
-chown -R docker-nobody:docker-nobody /opt/jacs
-chown -R docker-nobody:docker-nobody /data/deploy
-
 # prepare config file
 localip=$(ifconfig eth0 | grep inet | awk '$1=="inet" {print $2}')
 cat > /tmp/scmd <<- EOF
@@ -48,12 +48,21 @@ cat > /tmp/scmd <<- EOF
     s/MONGODB_SECRET_KEY=/MONGODB_SECRET_KEY=${MONGO_KEY}/
     s/MONGODB_INIT_ROOT_PASSWORD=/MONGODB_INIT_ROOT_PASSWORD=${MONGO_ROOT_PASS}/
     s/MONGODB_APP_PASSWORD=/MONGODB_APP_PASSWORD=${MONGO_APP_PASS}/
+    s/RABBITMQ_PASSWORD=/RABBITMQ_PASSWORD=${RABBITMQ_PASS}/
+    s/JACS_API_KEY=/JACS_API_KEY=${JACS_API_KEY}/
+    s/JADE_API_KEY=/JADE_API_KEY=${JADE_API_KEY}/
 EOF
 
 echo "Create env config from .env.template using /tmp/scmd"
 sed -f /tmp/scmd .env.template > .env.config
 
+# initialize jacs config
 ./manage.sh init-local-filesystem
+# copy the cert to the external location
+cp /jacs/config/certs/cert.crt /jacs/config/api-gateway/content
+
+chown -R docker-nobody:docker-nobody /opt/jacs
+
 ./manage.sh compose up -d
 ./manage.sh init-databases
 

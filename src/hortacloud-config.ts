@@ -21,7 +21,16 @@ const mongoKey = process.env.JACS_MONGO_KEY
     : crypto.randomBytes(32).toString('hex');
 const appPassword = process.env.JACS_APP_PASSWD
     ? process.env.JACS_APP_PASSWD
-    : crypto.randomBytes(10).toString('hex');
+    : crypto.randomBytes(16).toString('hex');
+const rabbitMQPassword = process.env.RABBITMQ_PASSWD
+    ? process.env.RABBITMQ_PASSWD
+    : crypto.randomBytes(16).toString('hex');
+const jacsAPIKey = process.env.JACS_API_KEY
+    ? process.env.JACS_API_KEY
+    : crypto.randomBytes(16).toString('hex');
+const jadeAPIKey = process.env.JADE_API_KEY
+    ? process.env.JADE_API_KEY
+    : crypto.randomBytes(16).toString('hex');
 
 export interface HortaCloudConfig {
     hortaStage: string;
@@ -35,6 +44,9 @@ export interface HortaCloudConfig {
     jwtKey: string;
     mongoKey: string;
     appPassword: string;
+    rabbitMQPassword: string;
+    jacsAPIKey: string;
+    jadeAPIKey: string;
 }
 
 export function getHortaConfig() : HortaCloudConfig {
@@ -49,6 +61,9 @@ export function getHortaConfig() : HortaCloudConfig {
         withPublicAccess: true,
         jwtKey: jwtKey,
         mongoKey: mongoKey,
-        appPassword: appPassword
+        appPassword: appPassword,
+        rabbitMQPassword: rabbitMQPassword,
+        jacsAPIKey: jacsAPIKey,
+        jadeAPIKey: jadeAPIKey
     };
 }
