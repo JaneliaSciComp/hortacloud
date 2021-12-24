@@ -31,6 +31,9 @@ const jacsAPIKey = process.env.JACS_API_KEY
 const jadeAPIKey = process.env.JADE_API_KEY
     ? process.env.JADE_API_KEY
     : crypto.randomBytes(16).toString('hex');
+const searchMemGB = process.env.SEARCH_MEM_SIZE
+    ? process.env.SEARCH_MEM_SIZE
+    : ""
 
 export interface HortaCloudConfig {
     hortaStage: string;
@@ -47,6 +50,7 @@ export interface HortaCloudConfig {
     rabbitMQPassword: string;
     jacsAPIKey: string;
     jadeAPIKey: string;
+    searchMemGB: string;
 }
 
 export function getHortaConfig() : HortaCloudConfig {
@@ -64,6 +68,7 @@ export function getHortaConfig() : HortaCloudConfig {
         appPassword: appPassword,
         rabbitMQPassword: rabbitMQPassword,
         jacsAPIKey: jacsAPIKey,
-        jadeAPIKey: jadeAPIKey
+        jadeAPIKey: jadeAPIKey,
+        searchMemGB: searchMemGB
     };
 }

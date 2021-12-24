@@ -14,6 +14,7 @@ MONGO_APP_PASS=$MONGO_ROOT_PASS
 RABBITMQ_PASS=$4
 JACS_API_KEY=$5
 JADE_API_KEY=$6
+SEARCH_MEM_GB=$7
 
 # Install jacs-cm
 DEPLOY_DIR=/opt/jacs/deploy
@@ -51,19 +52,26 @@ cat > /tmp/scmd <<- EOF
     s/RABBITMQ_PASSWORD=/RABBITMQ_PASSWORD=${RABBITMQ_PASS}/
     s/JACS_API_KEY=/JACS_API_KEY=${JACS_API_KEY}/
     s/JADE_API_KEY=/JADE_API_KEY=${JADE_API_KEY}/
+    s/SEARCH_INIT_MEM_SIZE=/SEARCH_INIT_MEM_SIZE=${SEARCH_MEM_GB}/
+    s/SEARCH_MAX_MEM_SIZE=/SEARCH_MAX_MEM_SIZE=${SEARCH_MEM_GB}/
 EOF
 
 echo "Create env config from .env.template using /tmp/scmd"
 sed -f /tmp/scmd .env.template > .env.config
 
+# change the ownership of the comfig base so that
+# the initialization step has permissions to write there
+chown -R docker-nobody:docker-nobody /opt/jacs
+
 # initialize jacs config
 ./manage.sh init-local-filesystem
 # copy the cert to the external location
-cp /jacs/config/certs/cert.crt /jacs/config/api-gateway/content
+cp /opt/jacs/config/certs/cert.crt /opt/jacs/config/api-gateway/content
 
-chown -R docker-nobody:docker-nobody /opt/jacs
+chown -R docker-nobody:docker-nobody /opt/jacs/config
 
 ./manage.sh compose up -d
+# initialize all databases
 ./manage.sh init-databases
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"
