@@ -52,6 +52,10 @@ export class HortaCloudJACS extends Construct {
         description: 'allow HTTPS traffic from anywhere',
       },
       {
+        port: 8080,
+        description: 'allow dashboard from anywhere'
+      },
+      {
         port: 9881,
         description: 'allow JADE traffic from anywhere'
       },
