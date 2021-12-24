@@ -6,7 +6,7 @@ const stage = process.env.HORTA_STAGE
 const version = '1.0.0';
 const serverInstanceType = process.env.HORTA_SERVER_INSTANCE_TYPE 
     ? process.env.HORTA_SERVER_INSTANCE_TYPE
-    : 't2.medium';
+    : 't2.xlarge';
 const serverKeyPairName = process.env.HORTA_KEY_PAIR 
     ? process.env.HORTA_KEY_PAIR
     : 'ec2_batch';
@@ -33,7 +33,7 @@ const jadeAPIKey = process.env.JADE_API_KEY
     : crypto.randomBytes(16).toString('hex');
 const searchMemGB = process.env.SEARCH_MEM_SIZE
     ? process.env.SEARCH_MEM_SIZE
-    : ""
+    : "1"
 
 export interface HortaCloudConfig {
     hortaStage: string;
