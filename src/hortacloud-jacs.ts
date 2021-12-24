@@ -18,6 +18,17 @@ interface HortaCloudMachine {
   readonly keyName?: string;
 }
 
+interface AssetOpts {
+  name: string;
+  path: string,
+  arguments?: string[];
+}
+
+interface SecurityRules {
+  port: number;
+  description: string;
+}
+
 export class HortaCloudJACS extends Construct {
 
   public readonly server: ec2.Instance;
@@ -29,7 +40,32 @@ export class HortaCloudJACS extends Construct {
     const hortaConfig = getHortaConfig();
  
     // create Security Group for the Instance
-    const serverSG = createSecurityGroup(this, props.vpc.vpc, hortaConfig.withPublicAccess);
+    const serverSG = createSecurityGroup(this, props.vpc.vpc, [
+      {
+        port: 22,
+        description: 'allow SSH access from anywhere'
+      },
+      {
+        port: 80,
+        description: 'allow HTTP traffic from anywhere'
+      },
+      {
+        port: 443,
+        description: 'allow HTTPS traffic from anywhere',
+      },
+      {
+        port: 9881,
+        description: 'allow JADE traffic from anywhere'
+      },
+      {
+        port: 5672,
+        description: 'allow RabbitMQ traffic from anywhere'
+      },
+      {
+        port: 15672,
+        description: 'allow RabbitMQ traffic from anywhere'
+      }
+    ]);
 
     // create a Role for the EC2 Instance
     const serverRole = new iam.Role(this, 'jacs-role', {
@@ -75,12 +111,20 @@ export class HortaCloudJACS extends Construct {
       {
         name: 'InitInstanceAsset',
         path: 'jacs/server-node-init.sh',
-        arguments: dataBucketName
+        arguments: [dataBucketName]
       },
       {
         name: 'InitJacsStackAsset',
         path: 'jacs/install-jacs-stack.sh',
-        arguments: `"${hortaConfig.jwtKey}" "${hortaConfig.mongoKey}" "${hortaConfig.appPassword}" "${hortaConfig.rabbitMQPassword}" "${hortaConfig.jacsAPIKey}" "${hortaConfig.jadeAPIKey}" "${hortaConfig.searchMemGB}"`
+        arguments: [
+          hortaConfig.jwtKey,
+          hortaConfig.mongoKey,
+          hortaConfig.appPassword,
+          hortaConfig.rabbitMQPassword,
+          hortaConfig.jacsAPIKey,
+          hortaConfig.jadeAPIKey,
+          hortaConfig.searchMemGB
+        ]
       },
       {
         name: 'CleanupAsset',
@@ -91,48 +135,20 @@ export class HortaCloudJACS extends Construct {
 
 }
 
-function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, withSSH?: boolean) :ec2.ISecurityGroup {
+function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, sgRules: SecurityRules[]) :ec2.ISecurityGroup {
   const serverSG = new ec2.SecurityGroup(scope, 'server-sg', {
     vpc: vpc,
     allowAllOutbound: true,
   });
 
-  if (withSSH)
+
+  sgRules.forEach(r => {
     serverSG.addIngressRule(
       ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(22),
-      'allow SSH access from anywhere',
+      ec2.Port.tcp(r.port),
+      r.description
     );
-
-  serverSG.addIngressRule(
-    ec2.Peer.anyIpv4(),
-    ec2.Port.tcp(80),
-    'allow HTTP traffic from anywhere',
-  );
-
-  serverSG.addIngressRule(
-    ec2.Peer.anyIpv4(),
-    ec2.Port.tcp(443),
-    'allow HTTPS traffic from anywhere',
-  );
-
-  serverSG.addIngressRule(
-    ec2.Peer.anyIpv4(),
-    ec2.Port.tcp(9881),
-    'allow JADE traffic from anywhere',
-  );
-
-  serverSG.addIngressRule(
-    ec2.Peer.anyIpv4(),
-    ec2.Port.tcp(5672),
-    'allow RabbitMQ traffic from anywhere',
-  );
-
-  serverSG.addIngressRule(
-    ec2.Peer.anyIpv4(),
-    ec2.Port.tcp(15672),
-    'allow RabbitMQ traffic from anywhere',
-  );
+  })
 
   return serverSG;
 }
@@ -161,12 +177,6 @@ function createDataBucketName(cfg: HortaCloudConfig):string {
   return `${cfg.hortaCloudOrg}-hortacloud-data-${cfg.hortaStage}`
 }
 
-interface AssetOpts {
-  name: string;
-  path: string,
-  arguments?: string;
-}
-
 function createAssets(scope: Construct, instance: ec2.Instance, assetsOpts: AssetOpts[]) {
   assetsOpts.forEach(opts => {
     // Create an asset that will be used as part of User Data to run on first load
@@ -177,9 +187,14 @@ function createAssets(scope: Construct, instance: ec2.Instance, assetsOpts: Asse
       bucket: asset.bucket,
       bucketKey: asset.s3ObjectKey,
     });
+    const args = opts.arguments 
+                  ? opts.arguments.map(s => {
+                      return s === '' ? '""' : s
+                  }).join(' ')
+                  : undefined;
     instance.userData.addExecuteFileCommand({
       filePath: localPath,
-      arguments: opts.arguments
+      arguments: args
     });
     asset.grantRead(instance.role);
   });

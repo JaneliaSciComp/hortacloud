@@ -40,11 +40,16 @@ cd $DEPLOY_DIR
 git clone --branch $JACS_STACK_BRANCH https://github.com/JaneliaSciComp/jacs-cm.git .
 
 # prepare config file
-localip=$(ifconfig eth0 | grep inet | awk '$1=="inet" {print $2}')
+CURRENT_HOST="$(wget -qO - http://169.254.169.254/latest/meta-data/public-hostname)"
+
+if [[ -z ${CURRENT_HOST} ]]; then
+    CURRENT_HOST="$(wget -qO - http://169.254.169.254/latest/meta-data/local-hostname)"
+fi
+
 cat > /tmp/scmd <<- EOF
     s/DEPLOYMENT=jacs/DEPLOYMENT=mouselight/
     s/DB_DIR=\$REDUNDANT_STORAGE/DB_DIR=\$NON_REDUNDANT_STORAGE/
-    s/HOST1=/HOST1=${localip}/
+    s/HOST1=/HOST1=${CURRENT_HOST}/
     s/JWT_SECRET_KEY=/JWT_SECRET_KEY=${JWT_KEY}/
     s/MONGODB_SECRET_KEY=/MONGODB_SECRET_KEY=${MONGO_KEY}/
     s/MONGODB_INIT_ROOT_PASSWORD=/MONGODB_INIT_ROOT_PASSWORD=${MONGO_ROOT_PASS}/
