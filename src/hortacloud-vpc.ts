@@ -1,18 +1,14 @@
 import { Construct } from 'constructs';
+import { Stack, StackProps } from 'aws-cdk-lib';
 import { GatewayVpcEndpointAwsService, InterfaceVpcEndpointAwsService, 
          Port, SecurityGroup, SubnetType, IVpc, Vpc, VpcProps, } from 'aws-cdk-lib/aws-ec2';
-import { getHortaConfig } from './hortacloud-config';
 
-
-export interface HortaCloudVPCProps extends VpcProps {
-}
-
-export class HortaCloudVPC extends Construct {
+export class HortaCloudVPC extends Stack {
 
   public readonly vpc: IVpc;
 
-  constructor(scope: Construct, id: string, props?: HortaCloudVPCProps) {
-    super(scope, id);
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
 
     this.vpc = createVPC(this, id);
 
@@ -75,12 +71,9 @@ export class HortaCloudVPC extends Construct {
       }],
     });
   }
-
 }
 
 function createVPC(scope: Construct, id: string) : IVpc {
-  const hortaConfig = getHortaConfig();
-
   return new Vpc(scope, id, {
     cidr: '10.0.0.0/16',
     maxAzs: 1,

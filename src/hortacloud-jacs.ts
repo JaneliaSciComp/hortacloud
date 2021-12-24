@@ -4,13 +4,9 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as path from 'path';
-import { HortaCloudVPC } from './hortacloud-vpc';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
-import { getHortaConfig, HortaCloudConfig } from './hortacloud-config';
-
-export interface HortaCloudJACSProps {
-  vpc: HortaCloudVPC;
-}
+import { getHortaServicesConfig, HortaCloudServicesConfig, HortaCloudConfig, createResourceId } from './hortacloud-config';
+import { HortaCloudVPC } from './hortacloud-vpc';
 
 interface HortaCloudMachine {
   readonly instanceType: ec2.InstanceType,
@@ -34,13 +30,15 @@ export class HortaCloudJACS extends Construct {
   public readonly server: ec2.Instance;
   public readonly dataBucket: s3.Bucket;
 
-  constructor(scope: Construct, id: string, props: HortaCloudJACSProps) {
+  constructor(scope: Construct, 
+              id: string,
+              hortaVpc: HortaCloudVPC) {
     super(scope, id);
 
-    const hortaConfig = getHortaConfig();
+    const hortaConfig = getHortaServicesConfig();
  
     // create Security Group for the Instance
-    const serverSG = createSecurityGroup(this, props.vpc.vpc, [
+    const serverSG = createSecurityGroup(this, hortaVpc.vpc, [
       {
         port: 22,
         description: 'allow SSH access from anywhere'
@@ -78,8 +76,9 @@ export class HortaCloudJACS extends Construct {
 
     const jacsMachineImage = createJacsMachineImage(hortaConfig);
     
-    this.server = new ec2.Instance(this, 'Instance', {
-      vpc : props.vpc.vpc,
+    const jacsNodeInstanceName = createResourceId(hortaConfig, 'jacs-node');
+    this.server = new ec2.Instance(this, jacsNodeInstanceName, {
+      vpc : hortaVpc.vpc,
       vpcSubnets : {
         subnetType: hortaConfig.withPublicAccess 
                       ? ec2.SubnetType.PUBLIC
@@ -87,7 +86,7 @@ export class HortaCloudJACS extends Construct {
       },
       role: serverRole,
       securityGroup: serverSG,
-      instanceName: createHortaServerInstanceName(hortaConfig),
+      instanceName: jacsNodeInstanceName,
       blockDevices: [
         {
           deviceName: '/dev/xvdb',
@@ -98,8 +97,8 @@ export class HortaCloudJACS extends Construct {
     });
 
     // create the data bucket
-    const dataBucketName = createDataBucketName(hortaConfig)
-    this.dataBucket = new s3.Bucket(this, 'DataBucket', {
+    const dataBucketName = createResourceId(hortaConfig, 'data')
+    this.dataBucket = new s3.Bucket(this, dataBucketName, {
       bucketName: dataBucketName,
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -153,7 +152,7 @@ function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, sgRules: SecurityR
   return serverSG;
 }
 
-function createJacsMachineImage(cfg: HortaCloudConfig) : HortaCloudMachine {
+function createJacsMachineImage(cfg: HortaCloudServicesConfig) : HortaCloudMachine {
   const jacsMachineImage = ec2.MachineImage.latestAmazonLinux({
     generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
     edition: ec2.AmazonLinuxEdition.STANDARD,
@@ -167,14 +166,6 @@ function createJacsMachineImage(cfg: HortaCloudConfig) : HortaCloudMachine {
     machineImage: jacsMachineImage,
     keyName: cfg.hortaServerKeyPairName
   };
-}
-
-function createHortaServerInstanceName(cfg: HortaCloudConfig):string {
-  return `${cfg.hortaCloudOrg}-hortacloud-jacs-${cfg.hortaStage}`
-}
-
-function createDataBucketName(cfg: HortaCloudConfig):string {
-  return `${cfg.hortaCloudOrg}-hortacloud-data-${cfg.hortaStage}`
 }
 
 function createAssets(scope: Construct, instance: ec2.Instance, assetsOpts: AssetOpts[]) {

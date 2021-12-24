@@ -2,16 +2,16 @@
 
 import { App, Tags } from 'aws-cdk-lib';
 import { HortaCloudServicesStack } from './hortacloud-services';
-import { getHortaConfig } from './hortacloud-config';
+import { getHortaCloudConfig, createResourceId } from './hortacloud-config';
+import { HortaCloudVPC } from './hortacloud-vpc';
 
-const hortaConfig = getHortaConfig();
-
-const stackId = `${hortaConfig.hortaCloudOrg}-hortacloud-${hortaConfig.hortaStage}`;
+const hortaConfig = getHortaCloudConfig();
 
 const app = new App();
 
-const servicesStack = new HortaCloudServicesStack(app, stackId, {
-});
+const vpc = new HortaCloudVPC(app, createResourceId(hortaConfig, 'vpc'));
+
+const servicesStack = new HortaCloudServicesStack(app, createResourceId(hortaConfig, 'services'), vpc);
 
 Tags.of(servicesStack).add('PROJECT', 'MouseLight');
 Tags.of(servicesStack).add('DEVELOPER', hortaConfig.developerName);
