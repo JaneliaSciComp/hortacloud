@@ -59,7 +59,7 @@ function prepareEnvConfig() {
         s/JADE_API_KEY=.*$/JADE_API_KEY=${JADE_API_KEY}/
         s/SEARCH_INIT_MEM_SIZE=.*$/SEARCH_INIT_MEM_SIZE=${SEARCH_MEM_GB}/
         s/SEARCH_MAX_MEM_SIZE=.*$/SEARCH_MAX_MEM_SIZE=${SEARCH_MEM_GB}/
-EOF
+    EOF
 
     echo "Create env config from .env.template using /tmp/scmd"
     sed -f /tmp/scmd .env.template > .env.config
@@ -103,7 +103,7 @@ function prepareJadeConfig() {
         Storage.Email.SMTPHost=
         Storage.Email.SMTPPort=25
         Storage.Email.Recipients=
-EOF
+    EOF
 }
 
 prepareFilesystem
