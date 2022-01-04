@@ -46,64 +46,66 @@ function prepareEnvConfig() {
         CURRENT_HOST="$(wget -qO - http://169.254.169.254/latest/meta-data/local-hostname)"
     fi
 
-    cat > /tmp/scmd <<- EOF
-        s/DEPLOYMENT=jacs/DEPLOYMENT=mouselight/
-        s/DB_DIR=\$REDUNDANT_STORAGE/DB_DIR=\$NON_REDUNDANT_STORAGE/
-        s/HOST1=/HOST1=${CURRENT_HOST}/
-        s/JWT_SECRET_KEY=/JWT_SECRET_KEY=${JWT_KEY}/
-        s/MONGODB_SECRET_KEY=/MONGODB_SECRET_KEY=${MONGO_KEY}/
-        s/MONGODB_INIT_ROOT_PASSWORD=/MONGODB_INIT_ROOT_PASSWORD=${MONGO_ROOT_PASS}/
-        s/MONGODB_APP_PASSWORD=/MONGODB_APP_PASSWORD=${MONGO_APP_PASS}/
-        s/RABBITMQ_PASSWORD=/RABBITMQ_PASSWORD=${RABBITMQ_PASS}/
-        s/JACS_API_KEY=.*$/JACS_API_KEY=${JACS_API_KEY}/
-        s/JADE_API_KEY=.*$/JADE_API_KEY=${JADE_API_KEY}/
-        s/SEARCH_INIT_MEM_SIZE=.*$/SEARCH_INIT_MEM_SIZE=${SEARCH_MEM_GB}/
-        s/SEARCH_MAX_MEM_SIZE=.*$/SEARCH_MAX_MEM_SIZE=${SEARCH_MEM_GB}/
-    EOF
+    sedcmds=(
+        "s/DEPLOYMENT=jacs/DEPLOYMENT=mouselight/"
+        "s/DB_DIR=\$REDUNDANT_STORAGE/DB_DIR=\$NON_REDUNDANT_STORAGE/"
+        "s/HOST1=/HOST1=${CURRENT_HOST}/"
+        "s/JWT_SECRET_KEY=/JWT_SECRET_KEY=${JWT_KEY}/"
+        "s/MONGODB_SECRET_KEY=/MONGODB_SECRET_KEY=${MONGO_KEY}/"
+        "s/MONGODB_INIT_ROOT_PASSWORD=/MONGODB_INIT_ROOT_PASSWORD=${MONGO_ROOT_PASS}/"
+        "s/MONGODB_APP_PASSWORD=/MONGODB_APP_PASSWORD=${MONGO_APP_PASS}/"
+        "s/RABBITMQ_PASSWORD=/RABBITMQ_PASSWORD=${RABBITMQ_PASS}/"
+        "s/JADE_AGENT_VOLUMES=.*$/JADE_AGENT_VOLUMES=localstorage,s3storage"
+        "s/JACS_API_KEY=.*$/JACS_API_KEY=${JACS_API_KEY}/"
+        "s/JADE_API_KEY=.*$/JADE_API_KEY=${JADE_API_KEY}/"
+        "s/SEARCH_INIT_MEM_SIZE=.*$/SEARCH_INIT_MEM_SIZE=${SEARCH_MEM_GB}/"
+        "s/SEARCH_MAX_MEM_SIZE=.*$/SEARCH_MAX_MEM_SIZE=${SEARCH_MEM_GB}/"
+    )
+    printf '%s\n' "${sedcmds[@]}" > /tmp/scmd
 
     echo "Create env config from .env.template using /tmp/scmd"
     sed -f /tmp/scmd .env.template > .env.config
 }
 
 function prepareJadeConfig() {
+
     mv /opt/jacs/config/jade/config.properties /opt/jacs/config/jade/config.bak
-    cat > /opt/jacs/config/jade/config.properties <<- EOF
-        MongoDB.Database=jade
-        MongoDB.AuthDatabase=jade
-        MongoDB.ReplicaSet=rsJacs
-        MongoDB.Username=
-        MongoDB.Password=
-        MongoDB.ConnectionWaitQueueSize=5000
-        MongoDB.ConnectTimeout=120000
 
-        StorageAgent.BootstrappedVolumes=localstorage,s3storage
+    jadeprops=(
+        "MongoDB.Database=jade"
+        "MongoDB.AuthDatabase=jade"
+        "MongoDB.ReplicaSet=rsJacs"
+        "MongoDB.Username="
+        "MongoDB.Password="
+        "MongoDB.ConnectionWaitQueueSize=5000"
+        "MongoDB.ConnectTimeout=120000"
 
-        StorageVolume.localstorage.RootDir=/data/jacsstorage
-        StorageVolume.localstorage.VirtualPath=/jade
-        StorageVolume.localstorage.Shared=false
-        StorageVolume.localstorage.Tags=local,jade
-        StorageVolume.localstorage.VolumePermissions=READ,WRITE,DELETE
+        "StorageVolume.localstorage.RootDir=/data/jacsstorage"
+        "StorageVolume.localstorage.VirtualPath=/jade"
+        "StorageVolume.localstorage.Shared=false"
+        "StorageVolume.localstorage.Tags=local,jade"
+        "StorageVolume.localstorage.VolumePermissions=READ,WRITE,DELETE"
 
-        StorageVolume.s3storage.RootDir=/s3data
-        StorageVolume.s3storage.VirtualPath=/s3jade
-        StorageVolume.s3storage.Shared=true
-        StorageVolume.s3storage.Tags=shared
-        StorageVolume.s3storage.VolumePermissions=READ,WRITE,DELETE
+        "StorageVolume.s3storage.RootDir=/s3data"
+        "StorageVolume.s3storage.VirtualPath=/s3jade"
+        "StorageVolume.s3storage.Shared=true"
+        "StorageVolume.s3storage.Tags=shared"
+        "StorageVolume.s3storage.VolumePermissions=READ,WRITE,DELETE"
 
-        # This should ideally point to an NFS mounted disk
-        StorageVolume.OVERFLOW_VOLUME.RootDir=/s3data/jade_overflow/${username}
-        StorageVolume.OVERFLOW_VOLUME.VirtualPath=/overflow/jade
-        StorageVolume.OVERFLOW_VOLUME.Tags=jade,overflow,includesUserFolder
-        StorageVolume.OVERFLOW_VOLUME.VolumePermissions=READ,WRITE,DELETE
+        "StorageVolume.OVERFLOW_VOLUME.RootDir=/s3data/jade_overflow/${username}"
+        "StorageVolume.OVERFLOW_VOLUME.VirtualPath=/overflow/jade"
+        "StorageVolume.OVERFLOW_VOLUME.Tags=jade,overflow,includesUserFolder"
+        "StorageVolume.OVERFLOW_VOLUME.VolumePermissions=READ,WRITE,DELETE"
 
-        Storage.Email.SenderEmail=
-        Storage.Email.SenderPassword=
-        Storage.Email.AuthRequired=false
-        Storage.Email.EnableTLS=false
-        Storage.Email.SMTPHost=
-        Storage.Email.SMTPPort=25
-        Storage.Email.Recipients=
-    EOF
+        "Storage.Email.SenderEmail="
+        "Storage.Email.SenderPassword="
+        "Storage.Email.AuthRequired=false"
+        "Storage.Email.EnableTLS=false"
+        "Storage.Email.SMTPHost="
+        "Storage.Email.SMTPPort=25"
+        "Storage.Email.Recipients="
+    )
+    printf '%s\n' "${jadeprops[@]}" > /opt/jacs/config/jade/config.properties
 }
 
 prepareFilesystem
