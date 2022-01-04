@@ -71,9 +71,9 @@ function prepareJadeConfig() {
 
     mv /opt/jacs/config/jade/config.properties /opt/jacs/config/jade/config.bak
 
-    jadeprops=(
+    local jadeprops=(
         "MongoDB.Database=jade"
-        "MongoDB.AuthDatabase=jade"
+        "MongoDB.AuthDatabase=admin"
         "MongoDB.ReplicaSet=rsJacs"
         "MongoDB.Username="
         "MongoDB.Password="
@@ -108,12 +108,30 @@ function prepareJadeConfig() {
     printf '%s\n' "${jadeprops[@]}" > /opt/jacs/config/jade/config.properties
 }
 
+function prepareJadeVolumesYML() {
+    local jade_vols_yml=(
+        "version: '3.7'"
+        ""
+        "services:"
+        ""
+        "  jade-agent1:"
+        "    volumes:"
+        "      - /s3data:/s3data"
+    )
+
+    mkdir -p ${DEPLOY_DIR}/local
+    printf '%s\n' "${jade_vols_yml[@]}" > ${DEPLOY_DIR}/local/docker-jade-volumes.yml
+
+}
+
 prepareFilesystem
 
 cd $DEPLOY_DIR
 git clone --branch $JACS_STACK_BRANCH https://github.com/JaneliaSciComp/jacs-cm.git .
 
 prepareEnvConfig
+
+prepareJadeVolumesYML
 
 # change the ownership of the comfig base so that
 # the initialization step has permissions to write there
