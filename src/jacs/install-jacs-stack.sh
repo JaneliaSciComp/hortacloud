@@ -171,7 +171,7 @@ prepareJacsConfig jacs-async
 prepareJacsConfig jacs-sync
 prepareJadeConfig
 
-./manage.sh compose --dbonly up -d
+./manage.sh compose up --dbonly -d
 ./manage.sh init-databases
 # bounce it again after the databases have been initialized
 ./manage.sh compose down
