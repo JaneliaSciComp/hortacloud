@@ -67,8 +67,25 @@ function prepareEnvConfig() {
     sed -f /tmp/scmd .env.template > .env.config
 }
 
-function prepareJadeConfig() {
+function prepareJacsConfig() {
+    mv /opt/jacs/config/jacs-async/jacs.properties /opt/jacs/config/jacs-async/jacs.bak
 
+    local jacsprops=(
+        "service.JacsDataDir=/data/jacs"
+        "service.DefaultWorkingDir=/data/jacs/devstore"
+        "service.DefaultScratchDir=/data/jacs/scratch"
+
+        "service.dispatcher.InitialDelayInSeconds=1"
+        "service.dispatcher.PeriodInSeconds=2"
+        "service.queue.InitialDelayInSeconds=1"
+        "service.queue.PeriodInSeconds=2"
+        "service.cluster.checkIntervalInSeconds=2"
+        "service.cluster.requiresAccountInfo=false"
+    )
+    printf '%s\n' "${jacsprops[@]}" > /opt/jacs/config/jacs-async/jacs.properties
+}
+
+function prepareJadeConfig() {
     mv /opt/jacs/config/jade/config.properties /opt/jacs/config/jade/config.bak
 
     local jadeprops=(
@@ -117,6 +134,10 @@ function prepareJadeVolumesYML() {
         "  jade-agent1:"
         "    volumes:"
         "      - /s3data:/s3data"
+        ""
+        "  jacs-async:"
+        "    volumes:"
+        "      - /s3data:/s3data"
     )
 
     mkdir -p ${DEPLOY_DIR}/local
@@ -144,9 +165,13 @@ cp /opt/jacs/config/certs/cert.crt /opt/jacs/config/api-gateway/content
 
 chown -R docker-nobody:docker-nobody /opt/jacs/config
 
+prepareJacsConfig
 prepareJadeConfig
 
-./manage.sh compose up -d
+./manage.sh compose --dbonly up -d
 ./manage.sh init-databases
+# bounce it again after the databases have been initialized
+./manage.sh compose down
+./manage.sh compose up -d
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"

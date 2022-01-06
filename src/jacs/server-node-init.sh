@@ -30,6 +30,8 @@ fi
 mount -a
 
 usermod -aG docker ec2-user
+useradd -d /home/ssm-user -s /bin/bash ssm-user
+usermod -aG docker ssm-user
 
 # Create Docker user 
 groupadd -g 4444 docker-nobody

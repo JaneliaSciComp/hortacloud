@@ -11,12 +11,12 @@
     "cleancdk": "npm run clean && npm run build && npm run cdk"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "~2.2.0",
+    "aws-cdk-lib": "^2.3.0",
     "constructs": "~10.0.13"
   },
   "devDependencies": {
-    "aws-cdk-lib": "~2.2.0",
-    "constructs": "~10.0.13",
+    "aws-cdk-lib": "^2.3.0",
+    "constructs": "^10.0.13",
     "crypto": "^1.0.1",
     "cpy-cli": "^3.1.1",
     "del-cli": "^4.0.1",

@@ -40,7 +40,7 @@ export class HortaCloudJACS extends Construct {
     // create Security Group for the Instance
     const serverSG = createSecurityGroup(this, hortaVpc.vpc, [
       {
-        port: 22,
+        port: hortaConfig.withPublicAccess ? 22 : 0,
         description: 'allow SSH access from anywhere'
       },
       {
@@ -54,6 +54,10 @@ export class HortaCloudJACS extends Construct {
       {
         port: 8080,
         description: 'allow dashboard from anywhere'
+      },
+      {
+        port: 8890,
+        description: 'allow solr from anywhere'
       },
       {
         port: 9881,
@@ -145,13 +149,16 @@ function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, sgRules: SecurityR
   });
 
 
-  sgRules.forEach(r => {
-    serverSG.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(r.port),
-      r.description
-    );
-  })
+  sgRules
+      .filter(r => r.port > 0)
+      .forEach(r => {
+          serverSG.addIngressRule(
+              ec2.Peer.anyIpv4(),
+              ec2.Port.tcp(r.port),
+              r.description
+          );
+      })
+      ;
 
   return serverSG;
 }
@@ -168,7 +175,7 @@ function createJacsMachineImage(cfg: HortaCloudServicesConfig) : HortaCloudMachi
   return {
     instanceType: new ec2.InstanceType(cfg.hortaServerInstanceType),
     machineImage: jacsMachineImage,
-    keyName: cfg.hortaServerKeyPairName
+    keyName: cfg.hortaServerKeyPairName ? cfg.hortaServerKeyPairName : undefined
   };
 }
 
