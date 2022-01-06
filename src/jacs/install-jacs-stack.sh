@@ -68,7 +68,9 @@ function prepareEnvConfig() {
 }
 
 function prepareJacsConfig() {
-    mv /opt/jacs/config/jacs-async/jacs.properties /opt/jacs/config/jacs-async/jacs.bak
+    local jacsService=$1
+
+    mv /opt/jacs/config/${jacsService}/jacs.properties /opt/jacs/config/${jacsService}/jacs.bak
 
     local jacsprops=(
         "service.JacsDataDir=/data/jacs"
@@ -82,7 +84,7 @@ function prepareJacsConfig() {
         "service.cluster.checkIntervalInSeconds=2"
         "service.cluster.requiresAccountInfo=false"
     )
-    printf '%s\n' "${jacsprops[@]}" > /opt/jacs/config/jacs-async/jacs.properties
+    printf '%s\n' "${jacsprops[@]}" > /opt/jacs/config/${jacsService}/jacs.properties
 }
 
 function prepareJadeConfig() {
@@ -165,7 +167,8 @@ cp /opt/jacs/config/certs/cert.crt /opt/jacs/config/api-gateway/content
 
 chown -R docker-nobody:docker-nobody /opt/jacs/config
 
-prepareJacsConfig
+prepareJacsConfig jacs-async
+prepareJacsConfig jacs-sync
 prepareJadeConfig
 
 ./manage.sh compose --dbonly up -d
