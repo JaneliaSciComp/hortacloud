@@ -13,7 +13,7 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig {
     hortaServerInstanceType: string;
     hortaServerKeyPairName?: string;
     hortaDataVolumeSizeGB: number;
-    withPublicAccess?: true;
+    withPublicAccess?: boolean;
     jwtKey: string;
     mongoKey: string;
     appPassword: string;
