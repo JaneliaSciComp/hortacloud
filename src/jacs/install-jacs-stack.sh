@@ -172,7 +172,10 @@ prepareJacsConfig jacs-sync
 prepareJadeConfig
 
 ./manage.sh compose up --dbonly -d
+./manage.sh compose ps
 ./manage.sh init-databases
+# print docker logs for reference
+./manage.sh compose logs
 # bounce it again after the databases have been initialized
 ./manage.sh compose down
 ./manage.sh compose up -d
