@@ -172,12 +172,29 @@ prepareJacsConfig jacs-sync
 prepareJadeConfig
 
 ./manage.sh compose up --dbonly -d
+
+echo "Wait for RabbitMQ"
+let rabbitmq_retries=0
+rabbitmq_running=
+
+while [ -z "${rabbitmq_running}" ] && [ ${rabbitmq_retries} -lt 10 ] ; do
+    rabbitmq_running=$(./manage.sh compose ps | grep rabbitmq | grep running)
+    rabbitmq_retries=$((rabbitmq_retries + 1))
+    sleep 2
+done
+
+if [ -z "${rabbitmq_running}" ] ; then
+    echo "RabbitMQ might not be initialized properly"
+fi
+
 ./manage.sh compose ps
+
 ./manage.sh init-databases
 # print docker logs for reference
 ./manage.sh compose logs
 # bounce it again after the databases have been initialized
-./manage.sh compose down
+./manage.sh compose down --dbonly
+# bring up all services
 ./manage.sh compose up -d
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"
