@@ -147,27 +147,6 @@ function prepareJadeVolumesYML() {
 
 }
 
-function waitForRabbitMQ() {
-    local rabbitmq_retries=0
-    local rabbitmq_running=
-
-    echo "Wait for RabbitMQ"
-    while [ ${rabbitmq_retries} -lt 10 ] ; do
-        rabbitmq_running=`./manage.sh compose logs | grep "Management plugin started. Port: 15672"`
-        if [[ -n "${rabbitmq_running}" ]]; then
-            break
-        fi
-        sleep 5
-        ((rabbitmq_retries++))
-    done
-
-    if [ -z "${rabbitmq_running}" ] ; then
-        echo "RabbitMQ might not be initialized properly"
-    else
-        echo "RabbitMQ started"
-    fi
-}
-
 prepareFilesystem
 
 cd $DEPLOY_DIR
