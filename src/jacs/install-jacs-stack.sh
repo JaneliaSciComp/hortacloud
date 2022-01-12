@@ -147,6 +147,27 @@ function prepareJadeVolumesYML() {
 
 }
 
+function waitForRabbitMQ() {
+    local rabbitmq_retries=0
+    local rabbitmq_running=
+
+    echo "Wait for RabbitMQ"
+    while [ ${rabbitmq_retries} -lt 10 ] ; do
+        rabbitmq_running=`./manage.sh compose logs | grep "Management plugin started. Port: 15672"`
+        if [[ -n "${rabbitmq_running}" ]]; then
+            break
+        fi
+        sleep 5
+        ((rabbitmq_retries++))
+    done
+
+    if [ -z "${rabbitmq_running}" ] ; then
+        echo "RabbitMQ might not be initialized properly"
+    else
+        echo "RabbitMQ started"
+    fi
+}
+
 prepareFilesystem
 
 cd $DEPLOY_DIR
@@ -171,29 +192,16 @@ prepareJacsConfig jacs-async
 prepareJacsConfig jacs-sync
 prepareJadeConfig
 
+# pull db images
+./manage.sh compose pull --dbonly
+
 ./manage.sh compose up --dbonly -d
-
-echo "Wait for RabbitMQ"
-let rabbitmq_retries=0
-rabbitmq_running=
-
-while [ -z "${rabbitmq_running}" ] && [ ${rabbitmq_retries} -lt 10 ] ; do
-    rabbitmq_running=$(./manage.sh compose ps | grep rabbitmq | grep running)
-    rabbitmq_retries=$((rabbitmq_retries + 1))
-    sleep 2
-done
-
-if [ -z "${rabbitmq_running}" ] ; then
-    echo "RabbitMQ might not be initialized properly"
-fi
-
 ./manage.sh compose ps
 
 ./manage.sh init-databases
-# print docker logs for reference
-./manage.sh compose logs
+
 # bounce it again after the databases have been initialized
-./manage.sh compose down --dbonly
+./manage.sh compose down
 # bring up all services
 ./manage.sh compose up -d
 
