@@ -26,7 +26,7 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig {
 export function getHortaCloudConfig() : HortaCloudConfig {
     return {
         hortaCloudOrg: process.env.HORTA_ORG || 'janelia',
-        hortaStage: process.env.HORTA_STAGE || 'cgdev',
+        hortaStage: process.env.HORTA_STAGE || 'dev',
         hortaCloudVersion: '1.0.0',
         developerName: process.env.USER || "unknown",
     };
