@@ -172,12 +172,15 @@ prepareJacsConfig jacs-sync
 prepareJadeConfig
 
 # pull db images
-./manage.sh compose pull --dbonly
+./manage.sh compose pull
 
-./manage.sh compose up --dbonly -d
+./manage.sh compose up -d
 ./manage.sh compose ps
 
-./manage.sh init-databases
+init_res=`./manage.sh init-databases`
+echo ${init_res}
+
+./manage.sh compose logs
 
 # bounce it again after the databases have been initialized
 ./manage.sh compose down
