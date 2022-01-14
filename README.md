@@ -6,30 +6,19 @@ It combines state-of-the-art volumetric visualization, advanced features for 3D 
 
 ![System archtecture diagram](docs/images/system_architecture.png)
 
-## Getting started
-
-To make use of this repo, you should have **node v14** installed on your local machine. We recommend using [nvm](https://github.com/nvm-sh/nvm) to install and activate this version of node. You should also install the [AWS CDK](https://aws.amazon.com/cdk/) and configure it with your AWS account information.
-
-After cloning this repo, run `npm install` to download dependencies.
-
-Then run `npm run build` to build the code and `cdk deploy` to deploy it to your AWS account.
-
 ## Implementation details
 
 The deployment uses AWS CDK to create AWS resources on your AWS account as shown in the diagram below. All services run in a secured Virtual Private Cloud (VPC).
 
 ![Cloud archtecture diagram](docs/images/cloud_architecture.png)
 
-## Development
+## Getting Started
 
-### Useful commands
+To make use of this repo, you should have **node v14** installed on your local machine. We recommend using [nvm](https://github.com/nvm-sh/nvm) to install and activate this version of node. You should also install the [AWS CDK](https://aws.amazon.com/cdk/) and configure it with your AWS account information.
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npm run cdk -- deploy`  deploy this stack to your default AWS account/region
-* `npm run cdk -- diff`  compare deployed stack with current state
-* `npm run cdk -- synth`  emits the synthesized CloudFormation template
+After cloning this repo, run `npm run setup` to download dependencies.
+
+Then you can run `npm run deploy` to build and deploy the code.
 
 ### Deployment examples
 
@@ -38,6 +27,7 @@ To a specific stage of the services and vpc stacks use the example below:
 ```
 HORTA_STAGE=prod
 HORTA_ORG=janelia
+ADMIN_USER_EMAIL=<adminuser>@<organization>
 
-HORTA_STAGE=${HORTA_STAGE} npm run cleancdk -- deploy ${HORTA_ORG}-hc-services-${HORTA_STAGE} ${HORTA_ORG}-hc-vpc-${HORTA_STAGE}
+ADMIN_USER_EMAIL=${ADMIN_USER_EMAIL} HORTA_STAGE=${HORTA_STAGE} npm run deploy
 ```

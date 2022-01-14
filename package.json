@@ -1,28 +1,22 @@
 {
   "name": "hortacloud",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Hortacloud services",
+  "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "postbuild": "cpy '**/*' '!**/*.ts' '../build/' --cwd=src --parents",
-    "watch": "tsc -w",
-    "test": "jest",
-    "cdk": "cdk",
-    "clean": "del build cdk.out",
-    "cleancdk": "npm run clean && npm run build && npm run cdk"
+    "setup": "node scripts/setup",
+    "deploy": "node scripts/deploy",
+    "destroy": "node scripts/destroy",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "peerDependencies": {
-    "aws-cdk-lib": "^2.4.0",
-    "constructs": "~10.0.13"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaneliaSciComp/hortacloud.git"
   },
-  "devDependencies": {
-    "aws-cdk-lib": "^2.4.0",
-    "constructs": "^10.0.13",
-    "crypto": "^1.0.1",
-    "cpy-cli": "^3.1.1",
-    "del-cli": "^4.0.1",
-    "jest": "^26.4.2",
-    "ts-jest": "^26.2.0",
-    "ts-node": "^9.0.0",
-    "typescript": "~3.9.7"
-  }
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/JaneliaSciComp/hortacloud/issues"
+  },
+  "homepage": "https://github.com/JaneliaSciComp/hortacloud#readme"
 }
