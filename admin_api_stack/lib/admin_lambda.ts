@@ -5,6 +5,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
+import * as path from "path";
 
 export class LambdaService extends Construct {
   public readonly api: apigateway.RestApi;
@@ -66,13 +67,12 @@ export class LambdaService extends Construct {
     });
 
     // add the /user-list resource
-
     const userListHandler = new lambda.Function(
       this,
       "HortaCloudUserListHandler",
       {
         runtime: lambda.Runtime.NODEJS_14_X, // So we can use async in widget.js
-        code: lambda.Code.fromAsset("user_list_resources/adminLambda.zip"),
+        code: lambda.Code.fromAsset(path.join(__dirname, "..", "user_list_resources")),
         handler: "index.handler",
         environment: {
           GROUP: "admins",
