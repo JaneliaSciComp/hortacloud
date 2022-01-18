@@ -6,7 +6,8 @@ const exec = command => {
   });
 };
 
-exec(`npm install --prefix ./vpc_stack`);
-exec(`npm install --prefix ./admin_api_stack`);
-exec(`npm install --prefix ./admin_api_stack/user_list_resources`);
-exec(`npm install --prefix ./website`);
+exec("npm install");
+exec("npm install --prefix ./vpc_stack");
+exec("npm install --prefix ./admin_api_stack");
+exec("npm install --prefix ./admin_api_stack/user_list_resources");
+exec("npm install --prefix ./website");
