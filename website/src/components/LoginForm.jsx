@@ -28,7 +28,7 @@ export default function LoginForm() {
         } else {
           navigate(from, { replace: true });
         }
-      },
+      }
     );
   };
 

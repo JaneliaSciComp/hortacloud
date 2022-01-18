@@ -90,8 +90,8 @@ export default function AddUserModal() {
                     ? Promise.resolve()
                     : Promise.reject(
                         new Error(
-                          "Email address must be less than or equal to 32 characters.",
-                        ),
+                          "Email address must be less than or equal to 32 characters."
+                        )
                       ),
               },
             ]}

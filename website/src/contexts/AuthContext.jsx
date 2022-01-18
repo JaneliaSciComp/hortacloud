@@ -31,7 +31,7 @@ function AuthProvider({ children }) {
             Auth.completeNewPassword(
               userObject, // the Cognito User Object
               newPassword, // the new password
-              requiredAttributes,
+              requiredAttributes
             ).then((updatedUser) => {
               // at this time the user is logged in if no MFA required
               setUser(user);

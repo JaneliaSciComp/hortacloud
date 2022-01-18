@@ -27,7 +27,7 @@ export default function AppStreamButton() {
       })
       .catch((e) => {
         message.error(
-          `Something went wrong creating access link to appstream: ${e.message}`,
+          `Something went wrong creating access link to appstream: ${e.message}`
         );
       });
   }

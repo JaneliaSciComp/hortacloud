@@ -59,7 +59,7 @@ export default function PasswordReset() {
       await Auth.forgotPasswordSubmit(
         state.email,
         values.code,
-        values.password,
+        values.password
       );
       setState({ ...state, confirmed: true, confirming: false });
       message.success("Your password has been updated.");

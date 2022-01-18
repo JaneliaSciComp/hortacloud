@@ -25,7 +25,7 @@ export default function ActiveStatus({ username, isActive }) {
       onSuccess: () => {
         queryClient.invalidateQueries("users");
       },
-    },
+    }
   );
 
   const enableUserMutation = useMutation(
@@ -36,7 +36,7 @@ export default function ActiveStatus({ username, isActive }) {
       onSuccess: () => {
         queryClient.invalidateQueries("users");
       },
-    },
+    }
   );
 
   function handleActiveChange(checked) {
