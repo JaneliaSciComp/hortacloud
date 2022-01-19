@@ -16,11 +16,11 @@ Then run `npm run build` to build the code and `cdk deploy` to deploy it to your
 
 ## Implementation details
 
-The deployment uses AWS CDK to create AWS resources on your AWS account as shown in the diagram below. 
+The deployment uses AWS CDK to create AWS resources on your AWS account as shown in the diagram below. All services run in a secured Virtual Private Cloud (VPC).
 
 ![Cloud archtecture diagram](docs/images/cloud_architecture.png)
 
-## Deveopment
+## Development
 
 ### Useful commands
 
