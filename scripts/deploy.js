@@ -6,8 +6,11 @@ const exec = (command, options={}) => {
   execSync(command, combinedOptions);
 };
 
-//console.log("- Deploying VPC stack");
-//exec(`cleancdk -- deploy --require-approval never janelia-hc-services-prod janelia-hc-vpc-prod`, {cwd: "./admin_api_stack/" });
+console.log(process.env.HORTA_ORG);
+const { HORTA_ORG, HORTA_STAGE }  = process.env;
+
+console.log("- Deploying VPC stack");
+exec(`cleancdk -- deploy --require-approval never ${HORTA_ORG}-hc-services-${HORTA_STAGE} ${HORTA_ORG}-hc-vpc-${HORTA_STAGE}`, {cwd: "./admin_api_stack/" });
 
 console.log(chalk.cyan("🚚 Deploying web admin backend stack."));
 exec(`cdk deploy --all --require-approval never -c deploy=backend`, {cwd: "./admin_api_stack/" });
