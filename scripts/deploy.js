@@ -6,7 +6,6 @@ const exec = (command, options={}) => {
   execSync(command, combinedOptions);
 };
 
-console.log(process.env.HORTA_ORG);
 const { HORTA_ORG, HORTA_STAGE }  = process.env;
 
 console.log("🚚 Deploying VPC stack");
