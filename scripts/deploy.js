@@ -9,7 +9,7 @@ const exec = (command, options={}) => {
 console.log(process.env.HORTA_ORG);
 const { HORTA_ORG, HORTA_STAGE }  = process.env;
 
-console.log("- Deploying VPC stack");
+console.log("🚚 Deploying VPC stack");
 exec(`cleancdk -- deploy --require-approval never ${HORTA_ORG}-hc-services-${HORTA_STAGE} ${HORTA_ORG}-hc-vpc-${HORTA_STAGE}`, {cwd: "./admin_api_stack/" });
 
 console.log(chalk.cyan("🚚 Deploying web admin backend stack."));

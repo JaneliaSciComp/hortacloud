@@ -34,8 +34,8 @@ export class LambdaService extends Construct {
       code: lambda.Code.fromAsset("appstream_lambda_resources"),
       handler: "index.handler",
       environment: {
-        FLEETNAME: "Workstation9Fleet",
-        STACKNAME: "JaneliaWorkstation3"
+        FLEETNAME: "Workstation9Fleet", // TODO: get this from the VPC stack
+        STACKNAME: "JaneliaWorkstation3"// TODO: get this from the VPC stack
       }
     });
 
