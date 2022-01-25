@@ -6,12 +6,6 @@ It combines state-of-the-art volumetric visualization, advanced features for 3D 
 
 ![System archtecture diagram](docs/images/system_architecture.png)
 
-## Implementation details
-
-The deployment uses AWS CDK to create AWS resources on your AWS account as shown in the diagram below. All services run in a secured Virtual Private Cloud (VPC).
-
-![Cloud archtecture diagram](docs/images/cloud_architecture.png)
-
 ## Getting Started
 
 To make use of this repo, you should have **node v14** installed on your local machine. We recommend using [nvm](https://github.com/nvm-sh/nvm) to install and activate this version of node. You should also install the [AWS CDK](https://aws.amazon.com/cdk/) and configure it with your AWS account information.
@@ -19,6 +13,12 @@ To make use of this repo, you should have **node v14** installed on your local m
 After cloning this repo, run `npm run setup` to download dependencies.
 
 Then you can run `npm run deploy` to build and deploy the code.
+
+## Implementation details
+
+The deployment uses AWS CDK to create AWS resources on your AWS account as shown in the diagram below. All services run in a secured Virtual Private Cloud (VPC).
+
+![Cloud archtecture diagram](docs/images/cloud_architecture.png)
 
 ### Deployment examples
 
