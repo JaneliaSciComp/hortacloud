@@ -3,11 +3,17 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
 
+
+interface WebAppStackProps extends cdk.StackProps {
+  stage: string;
+  org: string;
+}
+
 export class HortaCloudWebAppStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: WebAppStackProps) {
     super(scope, id, props);
     // create a bucket to store the websites static contents
-    const siteBucket = new s3.Bucket(this, "HortaCloudWebAdminBucket", {
+    const siteBucket = new s3.Bucket(this, `${props.org}-HortaCloudWebAdminBucket-${props.stage}`, {
       websiteIndexDocument: "index.html",
       websiteErrorDocument: "index.html",
       publicReadAccess: true,

@@ -14,7 +14,7 @@ async function main() {
   // get stack info
   const apiStack = await cloudformation
     .describeStacks({
-      StackName: `HortaCloudAdminAPIStack-${HORTA_ORG}-${HORTA_STAGE}`,
+      StackName: `${HORTA_ORG}-HortaCloudAdminAPIStack-${HORTA_STAGE}`,
     })
     .promise();
 
