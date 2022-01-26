@@ -25,7 +25,8 @@ if (deploy === "admin_api") {
         region: CDK_DEFAULT_REGION
       },
       stage: HORTA_STAGE,
-      org: HORTA_ORG
+      org: HORTA_ORG,
+      description: 'HortaCloud Admin API stack hosting the cognito pool and lambdas'
     }
   );
 
@@ -43,7 +44,8 @@ if (deploy === "admin_api") {
         region: CDK_DEFAULT_REGION
       },
       stage: HORTA_STAGE,
-      org: HORTA_ORG
+      org: HORTA_ORG,
+      description: 'HortaCloud Web Admin stack hosting the admin website'
     }
   );
 
