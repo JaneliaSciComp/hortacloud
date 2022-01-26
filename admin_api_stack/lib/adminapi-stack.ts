@@ -16,7 +16,7 @@ export class HortaCloudAdminAPIStack extends cdk.Stack {
     // user pool for auth
     const hortaCloudCognitoPool = new cognitoPool.CognitoPool(
       this,
-      "CognitoPool"
+      `${props.org}-CognitoPool-${props.stage}`
     );
 
     new cdk.CfnOutput(this, "UserPoolId", {
@@ -31,7 +31,8 @@ export class HortaCloudAdminAPIStack extends cdk.Stack {
     const adminLambdaConstruct = new adminLambda.LambdaService(
       this,
       "Lambdas",
-      hortaCloudCognitoPool.pool
+      hortaCloudCognitoPool.pool,
+      {org: props.org, stage: props.stage}
     );
 
     new cdk.CfnOutput(this, "ApiGatewayEndPoint", {

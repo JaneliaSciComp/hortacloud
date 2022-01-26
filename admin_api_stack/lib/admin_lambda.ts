@@ -7,16 +7,21 @@ import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as path from "path";
 
+interface LambaServiceProps {
+  org: string;
+  stage: string;
+}
+
 export class LambdaService extends Construct {
   public readonly api: apigateway.RestApi;
 
-  constructor(scope: Construct, id: string, userPool: cognito.UserPool) {
+  constructor(scope: Construct, id: string, userPool: cognito.UserPool, props: LambaServiceProps) {
     super(scope, id);
 
     // set up api gateway
-    this.api = new apigateway.RestApi(this, "horta-cloud-admin-lambda-api", {
-      restApiName: "Horta Cloud Admin Service",
-      description: "Admin service to manage users & generate app stream urls"
+    this.api = new apigateway.RestApi(this, `${props.org}-horta-cloud-admin-lambda-api-${props.stage}`, {
+      restApiName: `Horta Cloud Admin Service - ${props.org} ${props.stage}`,
+      description: `Admin service to manage users & generate app stream urls for ${props.org} ${props.stage}`
     });
 
     // set up authorizer to use cognito pools

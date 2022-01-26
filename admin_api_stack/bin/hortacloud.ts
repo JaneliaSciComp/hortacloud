@@ -16,10 +16,9 @@ const {
 } = process.env;
 
 if (deploy === "admin_api") {
-  console.log("- Admin API Stack");
   const backendStack = new HortaCloudAdminAPIStack(
     app,
-    `HortaCloudAdminAPIStack-${HORTA_ORG}-${HORTA_STAGE}`,
+    `${HORTA_ORG}-HortaCloudAdminAPIStack-${HORTA_STAGE}`,
     {
       env: {
         account: CDK_DEFAULT_ACCOUNT,
@@ -35,10 +34,9 @@ if (deploy === "admin_api") {
   cdk.Tags.of(backendStack).add("STAGE", "dev");
   cdk.Tags.of(backendStack).add("VERSION", "0.0.1");
 } else if (deploy === "admin_website") {
-  console.log("- Admin Web Stack");
   const frontendStack = new HortaCloudWebAppStack(
     app,
-    `HortaCloudWebAppStack-${HORTA_ORG}-${HORTA_STAGE}`,
+    `${HORTA_ORG}-HortaCloudWebAppStack-${HORTA_STAGE}`,
     {
       env: {
         account: CDK_DEFAULT_ACCOUNT,
