@@ -22,7 +22,6 @@ console.log(chalk.green("✓ environment looks good." ));
 // console.log("🚚 Deploying VPC stack");
 // exec(`cleancdk -- deploy --require-approval never ${HORTA_ORG}-hc-services-${HORTA_STAGE} ${HORTA_ORG}-hc-vpc-${HORTA_STAGE}`, {cwd: "./vpc_stack/" });
 
-/*
 console.log(chalk.cyan("🚚 Deploying web admin backend stack."));
 exec(`cdk deploy --all --require-approval never -c deploy=admin_api`, {cwd: "./admin_api_stack/" });
 
@@ -34,7 +33,6 @@ exec(`npm run build`, { cwd: "./website" });
 
 console.log(chalk.cyan("🚚 Deploying web admin frontend stack."));
 exec(`cdk deploy --all --require-approval never -c deploy=admin_website`, {cwd: "./admin_api_stack/" });
-*/
 
 // post install directions
 const region = "us-east-1";
