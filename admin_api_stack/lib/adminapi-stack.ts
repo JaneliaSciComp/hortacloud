@@ -3,8 +3,13 @@ import { Construct } from "constructs";
 import * as adminLambda from "./admin_lambda";
 import * as cognitoPool from "./cognitopool";
 
+interface AdminAPIStackProps extends cdk.StackProps {
+  stage: string;
+  org: string;
+}
+
 export class HortaCloudAdminAPIStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: AdminAPIStackProps) {
     super(scope, id, props);
     // The code that defines your stack goes here
 
