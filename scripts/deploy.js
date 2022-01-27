@@ -25,7 +25,7 @@ console.log(chalk.green("✅ environment looks good."));
 
 console.log(chalk.cyan("🚚 Deploying VPC stack"));
 exec(
-  `npm run cleancdk -- deploy --require-approval never ${HORTA_ORG}-hc-services-${HORTA_STAGE} ${HORTA_ORG}-hc-vpc-${HORTA_STAGE}`,
+  `npm run cdk -- deploy --require-approval never ${HORTA_ORG}-hc-services-${HORTA_STAGE} ${HORTA_ORG}-hc-vpc-${HORTA_STAGE}`,
   { cwd: "./vpc_stack/" }
 );
 
