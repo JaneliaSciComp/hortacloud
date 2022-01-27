@@ -7,7 +7,7 @@ import { HortaCloudAppstream } from './hortacloud-appstream';
 export class HortaCloudWorkstationStack extends Stack {
 
   public readonly server: HortaCloudAppstream;
-  
+
   constructor(scope: Construct,
               id: string,
               hortaVpc: HortaCloudVPC,
