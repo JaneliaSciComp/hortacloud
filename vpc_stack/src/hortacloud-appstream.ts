@@ -12,8 +12,9 @@ export class HortaCloudAppstream extends Construct {
               id: string,
               hortaVpc: HortaCloudVPC) {
     super(scope, id);
+
     // still need to add vpc configuration from main stack
-    const hortaCloudFleet = new appstream.CfnFleet(this, 'MyCfnFleet', {
+    const hortaCloudFleet = new appstream.CfnFleet(this, 'HortaCloudFleet', {
       instanceType: 'stream.graphics-pro.4xlarge',
       name: 'name',
       computeCapacity: {

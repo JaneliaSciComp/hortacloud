@@ -1,10 +1,6 @@
 {
-  "app": "npx ts-node --prefer-ts-exts build/hortacloud.js",
+  "app": "npx ts-node --prefer-ts-exts src/hortacloud.ts",
   "requireApproval": "never",
   "context": {
-    "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": false,
-    "@aws-cdk/aws-cloudfront:defaultSecurityPolicyTLSv1.2_2021": false,
-    "@aws-cdk/aws-rds:lowercaseDbIdentifier": false,
-    "@aws-cdk/core:stackRelativeExports": false
   }
 }
