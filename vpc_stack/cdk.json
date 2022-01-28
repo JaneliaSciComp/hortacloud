@@ -1,6 +1,5 @@
 {
   "app": "npx ts-node --prefer-ts-exts src/hortacloud.ts",
-  "requireApproval": "never",
   "context": {
   }
 }
