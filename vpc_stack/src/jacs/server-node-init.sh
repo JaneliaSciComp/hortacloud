@@ -7,24 +7,31 @@
 
 echo "Initializing server (server-init.sh)... $@"
 
-dataBucketName=$1
+dataBucketNames=("$@")
 
 # Install dependencies
 yum update -y
 amazon-linux-extras install -y epel
 yum install -y docker git fuse-devel s3fs-fuse
 
+curl -L https://github.com/kahing/goofys/releases/latest/download/goofys --output /usr/bin/goofys
+chmod 755 /usr/bin/goofys
+
 mkfs -t ext4 /dev/xvdb
 mkdir /data
 echo -e '/dev/xvdb\t/data\text4\tdefaults\t0\t0' | tee -a /etc/fstab
-mkdir /s3data
-chmod 777 /s3data
+mkdir "/s3data"
+chmod 777 "/s3data"
 
-if [ -n "${dataBucketName}" ] ; then
-    # if the data bucket name is set mount it using s3fs
-    echo -e "${dataBucketName}\t/s3data\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,use_path_request_style,umask=0000\t0\t0" | tee -a /etc/fstab
-else
+if [ ${#dataBucketNames[@]} -eq 0 ] ; then
     echo "No databucket name"
+else
+    # if the data bucket names are set mount them using s3fs
+    for dataBucketName in ${dataBucketNames[@]}; do
+        mkdir -p "/s3data/${dataBucketName}"
+        chmod 777 "/s3data/${dataBucketName}"
+        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,use_path_request_style,umask=0000\t0\t0" | tee -a /etc/fstab
+    done
 fi
 
 mount -a

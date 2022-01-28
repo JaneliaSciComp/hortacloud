@@ -8,13 +8,21 @@
 echo "Installing JACS Stack (install-jacs-stack.sh)... $@"
 
 JWT_KEY=$1
-MONGO_KEY=$2
-MONGO_ROOT_PASS=$3
+shift
+MONGO_KEY=$1
+shift
+MONGO_ROOT_PASS=$1
+shift
 MONGO_APP_PASS=$MONGO_ROOT_PASS
-RABBITMQ_PASS=$4
-JACS_API_KEY=$5
-JADE_API_KEY=$6
-SEARCH_MEM_GB=$7
+RABBITMQ_PASS=$1
+shift
+JACS_API_KEY=$1
+shift
+JADE_API_KEY=$1
+shift
+SEARCH_MEM_GB=$1
+shift
+JADE_DATA_BUCKETS=("$@")
 
 # Install jacs-cm
 DEPLOY_DIR=/opt/jacs/deploy
@@ -90,6 +98,16 @@ function prepareJacsConfig() {
 function prepareJadeConfig() {
     mv /opt/jacs/config/jade/config.properties /opt/jacs/config/jade/config.bak
 
+    if [ ${#JADE_DATA_BUCKETS[@]} -eq 0 ] ; then
+        JADE_BOOTSTRAP="StorageAgent.BootstrappedVolumes=localstorage"
+        OVERFLOW_ROOT_DIR="/data/jacsstorage/overflow"
+    else
+        JADE_DATA_BUCKETS_NAMES_WITH_SPACES=${JADE_DATA_BUCKETS[@]}     # space delimited string from array
+        JADE_DATA_BUCKETS_NAMES_WITH_COMMA=${JADE_DATA_BUCKETS_NAMES_WITH_SPACES// /,}   # comma delimited string
+        JADE_BOOTSTRAP="StorageAgent.BootstrappedVolumes=localstorage,${JADE_DATA_BUCKETS_NAMES_WITH_COMMA}"
+        OVERFLOW_ROOT_DIR="/s3data/${JADE_DATA_BUCKETS[0]}/overflow"
+    fi
+
     local jadeprops=(
         "MongoDB.Database=jade"
         "MongoDB.AuthDatabase=admin"
@@ -98,23 +116,7 @@ function prepareJadeConfig() {
         "MongoDB.Password="
         "MongoDB.ConnectionWaitQueueSize=5000"
         "MongoDB.ConnectTimeout=120000"
-
-        "StorageVolume.localstorage.RootDir=/data/jacsstorage"
-        "StorageVolume.localstorage.VirtualPath=/jade"
-        "StorageVolume.localstorage.Shared=false"
-        "StorageVolume.localstorage.Tags=local,jade"
-        "StorageVolume.localstorage.VolumePermissions=READ,WRITE,DELETE"
-
-        "StorageVolume.s3storage.RootDir=/s3data"
-        "StorageVolume.s3storage.VirtualPath=/s3jade"
-        "StorageVolume.s3storage.Shared=true"
-        "StorageVolume.s3storage.Tags=shared"
-        "StorageVolume.s3storage.VolumePermissions=READ,WRITE,DELETE"
-
-        "StorageVolume.OVERFLOW_VOLUME.RootDir=/s3data/jade_overflow/${username}"
-        "StorageVolume.OVERFLOW_VOLUME.VirtualPath=/overflow/jade"
-        "StorageVolume.OVERFLOW_VOLUME.Tags=jade,overflow,includesUserFolder"
-        "StorageVolume.OVERFLOW_VOLUME.VolumePermissions=READ,WRITE,DELETE"
+        "${JADE_BOOTSTRAP}"
 
         "Storage.Email.SenderEmail="
         "Storage.Email.SenderPassword="
@@ -123,7 +125,30 @@ function prepareJadeConfig() {
         "Storage.Email.SMTPHost="
         "Storage.Email.SMTPPort=25"
         "Storage.Email.Recipients="
+
+        "StorageVolume.OVERFLOW_VOLUME.RootDir=${OVERFLOW_ROOT_DIR}/${username}"
+        "StorageVolume.OVERFLOW_VOLUME.VirtualPath=/overflow/jade"
+        "StorageVolume.OVERFLOW_VOLUME.Tags=jade,overflow,includesUserFolder"
+        "StorageVolume.OVERFLOW_VOLUME.VolumePermissions=READ,WRITE,DELETE"
+
+        "StorageVolume.localstorage.RootDir=/data/jacsstorage"
+        "StorageVolume.localstorage.VirtualPath=/jade"
+        "StorageVolume.localstorage.Shared=false"
+        "StorageVolume.localstorage.Tags=local,jade"
+        "StorageVolume.localstorage.VolumePermissions=READ,WRITE,DELETE"
     )
+
+    for dataBucketName in ${JADE_DATA_BUCKETS[@]}; do
+        local dataBucketVolProps=(
+            "StorageVolume.${dataBucketName}.RootDir=/s3data/${dataBucketName}"
+            "StorageVolume.${dataBucketName}.VirtualPath=/${dataBucketName}"
+            "StorageVolume.${dataBucketName}.Shared=true"
+            "StorageVolume.${dataBucketName}.Tags=shared"
+            "StorageVolume.${dataBucketName}.VolumePermissions=READ,WRITE,DELETE"
+        )
+        jadeprops=("${jadeprops[@]}" "${dataBucketVolProps[@]}")
+    done
+
     printf '%s\n' "${jadeprops[@]}" > /opt/jacs/config/jade/config.properties
 }
 
@@ -134,10 +159,6 @@ function prepareJadeVolumesYML() {
         "services:"
         ""
         "  jade-agent1:"
-        "    volumes:"
-        "      - /s3data:/s3data"
-        ""
-        "  jacs-async:"
         "    volumes:"
         "      - /s3data:/s3data"
     )

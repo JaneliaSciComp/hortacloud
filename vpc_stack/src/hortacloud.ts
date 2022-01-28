@@ -13,9 +13,9 @@ const app = new App();
 const vpc = new HortaCloudVPC(app, createResourceId(hortaConfig, 'vpc'));
 
 const servicesStack = new HortaCloudServicesStack(app, createResourceId(hortaConfig, 'services'), vpc);
-const workstationStack = new HortaCloudWorkstationStack(app, createResourceId(hortaConfig, 'workstation'), vpc);
+// const workstationStack = new HortaCloudWorkstationStack(app, createResourceId(hortaConfig, 'workstation'), vpc);
 
-applyTags([servicesStack, workstationStack, vpc]);
+applyTags([servicesStack, /*workstationStack,*/ vpc]);
 
 function applyTags(stacks: Stack[]) {
     stacks.forEach(s => {

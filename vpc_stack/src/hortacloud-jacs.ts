@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { RemovalPolicy } from 'aws-cdk-lib';
+import { assertions, RemovalPolicy } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
@@ -28,7 +28,7 @@ interface SecurityRules {
 export class HortaCloudJACS extends Construct {
 
   public readonly server: ec2.Instance;
-  public readonly dataBucket: s3.Bucket;
+  public readonly defaultDataBucket: s3.Bucket;
 
   constructor(scope: Construct, 
               id: string,
@@ -104,21 +104,33 @@ export class HortaCloudJACS extends Construct {
       ...jacsMachineImage
     });
 
-    // create the data bucket
-    const dataBucketName = createResourceId(hortaConfig, 'data')
-    this.dataBucket = new s3.Bucket(this, dataBucketName, {
-      bucketName: dataBucketName,
+    // prepare all data buckets, i.e. default data bucket and external data buckets
+    const defaultDataBucketName = createResourceId(hortaConfig, 'data');
+    this.defaultDataBucket = new s3.Bucket(this, defaultDataBucketName, {
+      bucketName: defaultDataBucketName,
       autoDeleteObjects: true,
       removalPolicy: RemovalPolicy.DESTROY,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL
     });
-    this.dataBucket.grantReadWrite(this.server.role);
-    
+    this.defaultDataBucket.grantReadWrite(this.server.role);
+
+    const externalDataBuckets = hortaConfig.hortaDataBuckets 
+      ? hortaConfig.hortaDataBuckets.split(',').map(s => s.trim())
+      : [];
+
+    externalDataBuckets.forEach(bn => {
+      // external data buckets must exist
+      const externalBucket = s3.Bucket.fromBucketName(this, bn, bn);
+      externalBucket.grantReadWrite(this.server.role);
+    })
+
+    const dataBucketNames = [ ...externalDataBuckets, defaultDataBucketName];
+
     createAssets(this, this.server, [
       {
         name: 'InitInstanceAsset',
         path: 'jacs/server-node-init.sh',
-        arguments: [dataBucketName]
+        arguments: dataBucketNames
       },
       {
         name: 'InitJacsStackAsset',
@@ -130,7 +142,8 @@ export class HortaCloudJACS extends Construct {
           hortaConfig.rabbitMQPassword,
           hortaConfig.jacsAPIKey,
           hortaConfig.jadeAPIKey,
-          hortaConfig.searchMemGB
+          hortaConfig.searchMemGB,
+          ...dataBucketNames
         ]
       },
       {
@@ -139,7 +152,6 @@ export class HortaCloudJACS extends Construct {
       }
     ]);
   }
-
 }
 
 function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, sgRules: SecurityRules[]) :ec2.ISecurityGroup {
