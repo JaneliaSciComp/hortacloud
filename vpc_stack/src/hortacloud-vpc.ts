@@ -2,6 +2,7 @@ import { Construct } from 'constructs';
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { GatewayVpcEndpointAwsService, InterfaceVpcEndpointAwsService, 
          Port, SecurityGroup, SubnetType, IVpc, Vpc, VpcProps, } from 'aws-cdk-lib/aws-ec2';
+import * as cdk from "aws-cdk-lib";
 
 export class HortaCloudVPC extends Stack {
 
@@ -11,6 +12,11 @@ export class HortaCloudVPC extends Stack {
     super(scope, id, props);
 
     this.vpc = createVPC(this, id);
+
+    new cdk.CfnOutput(this, "VpcID", {
+      value: this.vpc.vpcId,
+      exportName: "VpcID"
+    });
 
     // Security Group to be used by EC2 instances and accessed via Systems Manager
     const ssmPrivateSG = new SecurityGroup(this, 'SSMPrivateSecurityGroup', {
