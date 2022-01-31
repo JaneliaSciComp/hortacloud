@@ -14,9 +14,6 @@ yum update -y
 amazon-linux-extras install -y epel
 yum install -y docker git fuse-devel s3fs-fuse
 
-curl -L https://github.com/kahing/goofys/releases/latest/download/goofys --output /usr/bin/goofys
-chmod 755 /usr/bin/goofys
-
 mkfs -t ext4 /dev/xvdb
 mkdir /data
 echo -e '/dev/xvdb\t/data\text4\tdefaults\t0\t0' | tee -a /etc/fstab
@@ -39,6 +36,9 @@ mount -a
 usermod -aG docker ec2-user
 useradd -d /home/ssm-user -s /bin/bash ssm-user
 usermod -aG docker ssm-user
+
+# give ssm-user sudo
+echo "ssm-user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ssm-agent-users
 
 # Create Docker user 
 groupadd -g 4444 docker-nobody
