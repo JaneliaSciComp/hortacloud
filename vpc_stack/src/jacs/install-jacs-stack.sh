@@ -23,6 +23,8 @@ shift
 SEARCH_MEM_GB=$1
 shift
 JADE_DATA_BUCKETS=("$@")
+JADE_DATA_BUCKETS_NAMES_WITH_SPACES=${JADE_DATA_BUCKETS[@]}     # space delimited string from array
+JADE_DATA_BUCKETS_NAMES_WITH_COMMA=${JADE_DATA_BUCKETS_NAMES_WITH_SPACES// /,}   # comma delimited string
 
 # Install jacs-cm
 DEPLOY_DIR=/opt/jacs/deploy
@@ -54,6 +56,12 @@ function prepareEnvConfig() {
         CURRENT_HOST="$(wget -qO - http://169.254.169.254/latest/meta-data/local-hostname)"
     fi
 
+    if [ ${#JADE_DATA_BUCKETS[@]} -eq 0 ] ; then
+        JADE_BOOTSTRAPPED_VOLUMES="localstorage"
+    else
+        JADE_BOOTSTRAPPED_VOLUMES="localstorage,${JADE_DATA_BUCKETS_NAMES_WITH_COMMA}"
+    fi
+
     sedcmds=(
         "s/DEPLOYMENT=jacs/DEPLOYMENT=mouselight/"
         "s/DB_DIR=\$REDUNDANT_STORAGE/DB_DIR=\$NON_REDUNDANT_STORAGE/"
@@ -63,7 +71,7 @@ function prepareEnvConfig() {
         "s/MONGODB_INIT_ROOT_PASSWORD=/MONGODB_INIT_ROOT_PASSWORD=${MONGO_ROOT_PASS}/"
         "s/MONGODB_APP_PASSWORD=/MONGODB_APP_PASSWORD=${MONGO_APP_PASS}/"
         "s/RABBITMQ_PASSWORD=/RABBITMQ_PASSWORD=${RABBITMQ_PASS}/"
-        "s/JADE_AGENT_VOLUMES=.*$/JADE_AGENT_VOLUMES=localstorage,s3storage/"
+        "s/JADE_AGENT_VOLUMES=.*$/JADE_AGENT_VOLUMES=${JADE_BOOTSTRAPPED_VOLUMES}/"
         "s/JACS_API_KEY=.*$/JACS_API_KEY=${JACS_API_KEY}/"
         "s/JADE_API_KEY=.*$/JADE_API_KEY=${JADE_API_KEY}/"
         "s/SEARCH_INIT_MEM_SIZE=.*$/SEARCH_INIT_MEM_SIZE=${SEARCH_MEM_GB}/"
@@ -100,13 +108,10 @@ function prepareJadeConfig() {
 
     if [ ${#JADE_DATA_BUCKETS[@]} -eq 0 ] ; then
         JADE_BOOTSTRAP="StorageAgent.BootstrappedVolumes=localstorage"
-        OVERFLOW_ROOT_DIR="/data/jacsstorage/overflow"
     else
-        JADE_DATA_BUCKETS_NAMES_WITH_SPACES=${JADE_DATA_BUCKETS[@]}     # space delimited string from array
-        JADE_DATA_BUCKETS_NAMES_WITH_COMMA=${JADE_DATA_BUCKETS_NAMES_WITH_SPACES// /,}   # comma delimited string
         JADE_BOOTSTRAP="StorageAgent.BootstrappedVolumes=localstorage,${JADE_DATA_BUCKETS_NAMES_WITH_COMMA}"
-        OVERFLOW_ROOT_DIR="/s3data/${JADE_DATA_BUCKETS[0]}/overflow"
     fi
+    OVERFLOW_ROOT_DIR="/data/jacsstorage/overflow"
 
     local jadeprops=(
         "MongoDB.Database=jade"

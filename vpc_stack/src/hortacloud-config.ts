@@ -39,7 +39,7 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         hortaServerInstanceType: process.env.HORTA_SERVER_INSTANCE_TYPE || 't2.xlarge',
         hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || 'ec2_batch',
         hortaDataVolumeSizeGB: 30,
-        withPublicAccess: true,
+        withPublicAccess: false,
         jwtKey: process.env.JACS_JWT_KEY || crypto.randomBytes(32).toString('hex'),
         mongoKey: process.env.JACS_MONGO_KEY || crypto.randomBytes(32).toString('hex'),
         appPassword: process.env.JACS_APP_PASSWD || crypto.randomBytes(16).toString('hex'),
