@@ -1,19 +1,16 @@
 #!/usr/bin/env node
 
 import { App, Stack, Tags } from 'aws-cdk-lib';
-import { HortaCloudServicesStack } from './hortacloud-services';
-import { getHortaCloudConfig, createResourceId } from './hortacloud-config';
-import { HortaCloudVPC } from './hortacloud-vpc';
+import { getHortaCloudConfig, createResourceId } from './config';
+import {HortaCloudWorkstationStack} from "./hortacloud-workstation";
 
 const hortaConfig = getHortaCloudConfig();
 
 const app = new App();
 
-const vpc = new HortaCloudVPC(app, createResourceId(hortaConfig, 'vpc'));
+const workstationStack = new HortaCloudWorkstationStack(app, createResourceId(hortaConfig, 'workstation'));
 
-const servicesStack = new HortaCloudServicesStack(app, createResourceId(hortaConfig, 'services'), vpc);
-
-applyTags([servicesStack, vpc]);
+applyTags([workstationStack]);
 
 function applyTags(stacks: Stack[]) {
     stacks.forEach(s => {

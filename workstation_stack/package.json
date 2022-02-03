@@ -1,5 +1,5 @@
 {
-  "name": "admin_api_stack",
+  "name": "workstation_stack",
   "version": "0.1.0",
   "scripts": {
     "build": "tsc",

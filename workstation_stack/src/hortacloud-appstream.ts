@@ -1,20 +1,35 @@
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as appstream from 'aws-cdk-lib/aws-appstream';
+import * as cdk from "aws-cdk-lib";
 
-import { HortaCloudVPC } from './hortacloud-vpc';
+import { HortaCloudVPC } from '../../vpc_stack/src/hortacloud-vpc';
 
-export class HortaCloudAppstream extends Construct {
+export class HortacloudAppstream extends Construct {
 
   public readonly server: ec2.Instance;
 
   constructor(scope: Construct,
-              id: string,
-              hortaVpc: HortaCloudVPC) {
+              id: string) {
     super(scope, id);
 
+    const vpcId = cdk.Fn.importValue('VpcID');
+
+    const hortaCloudImageBuilder = new appstream.CfnImageBuilder(this, 'HortaCloudImageBuilder', {
+      instanceType: 'stream.graphics-pro.4xlarge',
+      name: 'HortaCloudImageBuilder',
+
+      accessEndpoints: [{
+        endpointType: 'STREAMING',
+        vpceId: vpcId,
+      }],
+
+      displayName: 'HortaCloudImageBuilder',
+      imageName: 'AppStream-Graphics-G4dn-WinServer2019-07-19-2021'
+    });
+
     // still need to add vpc configuration from main stack
-    const hortaCloudFleet = new appstream.CfnFleet(this, 'MyCfnFleet', {
+    /* const hortaCloudFleet = new appstream.CfnFleet(this, 'HortaCloudFleet', {
       instanceType: 'stream.graphics-pro.4xlarge',
       name: 'name',
       computeCapacity: {
@@ -22,12 +37,11 @@ export class HortaCloudAppstream extends Construct {
       },
       displayName: 'HortaCloudAppstreamFleet',
       enableDefaultInternetAccess: false,
-      fleetType: 'On-demand',
-      maxConcurrentSessions: 5,
+      fleetType: 'ON_DEMAND',
       maxUserDurationInSeconds: 960
     });
 
-    const hortaCloudStack = new appstream.CfnStack(this, 'MyCfnStack',{
+    const hortaCloudStack = new appstream.CfnStack(this, 'HortaCloudStack',{
       accessEndpoints: [{
         endpointType: 'STREAMING',
         vpceId: hortaVpc.vpc.vpcId,
@@ -42,20 +56,9 @@ export class HortaCloudAppstream extends Construct {
     const hortaCloudStackFleetAssociation = new appstream.CfnStackFleetAssociation(this, 'HortaCloudStackFleet', {
       fleetName: 'HortaCloudAppstreamFleet',
       stackName: 'HortaCloudAppstreamStack',
-    });
+    }); */
 
-    const hortaCloudImageBuilder = new appstream.CfnImageBuilder(this, 'HortaCloudImageBuilder', {
-      instanceType: 'stream.graphics-pro.4xlarge',
-      name: 'HortaCloudImageBuilder',
-
-      accessEndpoints: [{
-        endpointType: 'STREAMING',
-        vpceId: hortaVpc.vpc.vpcId,
-      }],
-      displayName: 'HortaCloudImageBuilder',
-    });
-
-    /*const hortaCloudApp = new appstream.CfnApplication(this, 'HortaCloudAppstream', {
+    /*const hortaCloudApp = new appstream.CfnApplication(this, 'HortacloudAppstream', {
       appBlockArn: 'appBlockArn',
       iconS3Location: {
         s3Bucket: 's3Bucket',

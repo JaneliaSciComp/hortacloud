@@ -1,19 +1,18 @@
 import { Construct } from 'constructs';
 import { Stack, StackProps } from 'aws-cdk-lib';
 
-import { HortaCloudVPC } from './hortacloud-vpc';
-import { HortaCloudAppstream } from './hortacloud-appstream';
+import { HortaCloudVPC } from '../../vpc_stack/src/hortacloud-vpc';
+import { HortacloudAppstream } from './hortacloud-appstream';
 
 export class HortaCloudWorkstationStack extends Stack {
 
-  public readonly server: HortaCloudAppstream;
+  public readonly server: HortacloudAppstream;
 
   constructor(scope: Construct,
               id: string,
-              hortaVpc: HortaCloudVPC,
               props?: StackProps) {
     super(scope, id, props);
 
-    this.server = new HortaCloudAppstream(this, 'Workstation', hortaVpc);
+    this.server = new HortacloudAppstream(this, 'Workstation');
   }
 }
