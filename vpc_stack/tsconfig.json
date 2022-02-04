@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "build",
     "target": "ES2018",
-    "module": "commonjs",
+    "moduleResolution": "node",
     "lib": [
       "es2018"
     ],
@@ -21,7 +21,6 @@
     "inlineSources": true,
     "experimentalDecorators": true,
     "resolveJsonModule": false,
-    "rootDir": "src",
     "strictPropertyInitialization": false,
     "typeRoots": [
       "./node_modules/@types"

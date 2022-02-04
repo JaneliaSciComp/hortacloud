@@ -1,12 +1,6 @@
 import * as crypto from 'crypto';
 
-// Common Client/Server Horta Cloud Properties
-export interface HortaCloudConfig {
-    hortaStage: string;
-    hortaCloudOrg: string;
-    hortaCloudVersion: string;
-    developerName: string;
-}
+import { HortaCloudConfig, getHortaCloudConfig } from '../../common/hortacloud-common';
 
 // Horta Services Config
 export interface HortaCloudServicesConfig extends HortaCloudConfig {
@@ -22,15 +16,6 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig {
     jadeAPIKey: string;
     searchMemGB: string;
     hortaDataBuckets?: string;
-}
-
-export function getHortaCloudConfig() : HortaCloudConfig {
-    return {
-        hortaCloudOrg: process.env.HORTA_ORG || 'janelia',
-        hortaStage: process.env.HORTA_STAGE || 'dev',
-        hortaCloudVersion: '1.0.0',
-        developerName: process.env.USER || "unknown",
-    };
 }
 
 export function getHortaServicesConfig() : HortaCloudServicesConfig {

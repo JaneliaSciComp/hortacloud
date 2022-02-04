@@ -1,8 +1,8 @@
 import { Construct } from 'constructs';
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { GatewayVpcEndpointAwsService, InterfaceVpcEndpointAwsService, 
-         Port, SecurityGroup, SubnetType, IVpc, Vpc, VpcProps, } from 'aws-cdk-lib/aws-ec2';
-import * as cdk from "aws-cdk-lib";
+         Port, SecurityGroup, SubnetType, IVpc, Vpc, } from 'aws-cdk-lib/aws-ec2';
+import { createResourceId, getHortaServicesConfig } from './hortacloud-services-config';
 
 export class HortaCloudVPC extends Stack {
 
@@ -13,9 +13,13 @@ export class HortaCloudVPC extends Stack {
 
     this.vpc = createVPC(this, id);
 
-    new cdk.CfnOutput(this, "VpcID", {
+    const hortaConfig = getHortaServicesConfig();
+
+    const hortaVPCKey = createResourceId(hortaConfig, 'VpcID');
+
+    new CfnOutput(this, 'VpcID', {
       value: this.vpc.vpcId,
-      exportName: "VpcID"
+      exportName: hortaVPCKey
     });
 
     // Security Group to be used by EC2 instances and accessed via Systems Manager
@@ -99,3 +103,4 @@ function createVPC(scope: Construct, id: string) : IVpc {
     ],
   });
 }
+

@@ -1,12 +1,14 @@
 import { Construct } from 'constructs';
-import { assertions, RemovalPolicy } from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as path from 'path';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
-import { getHortaServicesConfig, HortaCloudServicesConfig, HortaCloudConfig, createResourceId } from './hortacloud-config';
+import { getHortaServicesConfig, HortaCloudServicesConfig } from './hortacloud-services-config';
 import { HortaCloudVPC } from './hortacloud-vpc';
+
+import { createResourceId } from '../../common/hortacloud-common';
 
 interface HortaCloudMachine {
   readonly instanceType: ec2.InstanceType,
@@ -83,7 +85,7 @@ export class HortaCloudJACS extends Construct {
     });
 
     const jacsMachineImage = createJacsMachineImage(hortaConfig);
-    
+
     const jacsNodeInstanceName = createResourceId(hortaConfig, 'jacs-node');
     this.server = new ec2.Instance(this, jacsNodeInstanceName, {
       vpc : hortaVpc.vpc,
