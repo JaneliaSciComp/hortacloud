@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { RemovalPolicy } from 'aws-cdk-lib';
+import { RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
@@ -9,6 +9,7 @@ import { getHortaServicesConfig, HortaCloudServicesConfig } from './hortacloud-s
 import { HortaCloudVPC } from './hortacloud-vpc';
 
 import { createResourceId } from '../../common/hortacloud-common';
+import { CfnDisk } from 'aws-cdk-lib/aws-lightsail';
 
 interface HortaCloudMachine {
   readonly instanceType: ec2.InstanceType,
@@ -104,6 +105,13 @@ export class HortaCloudJACS extends Construct {
         }
       ],
       ...jacsMachineImage
+    });
+
+    // output instance IP
+    new CfnOutput(this, 'ServerIP', {
+      value: hortaConfig.withPublicAccess
+                ? this.server.instancePublicDnsName
+                : this.server.instancePrivateDnsName
     });
 
     // prepare all data buckets, i.e. default data bucket and external data buckets
