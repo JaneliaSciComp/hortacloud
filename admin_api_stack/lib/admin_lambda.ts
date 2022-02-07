@@ -1,4 +1,4 @@
-import * as core from "aws-cdk-lib/core";
+import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -39,8 +39,10 @@ export class LambdaService extends Construct {
       code: lambda.Code.fromAsset("appstream_lambda_resources"),
       handler: "index.handler",
       environment: {
-        FLEETNAME: "Workstation9Fleet", // TODO: get this from the VPC stack
-        STACKNAME: "JaneliaWorkstation3"// TODO: get this from the VPC stack
+        // "Workstation9Fleet",
+        FLEETNAME: cdk.Fn.importValue(`${props.org}-${props.stage}-FleetID`),
+        // "JaneliaWorkstation3"
+        STACKNAME: cdk.Fn.importValue(`${props.org}-${props.stage}-StackId`),
       }
     });
 
