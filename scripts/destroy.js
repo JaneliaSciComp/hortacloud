@@ -26,12 +26,13 @@ exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_website
 
 console.log(chalk.red("️🚨 Removing web admin backend stack."));
 exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_api`, {cwd: "./admin_api_stack/" });
-
+/* !!!
 console.log(chalk.red("🚨 Removing Workstation stack"));
 exec(
     `npm run cdk -- destroy -f --require-approval never ${HORTA_ORG}-hc-workstation-${HORTA_STAGE}`,
     { cwd: "./workstation_stack/" }
 );
+!!!!*/
 
 console.log(chalk.red("🚨 Removing VPC stack."));
 exec(`npm run cdk -- destroy -f --all --require-approval never`, {cwd: "./vpc_stack/" });

@@ -28,7 +28,7 @@ exec(
   `npm run cdk -- deploy --all --require-approval never`,
   { cwd: "./vpc_stack/" }
 );
-
+/*!!!!
 console.log(chalk.cyan("🚚 Deploying Workstation stack"));
 exec(
     `npm run cdk -- deploy --require-approval never ${HORTA_ORG}-hc-workstation-${HORTA_STAGE}`,
@@ -79,3 +79,5 @@ async function postInstall() {
   open(outputs.SiteBucketUrl);
 }
 postInstall();
+
+!!!! */

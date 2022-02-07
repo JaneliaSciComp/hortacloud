@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { App, Stack, Tags } from 'aws-cdk-lib';
-import { getHortaCloudConfig, createResourceId } from './config';
 import {HortaCloudWorkstationStack} from "./hortacloud-workstation";
+import { getHortaCloudConfig, createResourceId } from '../../common/hortacloud-common';
 
 const hortaConfig = getHortaCloudConfig();
 

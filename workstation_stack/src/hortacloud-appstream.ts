@@ -1,19 +1,27 @@
 import { Construct } from 'constructs';
-import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import { Fn } from 'aws-cdk-lib';
+import { Vpc } from 'aws-cdk-lib/aws-ec2';
 import * as appstream from 'aws-cdk-lib/aws-appstream';
-import * as cdk from "aws-cdk-lib";
-
-import { HortaCloudVPC } from '../../vpc_stack/src/hortacloud-vpc';
+import { createResourceId, getHortaCloudConfig } from '../../common/hortacloud-common';
 
 export class HortacloudAppstream extends Construct {
-
-  public readonly server: ec2.Instance;
 
   constructor(scope: Construct,
               id: string) {
     super(scope, id);
 
-    const vpcId = cdk.Fn.importValue('VpcID');
+    const hortaConfig = getHortaCloudConfig();
+
+    const hortaVPCKey = createResourceId(hortaConfig, 'VpcID');
+
+    const vpcId = Fn.importValue(hortaVPCKey);
+
+    const vpc = Vpc.fromLookup(scope,
+      createResourceId(hortaConfig, 'vpc'),
+      {
+        isDefault: false,
+        vpcId: vpcId
+      });
 
     const hortaCloudImageBuilder = new appstream.CfnImageBuilder(this, 'HortaCloudImageBuilder', {
       instanceType: 'stream.graphics-pro.4xlarge',
@@ -25,7 +33,11 @@ export class HortacloudAppstream extends Construct {
       }],
 
       displayName: 'HortaCloudImageBuilder',
-      imageName: 'AppStream-Graphics-G4dn-WinServer2019-07-19-2021'
+      enableDefaultInternetAccess: true,
+      imageName: 'AppStream-Graphics-G4dn-WinServer2019-07-19-2021',
+      vpcConfig: {
+
+      }
     });
 
     // still need to add vpc configuration from main stack

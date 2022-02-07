@@ -1,7 +1,6 @@
 import { Construct } from 'constructs';
 import { Stack, StackProps } from 'aws-cdk-lib';
 
-import { HortaCloudVPC } from '../../vpc_stack/src/hortacloud-vpc';
 import { HortacloudAppstream } from './hortacloud-appstream';
 
 export class HortaCloudWorkstationStack extends Stack {
