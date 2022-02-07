@@ -22,19 +22,19 @@ if (!HORTA_ORG || !HORTA_STAGE || !ADMIN_USER_EMAIL) {
 console.log(chalk.green("✅ environment looks good."));
 
 // deploy all the stacks
-
 console.log(chalk.cyan("🚚 Deploying VPC stack"));
 exec(
   `npm run cdk -- deploy --all --require-approval never`,
   { cwd: "./vpc_stack/" }
 );
-/*!!!!
+
 console.log(chalk.cyan("🚚 Deploying Workstation stack"));
 exec(
     `npm run cdk -- deploy --require-approval never ${HORTA_ORG}-hc-workstation-${HORTA_STAGE}`,
     { cwd: "./workstation_stack/" }
 );
 
+/*!!!!
 console.log(chalk.cyan("🚚 Deploying web admin backend stack."));
 exec(`npm run cdk -- deploy --all --require-approval never -c deploy=admin_api`, {
   cwd: "./admin_api_stack/"

@@ -15,11 +15,19 @@ export class HortaCloudVPC extends Stack {
 
     const hortaConfig = getHortaServicesConfig();
 
-    const hortaVPCKey = createResourceId(hortaConfig, 'VpcID');
-
     new CfnOutput(this, 'VpcID', {
       value: this.vpc.vpcId,
-      exportName: hortaVPCKey
+      exportName: createResourceId(hortaConfig, 'VpcID')
+    });
+
+    new CfnOutput(this, 'PrivateSubnetID', {
+      value: this.vpc.privateSubnets.map(sn => sn.subnetId).join(','),
+      exportName: createResourceId(hortaConfig, 'PrivateSubnetID')
+    });
+
+    new CfnOutput(this, 'PublicSubnetID', {
+      value: this.vpc.publicSubnets.map(sn => sn.subnetId).join(','),
+      exportName: createResourceId(hortaConfig, 'PublicSubnetID')
     });
 
     // Security Group to be used by EC2 instances and accessed via Systems Manager

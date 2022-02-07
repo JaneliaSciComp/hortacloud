@@ -111,7 +111,8 @@ export class HortaCloudJACS extends Construct {
     new CfnOutput(this, 'ServerIP', {
       value: hortaConfig.withPublicAccess
                 ? this.server.instancePublicDnsName
-                : this.server.instancePrivateDnsName
+                : this.server.instancePrivateDnsName,
+      exportName: createResourceId(hortaConfig, 'ServerIP')
     });
 
     // prepare all data buckets, i.e. default data bucket and external data buckets
