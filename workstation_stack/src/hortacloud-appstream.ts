@@ -3,7 +3,7 @@ import { CfnOutput, Fn, Token } from 'aws-cdk-lib';
 import { IVpc } from 'aws-cdk-lib/aws-ec2';
 import * as appstream from 'aws-cdk-lib/aws-appstream';
 import { createResourceId, getHortaCloudConfig } from '../../common/hortacloud-common';
-import { VpcInstanceProps } from './hortacloud-vpc';
+import { VpcInstanceProps } from './hortacloud-vpcprops';
 
 export class HortacloudAppstream extends Construct {
 

@@ -3,19 +3,13 @@
 import { App, Fn, Lazy, Stack, Tags, Token } from 'aws-cdk-lib';
 import { HortaCloudWorkstationStack } from "./hortacloud-workstation";
 import { getHortaCloudConfig, createResourceId } from '../../common/hortacloud-common';
-import { getVPC } from './hortacloud-vpc';
+import { getVPCProps } from './hortacloud-vpcprops';
 
 const hortaConfig = getHortaCloudConfig();
 
 const app = new App();
 
-const hortaVPCIDKey = createResourceId(hortaConfig, 'VpcID');
-const vpcId = Fn.importValue(hortaVPCIDKey);
-const vpcProps = {
-    vpcId: vpcId,
-    privateSubnetId: Fn.importValue(createResourceId(hortaConfig, 'PrivateSubnetID')),
-    publicSubnetId: Fn.importValue(createResourceId(hortaConfig, 'PublicSubnetID'))
-};
+const vpcProps = getVPCProps(hortaConfig);
 
 const workstationStack = new HortaCloudWorkstationStack(
     app,
