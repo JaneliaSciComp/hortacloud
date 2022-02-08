@@ -1,54 +1,30 @@
 import { Construct } from 'constructs';
 import { CfnOutput, Fn, Token } from 'aws-cdk-lib';
-import { Vpc } from 'aws-cdk-lib/aws-ec2';
+import { IVpc } from 'aws-cdk-lib/aws-ec2';
 import * as appstream from 'aws-cdk-lib/aws-appstream';
 import { createResourceId, getHortaCloudConfig } from '../../common/hortacloud-common';
+import { VpcInstanceProps } from './hortacloud-vpc';
 
 export class HortacloudAppstream extends Construct {
 
   constructor(scope: Construct,
-              id: string) {
+              id: string,
+              vpcProps: VpcInstanceProps) {
     super(scope, id);
     const hortaCloudConfig = getHortaCloudConfig();
 
-    const hortaConfig = getHortaCloudConfig();
-
-    const hortaVPCIDKey = createResourceId(hortaConfig, 'VpcID');
-    const hortaVPCKey = createResourceId(hortaConfig, 'vpc');
-
-    const vpc = Vpc.fromVpcAttributes(this, 'VPC', {
-      vpcId: Fn.importValue(hortaVPCIDKey),
-      availabilityZones: ['us-east-1a'],
-      privateSubnetIds: [
-        Fn.importValue(`janelia-hc-vpc-cgdev:ExportsOutputRefjaneliahcvpccgdevPrivateSubnet1SubnetAD54AD79962E8AF4`)
-      ]
-    });
-
-    console.log('Imported VPC', vpc);
-    // const vpcIdToken = Fn.getAtt(hortaVPCKey, 'VpcID');
-    // const vpcId = vpcIdToken.resolve('VpcID');
-
-    // const vpc = Vpc.fromLookup(scope,
-    //   createResourceId(hortaConfig, 'vpc'),
-    //   {
-    //     isDefault: false,
-    //     vpcId: vpcId
-    //   });
-
     const imageBuilderInstanceName = createResourceId(hortaCloudConfig, 'image-builder');
-    const hortaCloudImageBuilder = new appstream.CfnImageBuilder(this, imageBuilderInstanceName, {
-      instanceType: 'stream.graphics-pro.4xlarge',
+    const subnetIds = [vpcProps.publicSubnetId]
+    console.log(`Subnets: ${subnetIds}`)
+    const hortaCloudImageBuilder = new appstream.CfnImageBuilder(this, 'ImageBuilder', {
       name: imageBuilderInstanceName,
-      accessEndpoints: [{
-        endpointType: 'STREAMING',
-        vpceId: vpc.vpcId,
-      }],
       displayName: imageBuilderInstanceName,
+      instanceType: 'stream.graphics.g4dn.xlarge',
       enableDefaultInternetAccess: true,
-      imageName: 'AppStream-Graphics-G4dn-WinServer2019-07-19-2021'
-      // vpcConfig: {
-      //   subnetIds: vpc.publicSubnets.map(sn => sn.subnetId)
-      // }
+      imageName: 'AppStream-Graphics-G4dn-WinServer2019-07-19-2021',
+      vpcConfig: {
+        subnetIds: subnetIds
+      }
     });
 
     const fleetInstanceName = createResourceId(hortaCloudConfig, 'workstation-fleet');

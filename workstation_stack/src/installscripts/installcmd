@@ -1,0 +1,22 @@
+$JACS_IP=10.0.0.215
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+iwr -useb get.scoop.sh | iex
+
+$env:SCOOP_GLOBAL='J:\'
+
+scoop install curl
+scoop install git
+scoop bucket add java
+scoop install -g ojdkbuild8
+
+mkdir c:\tmp
+cd c:\tmp
+wget --no-check-certificate -O jws-installer.exe https://ip-10-0-0-141.ec2.internal/files/JaneliaWorkstation-windows.exe
+wget --no-check-certificate -O cert.crt https://ip-10-0-0-141.ec2.internal/SCSW/cert.crt
+
+
+c:\apps\ojdkbuild8\current\bin\keytool.exe -import `
+    -alias mouse1selfcert -file cert.crt `
+    -keystore "c:\apps\ojdkbuild8\current\jre\lib\security\cacerts" `
+    -keypass changeit -storepass changeit

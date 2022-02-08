@@ -1,14 +1,30 @@
 #!/usr/bin/env node
 
-import { App, Stack, Tags } from 'aws-cdk-lib';
-import {HortaCloudWorkstationStack} from "./hortacloud-workstation";
+import { App, Fn, Lazy, Stack, Tags, Token } from 'aws-cdk-lib';
+import { HortaCloudWorkstationStack } from "./hortacloud-workstation";
 import { getHortaCloudConfig, createResourceId } from '../../common/hortacloud-common';
+import { getVPC } from './hortacloud-vpc';
 
 const hortaConfig = getHortaCloudConfig();
 
 const app = new App();
 
-const workstationStack = new HortaCloudWorkstationStack(app, createResourceId(hortaConfig, 'workstation'));
+const hortaVPCIDKey = createResourceId(hortaConfig, 'VpcID');
+const vpcId = Fn.importValue(hortaVPCIDKey);
+const vpcProps = {
+    vpcId: vpcId,
+    privateSubnetId: Fn.importValue(createResourceId(hortaConfig, 'PrivateSubnetID')),
+    publicSubnetId: Fn.importValue(createResourceId(hortaConfig, 'PublicSubnetID'))
+};
+
+const workstationStack = new HortaCloudWorkstationStack(
+    app,
+    'Workstation',
+    {
+        stackName: createResourceId(hortaConfig, 'workstation'),
+        ...vpcProps
+    }
+);
 
 applyTags([workstationStack]);
 

@@ -35,7 +35,3 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         hortaDataBuckets: process.env.HORTA_DATA_BUCKETS || "janelia-mouselight-imagery"
     };
 }
-
-export function createResourceId(cfg: HortaCloudConfig, resourceName: string) : string {
-    return `${cfg.hortaCloudOrg}-hc-${resourceName}-${cfg.hortaStage}`;
-}

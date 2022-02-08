@@ -2,7 +2,8 @@ import { Construct } from 'constructs';
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { GatewayVpcEndpointAwsService, InterfaceVpcEndpointAwsService, 
          Port, SecurityGroup, SubnetType, IVpc, Vpc, } from 'aws-cdk-lib/aws-ec2';
-import { createResourceId, getHortaServicesConfig } from './hortacloud-services-config';
+import { getHortaServicesConfig, HortaCloudServicesConfig } from './hortacloud-services-config';
+import { createResourceId } from '../../common/hortacloud-common';
 
 export class HortaCloudVPC extends Stack {
 
@@ -11,24 +12,9 @@ export class HortaCloudVPC extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    this.vpc = createVPC(this, id);
-
     const hortaConfig = getHortaServicesConfig();
 
-    new CfnOutput(this, 'VpcID', {
-      value: this.vpc.vpcId,
-      exportName: createResourceId(hortaConfig, 'VpcID')
-    });
-
-    new CfnOutput(this, 'PrivateSubnetID', {
-      value: this.vpc.privateSubnets.map(sn => sn.subnetId).join(','),
-      exportName: createResourceId(hortaConfig, 'PrivateSubnetID')
-    });
-
-    new CfnOutput(this, 'PublicSubnetID', {
-      value: this.vpc.publicSubnets.map(sn => sn.subnetId).join(','),
-      exportName: createResourceId(hortaConfig, 'PublicSubnetID')
-    });
+    this.vpc = createVPC(this, hortaConfig);
 
     // Security Group to be used by EC2 instances and accessed via Systems Manager
     const ssmPrivateSG = new SecurityGroup(this, 'SSMPrivateSecurityGroup', {
@@ -88,11 +74,27 @@ export class HortaCloudVPC extends Stack {
         onePerAz: true
       }],
     });
+
+    new CfnOutput(this, 'VpcID', {
+      value: this.vpc.vpcId,
+      exportName: createResourceId(hortaConfig, 'VpcID')
+    });
+
+    new CfnOutput(this, 'PrivateSubnetID', {
+      value: this.vpc.privateSubnets.map(sn => sn.subnetId).join(','),
+      exportName: createResourceId(hortaConfig, 'PrivateSubnetID')
+    });
+
+    new CfnOutput(this, 'PublicSubnetID', {
+      value: this.vpc.publicSubnets.map(sn => sn.subnetId).join(','),
+      exportName: createResourceId(hortaConfig, 'PublicSubnetID')
+    });
+
   }
 }
 
-function createVPC(scope: Construct, id: string) : IVpc {
-  return new Vpc(scope, id, {
+function createVPC(scope: Construct, config: HortaCloudServicesConfig) : IVpc {
+  return new Vpc(scope, "VPC", {
     cidr: '10.0.0.0/16',
     maxAzs: 1,
     natGateways: 1,
@@ -109,6 +111,6 @@ function createVPC(scope: Construct, id: string) : IVpc {
         name: 'Public'
       },
     ],
+    vpcName: createResourceId(config, 'vpc')
   });
 }
-
