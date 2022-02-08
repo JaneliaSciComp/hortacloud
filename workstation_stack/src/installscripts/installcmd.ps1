@@ -21,7 +21,6 @@ iwr -useb get.scoop.sh | iex
 
 $env:SCOOP_GLOBAL='C:\'
 
-scoop install curl
 scoop install git
 scoop bucket add java
 scoop install -g ojdkbuild8
@@ -50,7 +49,9 @@ echo "Downloaded installer: $wsInstallerRes"
 $JaneliaWSInstallDir = "C:\apps\JaneliaWorkstation"
 
 $RunScriptContent = @"
+# Set API Gateway
 `$ApiGateway = "$ServerIP"
+
 # get the appstream user
 `$UserName = `$env:AppStream_UserName
 `$JaneliaWSInstallDir = "$JaneliaWSInstallDir"
@@ -58,6 +59,7 @@ $RunScriptContent = @"
 `$JavaDir = `$env:JAVA_HOME
 `$UserDir = "`$DataDir\`$UserName"
 
+# Create user dir
 if(!(Get-Item -Path `$UserDir -ErrorAction Ignore))
 {
     Write-Host "Folder Doesn't Exists"
