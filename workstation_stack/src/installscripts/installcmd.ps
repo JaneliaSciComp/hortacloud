@@ -46,3 +46,34 @@ $wsInstallerRes = Invoke-WebRequest `
    -Uri https://$ServerIP/files/JaneliaWorkstation-windows.exe `
    -OutFile $TmpDir\jws-installer.exe
 echo "Downloaded installer: $wsInstallerRes"
+
+$JaneliaWSInstallDir = "C:\apps\JaneliaWorkstation"
+
+$RunScriptContent = @"
+`$ApiGateway = "$ServerIP"
+# get the appstream user
+`$UserName = `$env:AppStream_UserName
+`$JaneliaWSInstallDir = "$JaneliaWSInstallDir"
+`$DataDir = "C:\Users"
+`$JavaDir = `$env:JAVA_HOME
+`$UserDir = "`$DataDir\`$UserName"
+
+if(!(Get-Item -Path `$UserDir -ErrorAction Ignore))
+{
+    Write-Host "Folder Doesn't Exists"
+    New-Item `$UserDir -ItemType Directory
+}
+
+$JaneliaWSInstallDir\bin\janeliaws --jdkhome `$JavaDir ``
+    -J"-Duser.home=`$UserDir" ``
+    -J"-Dapi.gateway=https://`$ApiGateway" ``
+    -J"-Dconsole.serverLogin=`$UserName" ``
+    -J"-Dconsole.rememberPassword=true"
+"@
+
+$RunScriptName = "c:\apps\runJaneliaWorkstation.ps1"
+if(!(Get-Item -Path $RunScriptName -ErrorAction Ignore))
+{
+    New-Item $RunScriptName
+}
+Set-Content $RunScriptName "$RunScriptContent"
