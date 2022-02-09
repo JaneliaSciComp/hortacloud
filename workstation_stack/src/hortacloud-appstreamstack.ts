@@ -1,6 +1,6 @@
 import { Construct } from 'constructs';
 import { CfnOutput } from 'aws-cdk-lib';
-import { CfnFleet, CfnStack } from 'aws-cdk-lib/aws-appstream';
+import { CfnFleet, CfnStack, CfnStackFleetAssociation } from 'aws-cdk-lib/aws-appstream';
 import { createResourceId, getHortaCloudConfig, VpcInstanceProps } from '../../common/hortacloud-common';
 
 export class HortacloudAppstream extends Construct {
@@ -11,9 +11,10 @@ export class HortacloudAppstream extends Construct {
     super(scope, id);
     const hortaCloudConfig = getHortaCloudConfig();
 
+    // create the fleet
     const fleetInstanceName = createResourceId(hortaCloudConfig, 'workstation-fleet');
     const imageName = createResourceId(hortaCloudConfig, 'HortaCloudWorkstation');
-    const hortaCloudFleet = new CfnFleet(this, fleetInstanceName, {
+    new CfnFleet(this, 'HortaCloudFleet', {
       instanceType: 'stream.graphics.g4dn.xlarge',
       name: fleetInstanceName,
       imageName: imageName,
@@ -32,8 +33,9 @@ export class HortacloudAppstream extends Construct {
       maxUserDurationInSeconds: 960
     });
 
+    // create the stack
     const stackInstanceName = createResourceId(hortaCloudConfig, 'workstation-stack');
-    const hortaCloudStack = new CfnStack(this, stackInstanceName,{
+    new CfnStack(this, 'HortaCloudStack', {
       applicationSettings: {
         enabled: false
       },
@@ -41,8 +43,15 @@ export class HortacloudAppstream extends Construct {
       name: stackInstanceName,
     });
 
+    // associate the stack with the fleet
+    new CfnStackFleetAssociation(this, 'HortaCloudFleetStackAssoc', {
+      fleetName: fleetInstanceName,
+      stackName: stackInstanceName,
+    });
+
+    // export the fleet and the stack
     new CfnOutput(this, "FleetID", {
-      value: hortaCloudFleet.name,
+      value: fleetInstanceName,
       exportName: createResourceId(hortaCloudConfig, 'FleetID')
     });
 
@@ -50,25 +59,5 @@ export class HortacloudAppstream extends Construct {
       value: stackInstanceName,
       exportName: createResourceId(hortaCloudConfig, 'StackID')
     });
-
-   /* const stackFleetAssociationInstanceName = createResourceId(hortaCloudConfig, 'workstation-stack-fleet');
-    const hortaCloudStackFleetAssociation = new appstream.CfnStackFleetAssociation(this, stackFleetAssociationInstanceName, {
-      fleetName: fleetInstanceName,
-      stackName: stackInstanceName,
-    });*/
-
-    /*const hortaCloudApp = new appstream.CfnApplication(this, 'HortacloudAppstream', {
-      appBlockArn: 'appBlockArn',
-      iconS3Location: {
-        s3Bucket: 's3Bucket',
-        s3Key: 's3Key',
-      },
-      instanceFamilies: ['instanceFamilies'],
-      launchPath: 'launchPath',
-      name: 'name',
-      platforms: ['platforms'],
-
-    });*/
-
   }
 }
