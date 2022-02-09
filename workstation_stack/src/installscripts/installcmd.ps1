@@ -1,5 +1,5 @@
 $ServerIP = $args[0]
-echo "Use $ServerIP"
+Write-Output "Use $ServerIP"
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -17,34 +17,39 @@ add-type @"
 
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
-iwr -useb get.scoop.sh | iex
+Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 
 $env:SCOOP_GLOBAL='C:\'
 
 scoop install git
 scoop bucket add java
-scoop install -g ojdkbuild8
+scoop install -g zulu8-jdk
 
 $TmpDir = $env:TEMP
 
-echo "Download certificate"
+$ProgressPreference = 'SilentlyContinue'
+
+Write-Output "Download certificate"
 $certRes = Invoke-WebRequest `
    -Uri "https://$ServerIP/SCSW/cert.crt" `
    -OutFile $TmpDir\cert.crt
-echo "Downloaded cert: $certRes"
+Write-Output "Downloaded cert: $certRes"
 
-echo "Install certificate"
-c:\apps\ojdkbuild8\current\bin\keytool.exe -import `
+Write-Output "Install certificate"
+c:\apps\zulu8-jdk\current\bin\keytool.exe -import `
     -noprompt `
-    -alias mouse1selfcert -file cert.crt `
-    -keystore "c:\apps\ojdkbuild8\current\jre\lib\security\cacerts" `
+    -alias mouse1selfcert -file $TmpDir\cert.crt `
+    -keystore "c:\apps\zulu8-jdk\current\jre\lib\security\cacerts" `
     -keypass changeit -storepass changeit
 
-echo "Download workstation installer"
+Write-Output "Download workstation installer"
 $wsInstallerRes = Invoke-WebRequest `
    -Uri https://$ServerIP/files/JaneliaWorkstation-windows.exe `
    -OutFile $TmpDir\jws-installer.exe
-echo "Downloaded installer: $wsInstallerRes"
+Write-Output "Downloaded installer: $wsInstallerRes"
+
+# Run the installer
+Start-Process -Wait -FilePath $TmpDir\jws-installer.exe
 
 $JaneliaWSInstallDir = "C:\apps\JaneliaWorkstation"
 
@@ -54,6 +59,12 @@ $RunScriptContent = @"
 
 # get the appstream user
 `$UserName = `$env:AppStream_UserName
+
+if (!`$UserName)
+{
+    `$UserName = `$env:USERNAME
+}
+
 `$JaneliaWSInstallDir = "$JaneliaWSInstallDir"
 `$DataDir = "C:\Users"
 `$JavaDir = `$env:JAVA_HOME
