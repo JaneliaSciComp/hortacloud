@@ -9,13 +9,13 @@ export interface WorkstationStackProps extends StackProps, VpcInstanceProps {
 
 export class HortaCloudWorkstationStack extends Stack {
 
-  public readonly server: HortacloudAppstream;
+  public readonly appstreamStack: HortacloudAppstream;
 
   constructor(scope: Construct,
               id: string,
               props: WorkstationStackProps) {
     super(scope, id, props);
 
-    this.server = new HortacloudAppstream(this, 'Workstation', props);
+    this.appstreamStack = new HortacloudAppstream(this, 'Workstation', props);
   }
 }
