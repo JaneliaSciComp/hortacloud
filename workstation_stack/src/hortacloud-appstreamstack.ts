@@ -1,31 +1,39 @@
 import { Construct } from 'constructs';
 import { CfnOutput } from 'aws-cdk-lib';
-import * as appstream from 'aws-cdk-lib/aws-appstream';
-import { createResourceId, getHortaCloudConfig } from '../../common/hortacloud-common';
+import { CfnFleet, CfnStack } from 'aws-cdk-lib/aws-appstream';
+import { createResourceId, getHortaCloudConfig, VpcInstanceProps } from '../../common/hortacloud-common';
 
 export class HortacloudAppstream extends Construct {
 
   constructor(scope: Construct,
-              id: string) {
+              id: string,
+              vpcProps: VpcInstanceProps) {
     super(scope, id);
     const hortaCloudConfig = getHortaCloudConfig();
 
     const fleetInstanceName = createResourceId(hortaCloudConfig, 'workstation-fleet');
-    const hortaCloudFleet = new appstream.CfnFleet(this, fleetInstanceName, {
-      instanceType: 'stream.graphics-pro.4xlarge',
+    const imageName = createResourceId(hortaCloudConfig, 'HortaCloudWorkstation');
+    const hortaCloudFleet = new CfnFleet(this, fleetInstanceName, {
+      instanceType: 'stream.graphics.g4dn.xlarge',
       name: fleetInstanceName,
-      imageName: "NvidiaGraphicsProWorkstation",
+      imageName: imageName,
       computeCapacity: {
         desiredInstances: 5,
       },
       displayName: fleetInstanceName,
       enableDefaultInternetAccess: false,
       fleetType: 'ON_DEMAND',
+      vpcConfig: {
+        subnetIds: [
+          ...vpcProps.privateSubnetIds,
+          ...vpcProps.publicSubnetIds
+        ]
+      },
       maxUserDurationInSeconds: 960
     });
 
     const stackInstanceName = createResourceId(hortaCloudConfig, 'workstation-stack');
-    const hortaCloudStack = new appstream.CfnStack(this, stackInstanceName,{
+    const hortaCloudStack = new CfnStack(this, stackInstanceName,{
       applicationSettings: {
         enabled: false
       },

@@ -12,7 +12,8 @@ const workstationStack = new HortaCloudWorkstationStack(
     app,
     'Workstation',
     {
-        stackName: createResourceId(hortaConfig, 'workstation')
+        stackName: createResourceId(hortaConfig, 'workstation'),
+        ...importVPCProps(hortaConfig)
     }
 );
 
