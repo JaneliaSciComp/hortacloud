@@ -19,20 +19,26 @@ if (!HORTA_ORG || !HORTA_STAGE || !ADMIN_USER_EMAIL) {
 }
 console.log(chalk.green("✅ environment looks good."));
 
-
-
 console.log(chalk.red("🚨 Removing web admin frontend stack."));
-exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_website`, {cwd: "./admin_api_stack/" });
+exec(
+  `npm run cdk -- destroy -f --require-approval never -c deploy=admin_website`,
+  { cwd: "./admin_api_stack/" }
+);
 
 console.log(chalk.red("️🚨 Removing web admin backend stack."));
-exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_api`, {cwd: "./admin_api_stack/" });
-/* !!!
+exec(
+  `npm run cdk -- destroy -f --require-approval never -c deploy=admin_api`,
+  { cwd: "./admin_api_stack/" }
+);
+
 console.log(chalk.red("🚨 Removing Workstation stack"));
 exec(
-    `npm run cdk -- destroy -f --require-approval never ${HORTA_ORG}-hc-workstation-${HORTA_STAGE}`,
-    { cwd: "./workstation_stack/" }
+  `npm run cdk -- destroy -f --require-approval never Workstation`,
+  { cwd: "./workstation_stack/" }
 );
-!!!!*/
 
 console.log(chalk.red("🚨 Removing VPC stack."));
-exec(`npm run cdk -- destroy -f --all --require-approval never`, {cwd: "./vpc_stack/" });
+exec(
+  `npm run cdk -- destroy -f --all --require-approval never`,
+  { cwd: "./vpc_stack/" }
+);

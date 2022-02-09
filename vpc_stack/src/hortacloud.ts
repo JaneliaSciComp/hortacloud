@@ -11,8 +11,9 @@ const vpc = new HortaCloudVPC(app, 'VPC' , {
     stackName: createResourceId(hortaConfig, 'vpc')
 });
 
-const servicesStack = new HortaCloudServicesStack(app, 'Services', vpc, {
-    stackName: createResourceId(hortaConfig, 'services')
+const servicesStack = new HortaCloudServicesStack(app, 'Services', {
+    stackName: createResourceId(hortaConfig, 'services'),
+    vpc: vpc.vpc
 });
 
 applyTags([servicesStack, vpc]);

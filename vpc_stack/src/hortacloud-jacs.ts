@@ -6,10 +6,10 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as path from 'path';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { getHortaServicesConfig, HortaCloudServicesConfig } from './hortacloud-services-config';
-import { HortaCloudVPC } from './hortacloud-vpc';
 
 import { createResourceId } from '../../common/hortacloud-common';
 import { CfnDisk } from 'aws-cdk-lib/aws-lightsail';
+import { IVpc } from 'aws-cdk-lib/aws-ec2';
 
 interface HortaCloudMachine {
   readonly instanceType: ec2.InstanceType,
@@ -35,13 +35,13 @@ export class HortaCloudJACS extends Construct {
 
   constructor(scope: Construct, 
               id: string,
-              hortaVpc: HortaCloudVPC) {
+              hortaVpc: IVpc) {
     super(scope, id);
 
     const hortaConfig = getHortaServicesConfig();
  
     // create Security Group for the Instance
-    const serverSG = createSecurityGroup(this, hortaVpc.vpc, [
+    const serverSG = createSecurityGroup(this, hortaVpc, [
       {
         port: hortaConfig.withPublicAccess ? 22 : 0,
         description: 'allow SSH access from anywhere'
@@ -89,7 +89,7 @@ export class HortaCloudJACS extends Construct {
 
     const jacsNodeInstanceName = createResourceId(hortaConfig, 'jacs-node');
     this.server = new ec2.Instance(this, jacsNodeInstanceName, {
-      vpc : hortaVpc.vpc,
+      vpc : hortaVpc,
       vpcSubnets : {
         subnetType: hortaConfig.withPublicAccess 
                       ? ec2.SubnetType.PUBLIC
