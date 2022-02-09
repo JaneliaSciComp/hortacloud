@@ -56,32 +56,26 @@ $JaneliaWSInstallDir = "C:\apps\JaneliaWorkstation"
 $RunScriptContent = @"
 # Set API Gateway
 `$ApiGateway = "$ServerIP"
+`$JaneliaWSInstallDir = "$JaneliaWSInstallDir"
+`$JavaDir = `$env:JAVA_HOME
 
 # get the appstream user
 `$UserName = `$env:AppStream_UserName
 
-if (!`$UserName)
-{
-    `$UserName = `$env:USERNAME
+if (!`$UserName) {
+    `$WSArgs = "--jdkhome `$JavaDir -J``"-Dapi.gateway=https://`$ApiGateway``""
+} else {
+    `$DataDir = "C:\Users"
+    `$UserDir = "`$DataDir\`$UserName"
+
+    # Create user dir
+    if (!(Get-Item -Path `$UserDir -ErrorAction Ignore)) {
+        New-Item `$UserDir -ItemType Directory
+    }
+    `$WSArgs = "--jdkhome `$JavaDir -J``"-Dapi.gateway=https://`$ApiGateway``" -J``"-Duser.home=`$UserDir``" -J``"-Dconsole.serverLogin=`$UserName``" -J``"-Dconsole.rememberPassword=true``""
 }
 
-`$JaneliaWSInstallDir = "$JaneliaWSInstallDir"
-`$DataDir = "C:\Users"
-`$JavaDir = `$env:JAVA_HOME
-`$UserDir = "`$DataDir\`$UserName"
-
-# Create user dir
-if(!(Get-Item -Path `$UserDir -ErrorAction Ignore))
-{
-    Write-Host "Folder Doesn't Exists"
-    New-Item `$UserDir -ItemType Directory
-}
-
-$JaneliaWSInstallDir\bin\janeliaws --jdkhome `$JavaDir ``
-    -J"-Duser.home=`$UserDir" ``
-    -J"-Dapi.gateway=https://`$ApiGateway" ``
-    -J"-Dconsole.serverLogin=`$UserName" ``
-    -J"-Dconsole.rememberPassword=true"
+Start-Process -Wait -FilePath C:\apps\JaneliaWorkstation\bin\janeliaws -ArgumentList `$WSArgs
 "@
 
 $RunScriptName = "c:\apps\runJaneliaWorkstation.ps1"
