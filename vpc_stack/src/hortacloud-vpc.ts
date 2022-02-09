@@ -94,7 +94,7 @@ export class HortaCloudVPC extends Stack {
 }
 
 function createVPC(scope: Construct, config: HortaCloudServicesConfig) : IVpc {
-  return new Vpc(scope, "VPC", {
+  return new Vpc(scope, createResourceId(config, 'vpc'), {
     cidr: '10.0.0.0/16',
     maxAzs: 1,
     natGateways: 1,

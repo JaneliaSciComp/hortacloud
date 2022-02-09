@@ -6,6 +6,11 @@ export interface HortaCloudConfig {
     developerName: string;
 }
 
+export interface VpcInstanceProps {
+    vpcId: string;
+    privateSubnetIds: string[];
+    publicSubnetIds: string[];
+}
 
 export function getHortaCloudConfig() : HortaCloudConfig {
     return {

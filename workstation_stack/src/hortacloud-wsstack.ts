@@ -1,31 +1,14 @@
 import { Construct } from 'constructs';
-import { CfnOutput, Fn, Token } from 'aws-cdk-lib';
-import { IVpc } from 'aws-cdk-lib/aws-ec2';
+import { CfnOutput } from 'aws-cdk-lib';
 import * as appstream from 'aws-cdk-lib/aws-appstream';
 import { createResourceId, getHortaCloudConfig } from '../../common/hortacloud-common';
-import { VpcInstanceProps } from './hortacloud-vpcprops';
 
 export class HortacloudAppstream extends Construct {
 
   constructor(scope: Construct,
-              id: string,
-              vpcProps: VpcInstanceProps) {
+              id: string) {
     super(scope, id);
     const hortaCloudConfig = getHortaCloudConfig();
-
-    const imageBuilderInstanceName = createResourceId(hortaCloudConfig, 'image-builder');
-    const subnetIds = [vpcProps.publicSubnetId]
-    console.log(`Subnets: ${subnetIds}`)
-    const hortaCloudImageBuilder = new appstream.CfnImageBuilder(this, 'ImageBuilder', {
-      name: imageBuilderInstanceName,
-      displayName: imageBuilderInstanceName,
-      instanceType: 'stream.graphics.g4dn.xlarge',
-      enableDefaultInternetAccess: true,
-      imageName: 'AppStream-Graphics-G4dn-WinServer2019-07-19-2021',
-      vpcConfig: {
-        subnetIds: subnetIds
-      }
-    });
 
     const fleetInstanceName = createResourceId(hortaCloudConfig, 'workstation-fleet');
     const hortaCloudFleet = new appstream.CfnFleet(this, fleetInstanceName, {

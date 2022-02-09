@@ -1,11 +1,7 @@
 import { Construct } from 'constructs';
 import { Stack, StackProps } from 'aws-cdk-lib';
 
-import { HortacloudAppstream } from './hortacloud-appstream';
-import { VpcInstanceProps } from './hortacloud-vpcprops';
-
-interface WorkstationStackProps extends StackProps, VpcInstanceProps {
-}
+import { HortacloudAppstream } from './hortacloud-wsstack';
 
 export class HortaCloudWorkstationStack extends Stack {
 
@@ -13,9 +9,9 @@ export class HortaCloudWorkstationStack extends Stack {
 
   constructor(scope: Construct,
               id: string,
-              props: WorkstationStackProps) {
+              props: StackProps) {
     super(scope, id, props);
 
-    this.server = new HortacloudAppstream(this, 'Workstation', props);
+    this.server = new HortacloudAppstream(this, 'Workstation');
   }
 }
