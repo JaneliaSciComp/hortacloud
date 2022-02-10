@@ -40,9 +40,9 @@ export class LambdaService extends Construct {
       handler: "index.handler",
       environment: {
         // "Workstation9Fleet",
-        FLEETNAME: cdk.Fn.importValue(`${props.org}-${props.stage}-FleetID`),
+        FLEETNAME: cdk.Fn.importValue(`${props.org}-hc-FleetID-${props.stage}`),
         // "JaneliaWorkstation3"
-        STACKNAME: cdk.Fn.importValue(`${props.org}-${props.stage}-StackId`),
+        STACKNAME: cdk.Fn.importValue(`${props.org}-hc-StackID-${props.stage}`),
       }
     });
 

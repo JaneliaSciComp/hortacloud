@@ -29,7 +29,6 @@ exec(
     { cwd: "./workstation_stack/" }
 );
 
-/* !!!
 console.log(chalk.cyan("🚚 Deploying web admin backend stack."));
 exec(`npm run cdk -- deploy --all --require-approval never -c deploy=admin_api`, {
   cwd: "./admin_api_stack/"
@@ -74,5 +73,3 @@ async function postInstall() {
   open(outputs.SiteBucketUrl);
 }
 postInstall();
-
-!!!! */
