@@ -31,7 +31,7 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         rabbitMQPassword: process.env.RABBITMQ_PASSWD || crypto.randomBytes(16).toString('hex'),
         jacsAPIKey: process.env.JACS_API_KEY || crypto.randomBytes(16).toString('hex'),
         jadeAPIKey: process.env.JADE_API_KEY || crypto.randomBytes(16).toString('hex'),
-        searchMemGB: process.env.SEARCH_MEM_SIZE || "1",
-        hortaDataBuckets: process.env.HORTA_DATA_BUCKETS || "janelia-mouselight-imagery"
+        searchMemGB: process.env.SEARCH_MEM_SIZE || '1',
+        hortaDataBuckets: process.env.HORTA_DATA_BUCKETS || 'janelia-mouselight-imagery',
     };
 }

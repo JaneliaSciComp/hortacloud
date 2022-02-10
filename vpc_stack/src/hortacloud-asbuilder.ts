@@ -10,24 +10,25 @@ export class HortaCloudAppstreamBuilder extends Construct {
                 id: string,
                 vpcProps: VpcInstanceProps) {
         super(scope, id);
-        const hortaCloudConfig = getHortaCloudConfig();
 
-        const imageBuilderInstanceName = createResourceId(hortaCloudConfig, 'image-builder');
+        const hortaConfig = getHortaCloudConfig();
+
+        const imageBuilderInstanceName = createResourceId(hortaConfig, 'image-builder');
 
         new CfnImageBuilder(this, 'ImageBuilder', {
             name: imageBuilderInstanceName,
             displayName: "HortaCloud App ImageBuilder",
-            instanceType: 'stream.graphics.g4dn.xlarge',
+            instanceType: hortaConfig.hortaWorkstationInstanceType,
             enableDefaultInternetAccess: true,
-            imageName: 'AppStream-Graphics-G4dn-WinServer2019-07-19-2021',
+            imageName: hortaConfig.hortaWorkstationImageName,
             vpcConfig: {
                 subnetIds: vpcProps.publicSubnetIds
             }
         });
 
         new CfnOutput(this, 'AppstreamImage', {
-            value: createResourceId(hortaCloudConfig, 'HortaCloudWorkstation'),
-            exportName: createResourceId(hortaCloudConfig, 'HortaCloudImage')
+            value: createResourceId(hortaConfig, 'HortaCloudWorkstation'),
+            exportName: createResourceId(hortaConfig, 'HortaCloudImage')
         });
     
     }

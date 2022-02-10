@@ -4,6 +4,8 @@ export interface HortaCloudConfig {
     hortaCloudOrg: string;
     hortaCloudVersion: string;
     developerName: string;
+    hortaWorkstationInstanceType: string;
+    hortaWorkstationImageName: string; // the workstation image name and instance type are correlated
 }
 
 export interface VpcInstanceProps {
@@ -18,6 +20,8 @@ export function getHortaCloudConfig() : HortaCloudConfig {
         hortaStage: process.env.HORTA_STAGE || 'dev',
         hortaCloudVersion: '1.0.0',
         developerName: process.env.USER || "unknown",
+        hortaWorkstationInstanceType: process.env.HORTA_WS_INSTANCE_TYPE || 'stream.graphics.g4dn.xlarge',
+        hortaWorkstationImageName: process.env.HORTA_WS_IMAGE_NAME || 'AppStream-Graphics-G4dn-WinServer2019-07-19-2021',
     };
 }
 
