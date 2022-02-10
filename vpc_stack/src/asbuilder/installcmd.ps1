@@ -61,18 +61,25 @@ $RunScriptContent = @"
 
 # get the appstream user
 `$UserName = `$env:AppStream_UserName
+`$WindowsUserName = `$env:USERNAME
+
+Write-Debug "AppUser: `$UserName, WindowsUser: `$WindowsUserName"
+
+`$DataDir = "C:\Users\`$WindowsUserName"
 
 if (!`$UserName) {
-    `$WSArgs = "--jdkhome `$JavaDir -J``"-Dapi.gateway=https://`$ApiGateway``""
+    `$UserDir = `$DataDir
+    `$WSArgs = "--jdkhome `$JavaDir -J``"-Dapi.gateway=https://`$ApiGateway``" -J``"-Duser.home=`$UserDir``""
 } else {
-    `$DataDir = "C:\Users"
     `$UserDir = "`$DataDir\`$UserName"
-
-    # Create user dir
-    if (!(Get-Item -Path `$UserDir -ErrorAction Ignore)) {
-        New-Item `$UserDir -ItemType Directory
-    }
     `$WSArgs = "--jdkhome `$JavaDir -J``"-Dapi.gateway=https://`$ApiGateway``" -J``"-Duser.home=`$UserDir``" -J``"-Dconsole.serverLogin=`$UserName``" -J``"-Dconsole.rememberPassword=true``""
+}
+
+Write-Output "UserDir: `$UserDir"
+
+# Create user dir if needed
+if (!(Get-Item -Path `$UserDir -ErrorAction Ignore)) {
+    New-Item `$UserDir -ItemType Directory
 }
 
 Start-Process -Wait -FilePath C:\apps\JaneliaWorkstation\bin\janeliaws -ArgumentList `$WSArgs
