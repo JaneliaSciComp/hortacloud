@@ -128,6 +128,7 @@ export class HortaCloudJACS extends Construct {
     const externalDataBuckets = hortaConfig.hortaDataBuckets 
       ? hortaConfig.hortaDataBuckets.split(',').map(s => s.trim())
       : [];
+    console.log('External buckets:', externalDataBuckets);
 
     externalDataBuckets.forEach(bn => {
       // external data buckets must exist
