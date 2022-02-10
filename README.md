@@ -22,12 +22,29 @@ The deployment uses AWS CDK to create AWS resources on your AWS account as shown
 
 ### Deployment examples
 
-To a specific stage of the services and vpc stacks use the example below:
+The full deployment of the application requires 3 steps. 
+1) Deploy the back-end stacks - this includes the appstream builder
+2) Connect to appstream builder and install the workstation application. This is a semiautomated step that involves copying and running two PowerShell scripts onto the appstream builder instance.
+3) Deploy the front-end stacks 
+
+
+#### Back-end and front-end stacks deployment
+To deploy the backend and frontend stacks use the example below in which the `<step>` can be `backend` or `frontend`
 
 ```
 HORTA_STAGE=prod
 HORTA_ORG=janelia
 ADMIN_USER_EMAIL=<adminuser>@<organization>
 
-ADMIN_USER_EMAIL=${ADMIN_USER_EMAIL} HORTA_STAGE=${HORTA_STAGE} npm run deploy
+ADMIN_USER_EMAIL=${ADMIN_USER_EMAIL} HORTA_STAGE=${HORTA_STAGE} npm run deploy-<step>
 ```
+
+#### Client app installation
+For client installation start and connect to the appstream builder instance then copy the following scripts from this repo to the appstream instance:
+- [installcmd.ps1](vpc_stack/src/asbuilder/installcmd.ps1) - installs JDK and the workstation
+- [createappimage.ps1](vpc_stack/src/asbuilder/createappimage.ps1) - creates the appstream image
+
+After you copied or created the scripts open an "Administrator Power Shell" window and run the scripts one at a time - first `installcmd.ps1` and then `createappimage.ps1`.
+
+The first script `installcmd.ps1` will prompt you where to install the Workstation - please select "C:\apps" as the location of the JaneliaWorkstation install directory. After the workstation is installed run it using `c:\apps\runJaneliaWorkstation.ps1` from a `PowerShell` window.
+Once you are done and you created all users in the workstation you can run `createappimage.ps1` which will begin snapshotting the builder and creating the image. Once `createappimage.ps1` is completed, the builder will no longer be usable until the snapshotting process completes.
