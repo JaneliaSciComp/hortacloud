@@ -34,15 +34,17 @@ export class LambdaService extends Construct {
     });
 
     // add the /auth resource
+    const asFleetName = cdk.Fn.importValue(`${props.org}-hc-FleetID-${props.stage}`);
+    const asStackName = cdk.Fn.importValue(`${props.org}-hc-StackID-${props.stage}`);
     const authHandler = new lambda.Function(this, "HortaCloudAuthHandler", {
       runtime: lambda.Runtime.NODEJS_14_X, // So we can use async in widget.js
       code: lambda.Code.fromAsset("appstream_lambda_resources"),
       handler: "index.handler",
       environment: {
         // "Workstation9Fleet",
-        FLEETNAME: cdk.Fn.importValue(`${props.org}-hc-FleetID-${props.stage}`),
+        FLEETNAME: asFleetName,
         // "JaneliaWorkstation3"
-        STACKNAME: cdk.Fn.importValue(`${props.org}-hc-StackID-${props.stage}`),
+        STACKNAME: asStackName,
       }
     });
 
@@ -51,8 +53,8 @@ export class LambdaService extends Construct {
         actions: ["appstream:CreateStreamingURL"],
         effect: iam.Effect.ALLOW,
         resources: [
-          "arn:aws:appstream:us-east-1:777794738451:fleet/Workstation9Fleet",
-          "arn:aws:appstream:us-east-1:777794738451:stack/JaneliaWorkstation3"
+          `arn:aws:appstream:us-east-1:777794738451:fleet/${asFleetName}`,
+          `arn:aws:appstream:us-east-1:777794738451:stack/${asStackName}`
         ]
       })
     );
