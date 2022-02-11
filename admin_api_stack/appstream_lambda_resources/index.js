@@ -30,7 +30,7 @@ function errorResponse(errorMessage, awsRequestId, callback) { //Function for ha
             Reference: awsRequestId,
         }),
         headers: {
-            // 'Access-Control-Allow-Origin': 'http://janelia-mouselight-website-demo.s3-website-us-east-1.amazonaws.com/', //This should be the domain of the website that originated the request, example: amazonaws.com
+            //This should be the domain of the website that originated the request, example: amazonaws.com
             'Access-Control-Allow-Origin': '*',
         },
     });
@@ -49,7 +49,7 @@ function createas2streamingurl(params, awsRequestId, callback) {
                     Reference: awsRequestId,
                 }),
                 headers: {
-                    // 'Access-Control-Allow-Origin': 'http://janelia-mouselight-website-demo.s3-website-us-east-1.amazonaws.com', //This should be the domain of the website that originated the request, example: amazonaws.com
+                    //This should be the domain of the website that originated the request, example: amazonaws.com
                     'Access-Control-Allow-Origin': '*',
                 },
             });
