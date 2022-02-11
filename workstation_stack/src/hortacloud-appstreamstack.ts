@@ -15,7 +15,7 @@ export class HortacloudAppstream extends Construct {
     const fleetInstanceName = createResourceId(hortaCloudConfig, 'workstation-fleet');
     const imageName = createResourceId(hortaCloudConfig, 'HortaCloudWorkstation');
     const fleetInstance = new CfnFleet(this, 'HortaCloudFleet', {
-      instanceType: 'stream.graphics.g4dn.xlarge',
+      instanceType: hortaCloudConfig.hortaWorkstationInstanceType,
       name: fleetInstanceName,
       imageName: imageName,
       computeCapacity: {
