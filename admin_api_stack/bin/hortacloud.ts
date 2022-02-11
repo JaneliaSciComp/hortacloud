@@ -11,8 +11,8 @@ const deploy = app.node.tryGetContext("deploy");
 const {
   HORTA_ORG = "janelia",
   HORTA_STAGE = "dev",
-  CDK_DEFAULT_ACCOUNT,
-  CDK_DEFAULT_REGION
+  AWS_REGION,
+  AWS_ACCOUNT
 } = process.env;
 
 if (deploy === "admin_api") {
@@ -21,12 +21,13 @@ if (deploy === "admin_api") {
     `${HORTA_ORG}-HortaCloudAdminAPIStack-${HORTA_STAGE}`,
     {
       env: {
-        account: CDK_DEFAULT_ACCOUNT,
-        region: CDK_DEFAULT_REGION
+        account: AWS_ACCOUNT,
+        region: AWS_REGION
       },
       stage: HORTA_STAGE,
       org: HORTA_ORG,
-      description: 'HortaCloud Admin API stack hosting the cognito pool and lambdas'
+      description:
+        "HortaCloud Admin API stack hosting the cognito pool and lambdas"
     }
   );
 
@@ -40,12 +41,12 @@ if (deploy === "admin_api") {
     `${HORTA_ORG}-HortaCloudWebAppStack-${HORTA_STAGE}`,
     {
       env: {
-        account: CDK_DEFAULT_ACCOUNT,
-        region: CDK_DEFAULT_REGION
+        account: AWS_ACCOUNT,
+        region: AWS_REGION
       },
       stage: HORTA_STAGE,
       org: HORTA_ORG,
-      description: 'HortaCloud Web Admin stack hosting the admin website'
+      description: "HortaCloud Web Admin stack hosting the admin website"
     }
   );
 

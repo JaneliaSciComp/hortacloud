@@ -2,23 +2,35 @@ const execSync = require("child_process").execSync;
 const chalk = require("chalk");
 const open = require("open");
 const { CloudFormation } = require("aws-sdk");
+const cdk = require('@aws-cdk/core');
 
 const exec = (command, options = {}) => {
   const combinedOptions = { stdio: [0, 1, 2], ...options };
   execSync(command, combinedOptions);
 };
 
-const { HORTA_ORG, HORTA_STAGE, ADMIN_USER_EMAIL } = process.env;
+const { HORTA_ORG, HORTA_STAGE, ADMIN_USER_EMAIL, AWS_REGION, AWS_ACCOUNT } = process.env;
 console.log(chalk.cyan("🔎 Checking environment."));
 
-if (!HORTA_ORG || !HORTA_STAGE || !ADMIN_USER_EMAIL) {
-  console.log(
-    chalk.red(
-      "🚨 environment variables HORTA_ORG, HORTA_STAGE or ADMIN_USER_EMAIL were not set."
-    )
-  );
+const expectedEnvVars = ['HORTA_ORG', 'HORTA_STAGE', 'ADMIN_USER_EMAIL', 'AWS_REGION', 'AWS_ACCOUNT'];
+
+let missingVarsCount = 0;
+
+expectedEnvVars.forEach(envVar => {
+  if (!process.env[envVar]) {
+    console.log(
+      chalk.red(
+        `🚨 Environment variable ${envVar} was not set.`
+      )
+    );
+  }
+  missingVarsCount += 1;
+});
+
+if (missingVarsCount > 0) {
   process.exit(1);
 }
+
 console.log(chalk.green("✅ environment looks good."));
 
 // deploy all frontend stacks
@@ -46,7 +58,7 @@ exec(`npm run cdk -- deploy --all --require-approval never -c deploy=admin_websi
 });
 
 // post install directions
-const region = "us-east-1";
+const region = AWS_REGION;
 const cloudformation = new CloudFormation({ region });
 async function postInstall() {
   const outputs = {};

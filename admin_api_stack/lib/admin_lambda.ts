@@ -7,6 +7,13 @@ import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as path from "path";
 
+const {
+  AWS_ACCOUNT,
+  AWS_REGION
+} = process.env;
+
+
+
 interface LambaServiceProps {
   org: string;
   stage: string;
@@ -53,8 +60,8 @@ export class LambdaService extends Construct {
         actions: ["appstream:CreateStreamingURL"],
         effect: iam.Effect.ALLOW,
         resources: [
-          `arn:aws:appstream:us-east-1:777794738451:fleet/${asFleetName}`,
-          `arn:aws:appstream:us-east-1:777794738451:stack/${asStackName}`
+          `arn:aws:appstream:${AWS_REGION}:${AWS_ACCOUNT}:fleet/${asFleetName}`,
+          `arn:aws:appstream:${AWS_REGION}:${AWS_ACCOUNT}:stack/${asStackName}`
         ]
       })
     );

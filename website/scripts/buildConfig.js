@@ -2,11 +2,11 @@ const fs = require("fs");
 const path = require("path");
 const { CloudFormation } = require("aws-sdk");
 
-const region = "us-east-1";
-const cloudformation = new CloudFormation({ region });
-
 // set defaults for the org and stage.
 const { HORTA_ORG = "janelia", HORTA_STAGE = "dev" } = process.env;
+
+const region = process.env.AWS_REGION;
+const cloudformation = new CloudFormation({ region });
 
 async function main() {
   const outputs = {};
