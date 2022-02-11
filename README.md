@@ -44,7 +44,8 @@ For client installation start and connect to the appstream builder instance then
 - [installcmd.ps1](vpc_stack/src/asbuilder/installcmd.ps1) - installs JDK and the workstation
 - [createappimage.ps1](vpc_stack/src/asbuilder/createappimage.ps1) - creates the appstream image
 
-After you copied or created the scripts open an "Administrator Power Shell" window and run the scripts one at a time - first `installcmd.ps1` and then `createappimage.ps1`.
-
-The first script `installcmd.ps1` will prompt you where to install the Workstation - please select "C:\apps" as the location of the JaneliaWorkstation install directory. After the workstation is installed run it using `c:\apps\runJaneliaWorkstation.ps1` from a `PowerShell` window.
-Once you are done and you created all users in the workstation you can run `createappimage.ps1` which will begin snapshotting the builder and creating the image. Once `createappimage.ps1` is completed, the builder will no longer be usable until the snapshotting process completes.
+After you copied or created the scripts:
+* open an "Administrator Power Shell" window
+* Run `installcmd.ps1 <serverName>` where <serverName> is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with digits instead of dots>.ec2.internal`. This will install the JDK and the workstation. When the workstation installer prompts you for the install directory select `C:\apps` as the JaneliaWorkstation location.
+* Run `c:\apps\runJaneliaWorkstation.ps1` and create the users
+* Run `createappimage.ps1`. Keep in mind that once you start this step the builder instance begins the snapshotting process and it will not be usable until it completes. After this is completed the appstream image should be available and the builder is in a stop state. To use it again you need to start it and then you can connect to it again.
