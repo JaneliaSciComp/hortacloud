@@ -28,18 +28,28 @@ The full deployment of the application requires 3 steps.
 3) Deploy the front-end stacks 
 
 
-#### Back-end and front-end stacks deployment
-To deploy the backend and frontend stacks use the example below in which the `<step>` can be `backend` or `frontend`
-
+### Setting up the environment.
+Before you can deploy the application, there are a few environment variables that need to be set.
+This can be done by exporting them on the command line
+```shell
+export HORTA_STAGE=prod
+```
+or creating a .env file.
 ```
 HORTA_STAGE=prod
 HORTA_ORG=janelia
 ADMIN_USER_EMAIL=<adminuser>@<organization>
+AWS_ACCOUNT=123456789012
+AWS_REGION=us-east-1
+```
+### Back-end and front-end stacks deployment
+To deploy the backend and frontend stacks use the example below in which the `<step>` can be `backend` or `frontend`
 
-ADMIN_USER_EMAIL=${ADMIN_USER_EMAIL} HORTA_STAGE=${HORTA_STAGE} npm run deploy-<step>
+```bash
+npm run deploy-<step>
 ```
 
-#### Client app installation
+### Client app installation
 For client installation start and connect to the appstream builder instance then copy the following scripts from this repo to the appstream instance:
 - [installcmd.ps1](vpc_stack/src/asbuilder/installcmd.ps1) - installs JDK and the workstation
 - [createappimage.ps1](vpc_stack/src/asbuilder/createappimage.ps1) - creates the appstream image

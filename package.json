@@ -25,6 +25,7 @@
   "dependencies": {
     "aws-sdk": "^2.1063.0",
     "chalk": "^4.1.2",
+    "dotenv": "^16.0.0",
     "open": "^8.4.0"
   },
   "devDependencies": {

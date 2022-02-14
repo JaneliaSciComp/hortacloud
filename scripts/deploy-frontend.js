@@ -2,7 +2,10 @@ const execSync = require("child_process").execSync;
 const chalk = require("chalk");
 const open = require("open");
 const { CloudFormation } = require("aws-sdk");
-const cdk = require('@aws-cdk/core');
+const dotenv = require('dotenv')
+
+// set env from .env file if present
+const result = dotenv.config()
 
 const exec = (command, options = {}) => {
   const combinedOptions = { stdio: [0, 1, 2], ...options };
@@ -23,8 +26,8 @@ expectedEnvVars.forEach(envVar => {
         `🚨 Environment variable ${envVar} was not set.`
       )
     );
+    missingVarsCount += 1;
   }
-  missingVarsCount += 1;
 });
 
 if (missingVarsCount > 0) {

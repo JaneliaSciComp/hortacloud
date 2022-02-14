@@ -14,6 +14,10 @@ const app = new App();
 
 
 const vpc = new HortaCloudVPC(app, "VPC", {
+  env: {
+    account: AWS_ACCOUNT,
+    region: AWS_REGION
+  },
   stackName: createResourceId(hortaConfig, "vpc")
 });
 
