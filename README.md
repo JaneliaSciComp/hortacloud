@@ -55,7 +55,14 @@ For client installation start and connect to the appstream builder instance then
 - [createappimage.ps1](vpc_stack/src/asbuilder/createappimage.ps1) - creates the appstream image
 
 After you copied or created the scripts:
-* open an "Administrator Power Shell" window
-* Run `installcmd.ps1 <serverName>` where <serverName> is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with digits instead of dots>.ec2.internal`. This will install the JDK and the workstation. When the workstation installer prompts you for the install directory select `C:\apps` as the JaneliaWorkstation location.
+* Log in to the AWS console and go to https://console.aws.amazon.com/appstream2
+* Find your new builder in the "Images > Image Builder" tab
+* Click on the image name and open an "Administrator" window by clicking on the "Connect" button.
+* Copy the installation scripts from your local machine to AppStream:
+    * Click on the folder icon at the top left of the window
+    * Use the `Upload Files` icon to find the files on your machine and upload them. 
+* Open the powershell by typing "Windows Powershell" in the search found at the bottom left of the window. Then right click to "run as administrator"
+* change to the directory where you uploaded the installation scripts, eg:<br/> `cd 'C:\Users\ImagebuilderAdmin\My Files\Temporary Files'`
+* Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with digits instead of dots>.ec2.internal`. This will install the JDK and the workstation. When the workstation installer prompts you for the install directory select `C:\apps` as the JaneliaWorkstation location.
 * Run `c:\apps\runJaneliaWorkstation.ps1` and create the users
 * Run `createappimage.ps1`. Keep in mind that once you start this step the builder instance begins the snapshotting process and it will not be usable until it completes. After this is completed the appstream image should be available and the builder is in a stop state. To use it again you need to start it and then you can connect to it again.
