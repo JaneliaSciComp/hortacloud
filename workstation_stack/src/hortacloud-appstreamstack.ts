@@ -30,7 +30,6 @@ export class HortacloudAppstream extends Construct {
           ...vpcProps.publicSubnetIds
         ]
       },
-      maxConcurrentSessions: 5,
       maxUserDurationInSeconds: 960 * 60, // this value is in seconds
     });
 
