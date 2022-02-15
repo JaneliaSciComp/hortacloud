@@ -79,3 +79,13 @@ After you copied or created the scripts:
 * Run `createappimage.ps1`. Keep in mind that once you start this step the builder instance begins the snapshotting process and it will not be usable until it completes. After this is completed the appstream image should be available and the builder is in a stop state. To use it again you need to start it and then you can connect to it again.
 * You can now safely close the appstream session and return to the appstream console. There you will see a new image in the image registry with a status of `Pending`. Once is has changed to a status of `Available` you can run the frontend installation script.
 * `npm run deploy-frontend`
+
+### Troubleshooting
+
+#### Troubleshooting client app installation
+If the client app installation fails for any reason - for example you did not start the installation in an administrator power shell or any other reason - before you attempt the install again you must remove everything that was installed by the install script. Uninstall all applications installed with scoop and remove the 'C:\apps' folder. To do that simply run:
+```
+scoop uninstall scoop
+del c:\apps
+```
+When prompted whether you really want to uninstall everything, just select "yes" or "all".
