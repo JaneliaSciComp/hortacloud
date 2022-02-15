@@ -77,7 +77,9 @@ After you copied or created the scripts:
     * finally click 'Save User'
 * close down the workstation
 * Run `createappimage.ps1`. Keep in mind that once you start this step the builder instance begins the snapshotting process and it will not be usable until it completes. After this is completed the appstream image should be available and the builder is in a stop state. To use it again you need to start it and then you can connect to it again.
-* You can now safely close the appstream session and return to the appstream console. There you will see a new image in the image registry with a status of `Pending`. Once is has changed to a status of `Available` you can run the frontend installation script.
+* You can now safely close the appstream session and return to the appstream console. There you will see a new image in the image registry with a status of `Pending`.
+* Once the image status has changed to a status of `Available` you can start the fleet by going to the `Fleets` page on the appstream site.
+  * Select your fleet from the list of fleets and then select 'Start' from the `Action` menu.
 * `npm run deploy-frontend`
 
 ### Troubleshooting
