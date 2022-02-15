@@ -50,6 +50,7 @@ npm run deploy-<step>
 ```
 
 ### Client app installation
+
 For client installation start and connect to the appstream builder instance then copy the following scripts from this repo to the appstream instance:
 - [installcmd.ps1](vpc_stack/src/asbuilder/installcmd.ps1) - installs JDK and the workstation
 - [createappimage.ps1](vpc_stack/src/asbuilder/createappimage.ps1) - creates the appstream image
@@ -64,5 +65,17 @@ After you copied or created the scripts:
 * Open the powershell by typing "Windows Powershell" in the search found at the bottom left of the window. Then right click to "run as administrator"
 * change to the directory where you uploaded the installation scripts, eg:<br/> `cd 'C:\Users\ImagebuilderAdmin\My Files\Temporary Files'`
 * Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with digits instead of dots>.ec2.internal`. This will install the JDK and the workstation. When the workstation installer prompts you for the install directory select `C:\apps` as the JaneliaWorkstation location.
-* Run `c:\apps\runJaneliaWorkstation.ps1` and create the users
+* Run `c:\apps\runJaneliaWorkstation.ps1` to start the workstation 
+    * when prompted, login as the root user with password 'root'
+* Add users
+    * Select > window > core > Administration tool
+    * Select Users from the choices
+    * Click on the 'New User' button at the bottom of the screen
+    * Name must be the email address that the user will use to log in.
+    * Password must be empty
+    * Add them to the appropriate groups by seelcting a group from the dropdown menu and clicking 'Add Group'
+    * finally click 'Save User'
+* close down the workstation
 * Run `createappimage.ps1`. Keep in mind that once you start this step the builder instance begins the snapshotting process and it will not be usable until it completes. After this is completed the appstream image should be available and the builder is in a stop state. To use it again you need to start it and then you can connect to it again.
+* You can now safely close the appstream session and return to the appstream console. There you will see a new image in the image registry with a status of `Pending`. Once is has changed to a status of `Available` you can run the frontend installation script.
+* `npm run deploy-frontend`
