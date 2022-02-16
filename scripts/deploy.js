@@ -66,7 +66,8 @@ async function install() {
 
   // check that the appStream image is available
   const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
-  console.log(chalk.cyan(`🔎 Looking for AppStream image ${imageName}...`));
+  console.log(chalk.cyan(`🔎 Looking for AppStream image ${imageName}`));
+  console.log(chalk.white("This could take 10-20 minutes");
   let imageAvailable = false;
   while (!imageAvailable) {
     try {
@@ -96,6 +97,7 @@ async function install() {
   // check that the appStream fleet is up and ready
   const fleetName = `${HORTA_ORG}-hc-workstation-fleet-${HORTA_STAGE}`;
   console.log(chalk.cyan(`🔎 Looking for AppStream fleet ${fleetName}...`));
+  console.log(chalk.white("This could take 10-20 minutes");
 
   let fleetRunning = false;
   while (!fleetRunning) {
