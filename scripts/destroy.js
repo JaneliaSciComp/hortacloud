@@ -27,3 +27,9 @@ exec(
   `npm run cdk -- destroy -f --require-approval never Workstation`,
   { cwd: "./workstation_stack/" }
 );
+
+console.log(chalk.red("🚨 Removing VPC stack."));
+exec(
+  `npm run cdk -- destroy -f --all --require-approval never`,
+  { cwd: "./vpc_stack/" }
+);
