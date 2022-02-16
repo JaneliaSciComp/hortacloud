@@ -12,8 +12,6 @@ To make use of this repo, you should have **node v14** installed on your local m
 
 After cloning this repo, run `npm run setup` to download dependencies.
 
-Then you can run `npm run deploy` to build and deploy the code.
-
 ## Implementation details
 
 The deployment uses AWS CDK to create AWS resources on your AWS account as shown in the diagram below. All services run in a secured Virtual Private Cloud (VPC).
@@ -27,8 +25,8 @@ The full deployment of the application requires 3 steps.
 2) Connect to appstream builder and install the workstation application. This is a semiautomated step that involves copying and running two PowerShell scripts onto the appstream builder instance.
 3) Deploy the front-end stacks 
 
+### Setting up the environment
 
-### Setting up the environment.
 Before you can deploy the application, there are a few environment variables that need to be set.
 This can be done by exporting them on the command line
 ```shell
