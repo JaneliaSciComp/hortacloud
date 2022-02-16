@@ -1,8 +1,9 @@
 $ProjectTagValue = "MouseLight"
 
 $AppName = "HortaWorkstation"
+$AppFolderName = "Horta"
 $AppPath = "C:\apps\runJaneliaWorkstation.ps1"
-$AppWorkingPath = "C:\apps\JaneliaWorkstation"
+$AppWorkingPath = "C:\apps\$AppFolderName"
 
 $PSLauncher = " C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 $Params = "--name `"$AppName`" "
