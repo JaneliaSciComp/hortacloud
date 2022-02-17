@@ -55,7 +55,7 @@ exec(
 
 
 console.log(chalk.green("✅ Image builder is ready for your input."));
-console.log(chalk.yellow("Please follow the instructions at: "));
+console.log(chalk.yellow("⚠️  Please follow the instructions at: "));
 console.log(chalk.white("https://github.com/JaneliaSciComp/hortacloud/blob/main/README.md#client-app-installation"));
 console.log(chalk.yellow("to complete workstation client configuration. This script will now wait until your configured AppStream image is available."));
 
@@ -66,8 +66,7 @@ async function install() {
 
   // check that the appStream image is available
   const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
-  console.log(chalk.cyan(`🔎 Looking for AppStream image ${imageName}`));
-  console.log(chalk.white("This could take 10-20 minutes");
+  console.log(chalk.cyan(`🔎 Waiting for AppStream image ${imageName}`));
   let imageAvailable = false;
   while (!imageAvailable) {
     try {
@@ -83,7 +82,7 @@ async function install() {
         }
       }
     } catch (error) {
-      console.log(error);
+      process.stdout.write(".");
     }
 
     if (imageAvailable === false) {
@@ -93,11 +92,18 @@ async function install() {
   }
   console.log(chalk.green("✅ AppStream image found."));
 
+  console.log(chalk.cyan("🚚 Deploying Workstation stack"));
+  exec(`npm run cdk -- deploy --require-approval never Workstation`, {
+     cwd: "./workstation_stack/"
+  });
 
   // check that the appStream fleet is up and ready
   const fleetName = `${HORTA_ORG}-hc-workstation-fleet-${HORTA_STAGE}`;
+  console.log(chalk.yellow(`⚠️  Please Activate your fleet ${fleetName} in the AppStream console at: `));
+  console.log(chalk.white("https://console.aws.amazon.com/appstream2/home"));
+  console.log(chalk.yellow(`Select your fleet ${fleetName} and choose "Start" in the Action menu`));
   console.log(chalk.cyan(`🔎 Looking for AppStream fleet ${fleetName}...`));
-  console.log(chalk.white("This could take 10-20 minutes");
+  console.log(chalk.white("This could take 10-20 minutes"));
 
   let fleetRunning = false;
   while (!fleetRunning) {
@@ -132,10 +138,6 @@ async function install() {
 
   // deploy all frontend stacks
 
-  console.log(chalk.cyan("🚚 Deploying Workstation stack"));
-  exec(`npm run cdk -- deploy --require-approval never Workstation`, {
-     cwd: "./workstation_stack/"
-  });
 
   console.log(chalk.cyan("🚚 Deploying web admin backend stack."));
   exec(
