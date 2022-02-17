@@ -40,12 +40,13 @@ ADMIN_USER_EMAIL=<adminuser>@<organization>
 AWS_ACCOUNT=123456789012
 AWS_REGION=us-east-1
 ```
-### Back-end and front-end stacks deployment
-To deploy the backend and frontend stacks use the example below in which the `<step>` can be `backend` or `frontend`
+### Deployment
+To deploy the application
 
 ```bash
-npm run deploy-<step>
+npm run deploy
 ```
+There are a few steps during the deployment that require manual intervention. The deploy script will indicate when these steps should be taken with a ⚠️  warning message.
 
 ### Client app installation
 
@@ -59,9 +60,10 @@ After you copied or created the scripts:
 * Click on the image name and open an "Administrator" window by clicking on the "Connect" button.
 * Copy the installation scripts from your local machine to AppStream:
     * Click on the folder icon at the top left of the window
+    * Select the `Temporary Files` folder
     * Use the `Upload Files` icon to find the files on your machine and upload them. 
-* Open the powershell by typing "Windows Powershell" in the search found at the bottom left of the window. Then right click to "run as administrator"
-* change to the directory where you uploaded the installation scripts, eg:<br/> `cd 'C:\Users\ImagebuilderAdmin\My Files\Temporary Files'`
+* Open the powershell by typing "`Power shell" in the search found at the bottom left of the window. Then right click the Windows Powershell icon and choose "run as administrator".
+* Change to the directory where you uploaded the installation scripts, eg:<br/> `cd 'C:\Users\ImagebuilderAdmin\My Files\Temporary Files'`
 * Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`. This will install the JDK and the workstation. The installer will run silently and it will install the workstation under the `C:\apps` folder. In case it prompts you for the install directory, select `C:\apps` as the JaneliaWorkstation location.
 * Run `c:\apps\runJaneliaWorkstation.ps1` to start the workstation 
     * when prompted, login as the root user with password 'root'
@@ -73,12 +75,11 @@ After you copied or created the scripts:
     * Password must be empty
     * Add them to the appropriate groups by seelcting a group from the dropdown menu and clicking 'Add Group'
     * finally click 'Save User'
-* close down the workstation
+* Close down the workstation
 * Run `createappimage.ps1`. Keep in mind that once you start this step the builder instance begins the snapshotting process and it will not be usable until it completes. After this is completed the appstream image should be available and the builder is in a stop state. To use it again you need to start it and then you can connect to it again.
 * You can now safely close the appstream session and return to the appstream console. There you will see a new image in the image registry with a status of `Pending`.
 * Once the image status has changed to a status of `Available` you can start the fleet by going to the `Fleets` page on the appstream site.
   * Select your fleet from the list of fleets and then select 'Start' from the `Action` menu.
-* `npm run deploy-frontend`
 
 ### Troubleshooting
 
