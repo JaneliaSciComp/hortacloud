@@ -50,8 +50,35 @@ $wsInstallerRes = Invoke-WebRequest `
    -OutFile $TmpDir\jws-installer.exe
 Write-Output "Downloaded installer: $wsInstallerRes"
 
+# Generate the installer state for the silent install
+$InstallerStateContent = @"
+<state xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xsi:noNamespaceSchemaLocation="state-file.xsd">
+    <components>
+        <product platform="generic" status="to-be-installed" uid="workstation" version="1.0.0.0.0">
+            <properties>
+                <property name="installation.location">`$N{install}/Horta</property>
+                <property name="create.desktop.shortcut">true</property>
+                <property name="desktop.shortcut.location">all.users</property>
+                <property name="installation.location.windows">C:\apps\$AppFolderName</property>
+                <property name="create.start.menu.shortcut">false</property>
+                <property name="installation.location.macosx">`$N{install}/$AppFolderName.app</property>
+            </properties>
+        </product>
+    </components>
+</state>
+"@
+
+$InstallerStateName = "$TmpDir\jws-installer.xml"
+if(!(Get-Item -Path $InstallerStateName -ErrorAction Ignore))
+{
+    New-Item $InstallerStateName
+}
+Set-Content $InstallerStateName "$InstallerStateContent"
+
+
 # Run the installer
-Start-Process -Wait -FilePath $TmpDir\jws-installer.exe
+Start-Process -Wait -FilePath $TmpDir\jws-installer.exe -ArgumentList "--silent --state $InstallerStateName"
 
 $WSInstallDir = "C:\apps\$AppFolderName"
 
