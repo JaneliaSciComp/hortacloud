@@ -9,5 +9,5 @@ cdk.out
 build
 local
 .DS_Store
-.env
+.env*
 cdk.context.json
