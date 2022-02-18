@@ -10,10 +10,6 @@
     "clean": "del build cdk.out",
     "cleancdk": "npm run clean && npm run cdk"
   },
-  "peerDependencies": {
-    "aws-cdk-lib": "^2.6.0",
-    "constructs": "^10.0.44"
-  },
   "devDependencies": {
     "aws-cdk": "^2.12.0",
     "aws-cdk-lib": "^2.6.0",

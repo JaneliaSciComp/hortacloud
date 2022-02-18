@@ -99,9 +99,6 @@ async function install() {
 
   // check that the appStream fleet is up and ready
   const fleetName = `${HORTA_ORG}-hc-workstation-fleet-${HORTA_STAGE}`;
-  console.log(chalk.yellow(`⚠️  Please Activate your fleet ${fleetName} in the AppStream console at: `));
-  console.log(chalk.white("https://console.aws.amazon.com/appstream2/home"));
-  console.log(chalk.yellow(`Select your fleet ${fleetName} and choose "Start" in the Action menu`));
   console.log(chalk.cyan(`🔎 Looking for AppStream fleet ${fleetName}...`));
   console.log(chalk.white("This could take 10-20 minutes"));
 
@@ -117,12 +114,21 @@ async function install() {
       if (fleet) {
         if (fleet.State === "RUNNING") {
           fleetRunning = true;
+        } else if (fleet.State === "STOPPED") {
+          // Start the fleet
+          const startFleetReq = appstream.startFleet({
+            Name: fleetName
+          });
+          startFleetReq.send();
         } else {
           process.stdout.write(".");
         }
       }
     } catch (error) {
       if (error.code !== "ResourceNotFoundException") {
+        console.log(chalk.yellow(`⚠️  Please Activate your fleet ${fleetName} in the AppStream console at: `));
+        console.log(chalk.white("https://console.aws.amazon.com/appstream2/home"));
+        console.log(chalk.yellow(`Select your fleet ${fleetName} and choose "Start" in the Action menu`));
         throw error;
       } else {
         process.stdout.write(".");

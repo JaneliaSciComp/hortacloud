@@ -1,4 +1,5 @@
 const execSync = require("child_process").execSync;
+const { AppStream } = require("aws-sdk");
 const chalk = require("chalk");
 const dotenv = require('dotenv')
 
@@ -60,6 +61,23 @@ exec(
 );
 
 console.log(chalk.green("✅ All stacks have been removed."));
-const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
-console.log(chalk.yellow(`⚠️  Please manually remove the AppStream image ${imageName} at:`));
-console.log(chalk.white("https://console.aws.amazon.com/appstream2/home"));
+removeAppStreamImage();
+
+function removeAppStreamImage() {
+  const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
+
+  try {
+    const appstream = new AppStream({ AWS_REGION });
+    console.log(chalk.red("🚨 Delete appstream image ${imageName}"));
+    const deleteImageReq = appstream.deleteImage({
+      Name: imageName
+    });
+    deleteImageReq.send();
+    console.log(chalk.green(`Removed appstream image ${imageName}`));
+  } catch (error) {
+    console.log(chalk.red(`Error while trying to remove ${imageName}`));
+    console.log(chalk.red(error));
+    console.log(chalk.yellow(`⚠️  Please manually remove the AppStream image ${imageName} at:`));
+    console.log(chalk.white("https://console.aws.amazon.com/appstream2/home"));
+  }
+}

@@ -29,7 +29,7 @@ JADE_DATA_BUCKETS_NAMES_WITH_COMMA=${JADE_DATA_BUCKETS_NAMES_WITH_SPACES// /,}  
 # Install jacs-cm
 DEPLOY_DIR=/opt/jacs/deploy
 CONFIG_DIR=/opt/jacs/config
-JACS_STACK_BRANCH=docker20
+JACS_STACK_BRANCH=master
 
 mkdir -p $DEPLOY_DIR
 mkdir -p $CONFIG_DIR
