@@ -22,7 +22,7 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
     return {
         ...getHortaCloudConfig(),
         hortaServerInstanceType: process.env.HORTA_SERVER_INSTANCE_TYPE || 't2.xlarge',
-        hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || 'ec2_batch',
+        hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || '',
         hortaDataVolumeSizeGB: 30,
         withPublicAccess: false,
         jwtKey: process.env.JACS_JWT_KEY || crypto.randomBytes(32).toString('hex'),
