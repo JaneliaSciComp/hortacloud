@@ -52,6 +52,7 @@ async function addUser(username) {
       .adminCreateUser(params)
       .promise();
     console.log(`Success adding ${username} to userpool ${userPoolId}`);
+    // TODO: add code to connect to Workstation API and add the user.
     return {
       message: `Success adding ${username} to userpool`,
     };
@@ -75,6 +76,7 @@ async function addUserToGroup(username, groupname) {
       .adminAddUserToGroup(params)
       .promise();
     console.log(`Success adding ${username} to ${groupname}`);
+    // TODO: add code to connect to Workstation API and add the user to a group.
     return {
       message: `Success adding ${username} to ${groupname}`,
     };
@@ -120,6 +122,7 @@ async function removeUserFromGroup(username, groupname) {
       .adminRemoveUserFromGroup(params)
       .promise();
     console.log(`Removed ${username} from ${groupname}`);
+    // TODO: add code to connect to Workstation API and remove the user from a group.
     return {
       message: `Removed ${username} from ${groupname}`,
     };
