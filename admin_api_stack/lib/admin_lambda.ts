@@ -3,16 +3,12 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as path from "path";
 
-const {
-  AWS_ACCOUNT,
-  AWS_REGION
-} = process.env;
-
-
+const { AWS_ACCOUNT, AWS_REGION } = process.env;
 
 interface LambaServiceProps {
   org: string;
@@ -22,14 +18,23 @@ interface LambaServiceProps {
 export class LambdaService extends Construct {
   public readonly api: apigateway.RestApi;
 
-  constructor(scope: Construct, id: string, userPool: cognito.UserPool, props: LambaServiceProps) {
+  constructor(
+    scope: Construct,
+    id: string,
+    userPool: cognito.UserPool,
+    props: LambaServiceProps
+  ) {
     super(scope, id);
 
     // set up api gateway
-    this.api = new apigateway.RestApi(this, `${props.org}-horta-cloud-admin-lambda-api-${props.stage}`, {
-      restApiName: `Horta Cloud Admin Service - ${props.org} ${props.stage}`,
-      description: `Admin service to manage users & generate app stream urls for ${props.org} ${props.stage}`
-    });
+    this.api = new apigateway.RestApi(
+      this,
+      `${props.org}-horta-cloud-admin-lambda-api-${props.stage}`,
+      {
+        restApiName: `Horta Cloud Admin Service - ${props.org} ${props.stage}`,
+        description: `Admin service to manage users & generate app stream urls for ${props.org} ${props.stage}`
+      }
+    );
 
     // set up authorizer to use cognito pools
     const authorizer = new apigateway.CfnAuthorizer(this, "cfnAuth", {
@@ -41,8 +46,12 @@ export class LambdaService extends Construct {
     });
 
     // add the /auth resource
-    const asFleetName = cdk.Fn.importValue(`${props.org}-hc-FleetID-${props.stage}`);
-    const asStackName = cdk.Fn.importValue(`${props.org}-hc-StackID-${props.stage}`);
+    const asFleetName = cdk.Fn.importValue(
+      `${props.org}-hc-FleetID-${props.stage}`
+    );
+    const asStackName = cdk.Fn.importValue(
+      `${props.org}-hc-StackID-${props.stage}`
+    );
     const authHandler = new lambda.Function(this, "HortaCloudAuthHandler", {
       runtime: lambda.Runtime.NODEJS_14_X, // So we can use async in widget.js
       code: lambda.Code.fromAsset("appstream_lambda_resources"),
@@ -51,7 +60,7 @@ export class LambdaService extends Construct {
         // "Workstation9Fleet",
         FLEETNAME: asFleetName,
         // "JaneliaWorkstation3"
-        STACKNAME: asStackName,
+        STACKNAME: asStackName
       }
     });
 
@@ -82,13 +91,40 @@ export class LambdaService extends Construct {
       allowMethods: ["POST", "OPTIONS"]
     });
 
+    // creates a custom role that grants the lambda permissions to access the workstation VPC
+    const userListRole = new iam.Role(this, "userListRole", {
+      roleName: "userListRole",
+      assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          "service-role/AWSLambdaVPCAccessExecutionRole"
+        ),
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          "service-role/AWSLambdaBasicExecutionRole"
+        )
+      ]
+    });
+
+    // get the vpc from the vpc-stack
+    const workstationVpc = ec2.Vpc.fromLookup(this, "ImportedVPC", {
+      isDefault: false,
+      vpcName: `${props.org}-hc-vpc-${props.stage}`
+    });
+
     // add the /user-list resource
     const userListHandler = new lambda.Function(
       this,
       "HortaCloudUserListHandler",
       {
         runtime: lambda.Runtime.NODEJS_14_X, // So we can use async in widget.js
-        code: lambda.Code.fromAsset(path.join(__dirname, "..", "user_list_resources")),
+        role: userListRole,
+        vpc: workstationVpc,
+        vpcSubnets: {
+          subnetType: ec2.SubnetType.PRIVATE
+        },
+        code: lambda.Code.fromAsset(
+          path.join(__dirname, "..", "user_list_resources")
+        ),
         handler: "index.handler",
         environment: {
           GROUP: "admins",
