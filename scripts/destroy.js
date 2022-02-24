@@ -36,25 +36,25 @@ if (missingVarsCount > 0) {
 }
 console.log(chalk.green("✅ environment looks good."));
 
-console.log(chalk.red("🚨 Removing web admin frontend stack."));
+console.log(chalk.yellow("⚠️  Removing web admin frontend stack."));
 exec(
   `npm run cdk -- destroy -f --require-approval never -c deploy=admin_website`,
   { cwd: "./admin_api_stack/" }
 );
 
-console.log(chalk.red("️🚨 Removing web admin backend stack."));
+console.log(chalk.yellow("⚠️  Removing web admin backend stack."));
 exec(
   `npm run cdk -- destroy -f --require-approval never -c deploy=admin_api`,
   { cwd: "./admin_api_stack/" }
 );
 
-console.log(chalk.red("🚨 Removing Workstation stack"));
+console.log(chalk.yellow("⚠️  Removing Workstation stack"));
 exec(
   `npm run cdk -- destroy -f --require-approval never Workstation`,
   { cwd: "./workstation_stack/" }
 );
 
-console.log(chalk.red("🚨 Removing VPC stack."));
+console.log(chalk.yellow("⚠️  Removing VPC stack."));
 exec(
   `npm run cdk -- destroy -f --all --require-approval never`,
   { cwd: "./vpc_stack/" }
@@ -68,16 +68,16 @@ function removeAppStreamImage() {
 
   try {
     const appstream = new AppStream({ AWS_REGION });
-    console.log(chalk.red("🚨 Delete appstream image ${imageName}"));
+    console.log(chalk.yellow(`⚠️  Removing appstream image ${imageName}`));
     const deleteImageReq = appstream.deleteImage({
       Name: imageName
     });
     deleteImageReq.send();
-    console.log(chalk.green(`Removed appstream image ${imageName}`));
+    console.log(chalk.green(`✅ Removed appstream image ${imageName}`));
   } catch (error) {
-    console.log(chalk.red(`Error while trying to remove ${imageName}`));
+    console.log(chalk.red(`🚨 Error while trying to remove ${imageName}`));
     console.log(chalk.red(error));
-    console.log(chalk.yellow(`⚠️  Please manually remove the AppStream image ${imageName} at:`));
+    console.log(chalk.red(`Please manually remove the AppStream image ${imageName} at:`));
     console.log(chalk.white("https://console.aws.amazon.com/appstream2/home"));
   }
 }
