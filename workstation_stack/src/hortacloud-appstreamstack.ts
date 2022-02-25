@@ -1,7 +1,8 @@
 import { Construct } from 'constructs';
 import { CfnOutput } from 'aws-cdk-lib';
 import { CfnFleet, CfnStack, CfnStackFleetAssociation } from 'aws-cdk-lib/aws-appstream';
-import { createResourceId, getHortaCloudConfig, VpcInstanceProps } from '../../common/hortacloud-common';
+import { createResourceId, VpcInstanceProps } from '../../common/hortacloud-common';
+import { getHortaAppstreamConfig } from './hortacloud-appstream-config';
 
 export class HortacloudAppstream extends Construct {
 
@@ -9,7 +10,7 @@ export class HortacloudAppstream extends Construct {
               id: string,
               vpcProps: VpcInstanceProps) {
     super(scope, id);
-    const hortaCloudConfig = getHortaCloudConfig();
+    const hortaCloudConfig = getHortaAppstreamConfig();
 
     // create the fleet
     const fleetInstanceName = createResourceId(hortaCloudConfig, 'workstation-fleet');
@@ -19,7 +20,7 @@ export class HortacloudAppstream extends Construct {
       name: fleetInstanceName,
       imageName: imageName,
       computeCapacity: {
-        desiredInstances: 5,
+        desiredInstances: hortaCloudConfig.appstreamComputeCapacity,
       },
       displayName: fleetInstanceName,
       enableDefaultInternetAccess: false,
@@ -30,7 +31,7 @@ export class HortacloudAppstream extends Construct {
           ...vpcProps.publicSubnetIds
         ]
       },
-      maxUserDurationInSeconds: 960 * 60, // this value is in seconds
+      maxUserDurationInSeconds: hortaCloudConfig.sessionDurationInMin * 60, // this value is in seconds
     });
 
     // create the stack
