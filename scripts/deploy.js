@@ -4,65 +4,39 @@ const open = require("open");
 const { CloudFormation, AppStream } = require("aws-sdk");
 const dotenv = require("dotenv");
 
+const exec = (command, options = {}) => {
+  const combinedOptions = { stdio: [0, 1, 2], ...options };
+  execSync(command, combinedOptions);
+};
+
 function sleep(ms) {
   return new Promise(resolve => {
     setTimeout(resolve, ms);
   });
 }
 
-// set env from .env file if present
-const result = dotenv.config();
-
-const exec = (command, options = {}) => {
-  const combinedOptions = { stdio: [0, 1, 2], ...options };
-  execSync(command, combinedOptions);
-};
-
-const { HORTA_ORG, HORTA_STAGE, ADMIN_USER_EMAIL, AWS_REGION, AWS_ACCOUNT } =
-  process.env;
-console.log(chalk.cyan("🔎 Checking environment."));
-
-const expectedEnvVars = [
-  "HORTA_ORG",
-  "HORTA_STAGE",
-  "ADMIN_USER_EMAIL",
-  "AWS_REGION",
-  "AWS_ACCOUNT"
-];
-
-let missingVarsCount = 0;
-
-expectedEnvVars.forEach(envVar => {
-  if (!process.env[envVar]) {
-    console.log(chalk.red(`🚨 Environment variable ${envVar} was not set.`));
-    missingVarsCount += 1;
-  }
-});
-
-if (missingVarsCount > 0) {
-  process.exit(1);
-}
-
-console.log(chalk.green("✅ environment looks good."));
-
-// deploy the VPC stack
-
-console.log(chalk.cyan("🚚 Deploying VPC stack"));
-exec(
-  `npm run cdk -- deploy --all --require-approval never`,
-  { cwd: "./vpc_stack/" }
-);
-
-
-console.log(chalk.green("✅ Image builder is ready for your input."));
-console.log(chalk.yellow("⚠️  Please follow the instructions at: "));
-console.log(chalk.white("https://github.com/JaneliaSciComp/hortacloud/blob/main/README.md#client-app-installation"));
-console.log(chalk.yellow("to complete workstation client configuration. This script will now wait until your configured AppStream image is available."));
-
-async function install() {
+async function deploy_vpc_and_workstation() {
   const appstream = new AppStream({ AWS_REGION });
   const sleep_duration = 2;
 
+  // deploy the VPC stack
+  console.log(chalk.cyan("🚚 Deploying VPC stack"));
+  exec(`npm run cdk -- deploy --all --require-approval never`, {
+    cwd: "./vpc_stack/"
+  });
+
+  console.log(chalk.green("✅ Image builder is ready for your input."));
+  console.log(chalk.yellow("⚠️  Please follow the instructions at: "));
+  console.log(
+    chalk.white(
+      "https://github.com/JaneliaSciComp/hortacloud/blob/main/README.md#client-app-installation"
+    )
+  );
+  console.log(
+    chalk.yellow(
+      "to complete workstation client configuration. This script will now wait until your configured AppStream image is available."
+    )
+  );
 
   // check that the appStream image is available
   const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
@@ -94,7 +68,7 @@ async function install() {
 
   console.log(chalk.cyan("🚚 Deploying Workstation stack"));
   exec(`npm run cdk -- deploy --require-approval never Workstation`, {
-     cwd: "./workstation_stack/"
+    cwd: "./workstation_stack/"
   });
 
   // check that the appStream fleet is up and ready
@@ -126,9 +100,19 @@ async function install() {
       }
     } catch (error) {
       if (error.code !== "ResourceNotFoundException") {
-        console.log(chalk.yellow(`⚠️  Please Activate your fleet ${fleetName} in the AppStream console at: `));
-        console.log(chalk.white("https://console.aws.amazon.com/appstream2/home"));
-        console.log(chalk.yellow(`Select your fleet ${fleetName} and choose "Start" in the Action menu`));
+        console.log(
+          chalk.yellow(
+            `⚠️  Please Activate your fleet ${fleetName} in the AppStream console at: `
+          )
+        );
+        console.log(
+          chalk.white("https://console.aws.amazon.com/appstream2/home")
+        );
+        console.log(
+          chalk.yellow(
+            `Select your fleet ${fleetName} and choose "Start" in the Action menu`
+          )
+        );
         throw error;
       } else {
         process.stdout.write(".");
@@ -141,10 +125,10 @@ async function install() {
   }
 
   console.log(chalk.green("✅ Found a running fleet, proceeding"));
+}
 
+async function deploy_admin_site() {
   // deploy all frontend stacks
-
-
   console.log(chalk.cyan("🚚 Deploying web admin backend stack."));
   exec(
     `npm run cdk -- deploy --all --require-approval never -c deploy=admin_api`,
@@ -166,6 +150,13 @@ async function install() {
       cwd: "./admin_api_stack/"
     }
   );
+}
+
+async function install(argv) {
+  if (!argv.adminOnly) {
+    await deploy_vpc_and_workstation();
+  }
+  await deploy_admin_site();
 
   // post install directions
   const postOutputs = {};
@@ -192,4 +183,43 @@ async function install() {
   );
   open(postOutputs.SiteBucketUrl);
 }
-install();
+
+const argv = require("yargs/yargs")(process.argv.slice(2))
+  .usage("$0 [options]")
+  .boolean(["a"])
+  .describe(
+    "a",
+    "Only deploy the admin website. Requires a deployed workstation stack."
+  )
+  .alias("a", "admin-only").argv;
+
+// set env from .env file if present
+dotenv.config();
+
+const { HORTA_ORG, HORTA_STAGE, ADMIN_USER_EMAIL, AWS_REGION } = process.env;
+console.log(chalk.cyan("🔎 Checking environment."));
+
+const expectedEnvVars = [
+  "HORTA_ORG",
+  "HORTA_STAGE",
+  "ADMIN_USER_EMAIL",
+  "AWS_REGION",
+  "AWS_ACCOUNT"
+];
+
+let missingVarsCount = 0;
+
+expectedEnvVars.forEach(envVar => {
+  if (!process.env[envVar]) {
+    console.log(chalk.red(`🚨 Environment variable ${envVar} was not set.`));
+    missingVarsCount += 1;
+  }
+});
+
+if (missingVarsCount > 0) {
+  process.exit(1);
+}
+
+console.log(chalk.green("✅ environment looks good."));
+
+install(argv);

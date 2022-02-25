@@ -4,14 +4,14 @@ const chalk = require("chalk");
 const dotenv = require('dotenv')
 
 // set env from .env file if present
-const result = dotenv.config()
+dotenv.config()
 
 const exec = (command, options={}) => {
   const combinedOptions = { stdio: [0, 1, 2], ...options};
   execSync(command, combinedOptions);
 };
 
-const { HORTA_ORG, HORTA_STAGE, AWS_REGION, AWS_ACCOUNT } =
+const { HORTA_ORG, HORTA_STAGE, AWS_REGION } =
   process.env;
 console.log(chalk.cyan("🔎 Checking environment."));
 
