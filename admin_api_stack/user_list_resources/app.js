@@ -80,7 +80,8 @@ app.post('/addUserToGroup', async (req, res, next) => {
   }
 
   try {
-    const response = await addUserToGroup(req.body.username, req.body.groupname);
+    const {email: authUser} = req.apiGateway.event.requestContext.authorizer.claims;
+    const response = await addUserToGroup(req.body.username, req.body.groupname, authUser);
     res.status(200).json(response);
   } catch (err) {
     next(err);
@@ -95,7 +96,9 @@ app.post('/addUser', async (req, res, next) => {
   }
 
   try {
-    const response = await addUser(req.body.username);
+    // fetch the authorized user for contacting the JACS API.
+    const {email: authUser} = req.apiGateway.event.requestContext.authorizer.claims;
+    const response = await addUser(req.body.username, authUser);
     res.status(200).json(response);
   } catch (err) {
     next(err);
@@ -110,7 +113,8 @@ app.post('/removeUserFromGroup', async (req, res, next) => {
   }
 
   try {
-    const response = await removeUserFromGroup(req.body.username, req.body.groupname);
+    const {email: authUser} = req.apiGateway.event.requestContext.authorizer.claims;
+    const response = await removeUserFromGroup(req.body.username, req.body.groupname, authUser);
     res.status(200).json(response);
   } catch (err) {
     next(err);

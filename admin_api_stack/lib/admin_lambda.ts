@@ -128,7 +128,8 @@ export class LambdaService extends Construct {
         handler: "index.handler",
         environment: {
           GROUP: "admins",
-          USERPOOL: userPool.userPoolId
+          USERPOOL: userPool.userPoolId,
+          JACS_HOSTNAME: cdk.Fn.importValue(`${props.org}-hc-ServerIP-${props.stage}`)
         }
       }
     );
