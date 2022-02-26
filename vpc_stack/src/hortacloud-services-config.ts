@@ -1,5 +1,3 @@
-import * as crypto from 'crypto';
-
 import { HortaCloudConfig, getHortaCloudConfig } from '../../common/hortacloud-common';
 
 // Horta Services Config
@@ -25,12 +23,12 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || '',
         hortaDataVolumeSizeGB: 30,
         withPublicAccess: false,
-        jwtKey: process.env.JACS_JWT_KEY || crypto.randomBytes(32).toString('hex'),
-        mongoKey: process.env.JACS_MONGO_KEY || crypto.randomBytes(32).toString('hex'),
-        appPassword: process.env.JACS_APP_PASSWD || crypto.randomBytes(16).toString('hex'),
-        rabbitMQPassword: process.env.RABBITMQ_PASSWD || crypto.randomBytes(16).toString('hex'),
-        jacsAPIKey: process.env.JACS_API_KEY || crypto.randomBytes(16).toString('hex'),
-        jadeAPIKey: process.env.JADE_API_KEY || crypto.randomBytes(16).toString('hex'),
+        jwtKey: process.env.JACS_JWT_KEY || 'GFNaVyaC6boqf0VKtBEjLLu5VY8Ks0PQ23kpSs8lgWg',
+        mongoKey: process.env.JACS_MONGO_KEY || 'C9w7ZIVbtvN4LqDgOUrZuLEOqGSkgjWvRDg4mpgDw',
+        appPassword: process.env.JACS_APP_PASSWD || 'changeJacsPasswdInenv',
+        rabbitMQPassword: process.env.RABBITMQ_PASSWD || 'changeRabbitPasswdInenv',
+        jacsAPIKey: process.env.JACS_API_KEY || 'changeJacsAPIKeyInenv',
+        jadeAPIKey: process.env.JADE_API_KEY || 'changeJadeAPIKeyInenv',
         searchMemGB: process.env.SEARCH_MEM_SIZE || '1',
         hortaDataBuckets: process.env.HORTA_DATA_BUCKETS || 'janelia-mouselight-imagery',
     };

@@ -43,6 +43,35 @@ AWS_REGION=us-east-1
 ### Deployment
 To deploy the application
 
+Copy env.template to .env and edit it.
+```
+cp env.template .env
+```
+
+The following values must be set in the .env file:
+```
+AWS_REGION=<your aws region>
+AWS_ACCOUNT=<your aws account>
+
+HORTA_ORG=<app qualifier name>
+ADMIN_USER_EMAIL=<admin email>
+
+JACS_JWT_KEY=<a 32 byte jwt secret>
+JACS_MONGO_KEY=<a 32 byte mongo secret>
+JACS_APP_PASSWD=<app password>
+RABBITMQ_PASSWD=<rabbitmq password>
+JACS_API_KEY=<jacs api key>
+JADE_API_KEY=<jade api key>
+```
+
+To generate the 32 byte secrets for JWT or mongo you can use:
+```
+openssl rand -hex 32
+```
+It is preferrable to use hex encoding because base64 may have characters that need to be escaped for the sed command, in which case the initialization will fail.
+
+If you already have data on some S3 buckets you can add them to `HORTA_DATA_BUCKETS` as a comma separated list. Currently it is set to Janelia's open data MouseLight bucket. Every bucket specified in the 'HORTA_DATA_BUCKETS' list will be available in the workstation as `/<s3BucketName>` directory.
+
 ```bash
 npm run deploy
 ```
@@ -62,9 +91,10 @@ After you copied or created the scripts:
     * Click on the folder icon at the top left of the window
     * Select the `Temporary Files` folder
     * Use the `Upload Files` icon to find the files on your machine and upload them. 
-* Open the powershell by typing "`Power shell" in the search found at the bottom left of the window. Then right click the Windows Powershell icon and choose "run as administrator".
+* Open the powershell by typing "`Power shell" in the search found at the bottom left of the window. Then right click the Windows Powershell icon and choose "run as administrator". 
 * Change to the directory where you uploaded the installation scripts, eg:<br/> `cd 'C:\Users\ImagebuilderAdmin\My Files\Temporary Files'`
-* Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`. This will install the JDK and the workstation. The installer will run silently and it will install the workstation under the `C:\apps` folder. In case it prompts you for the install directory, select `C:\apps` as the JaneliaWorkstation location.
+* Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`. This will install the JDK and the workstation. The installer will run silently and it will install the workstation under the `C:\apps` folder. In case it prompts you for the install directory, select `C:\apps` as the JaneliaWorkstation location. 
+** Note that if you run the installation scripts in a non-administrator window, the installation will fail and before you try this again check the [troubleshooting section](#troubleshooting-client-app-installation)
 * Run `c:\apps\runJaneliaWorkstation.ps1` to start the workstation 
     * when prompted, login as the root user with password 'root'
 * Add users
@@ -80,6 +110,12 @@ After you copied or created the scripts:
 * You can now safely close the appstream session and return to the appstream console. There you will see a new image in the image registry with a status of `Pending`.
 * Once the image status has changed to a status of `Available` you can start the fleet by going to the `Fleets` page on the appstream site.
   * Select your fleet from the list of fleets and then select 'Start' from the `Action` menu.
+
+### Import Imagery In the Workstation
+
+If you already have the data on the S3 buckets in the Workstation, select **File** → **New** → **Tiled Microscope Sample**, and then set "Sample Name" to `<sampleDirectoryName>` and "Path to Render Folder" as `/<bucketName>/<sampleDirectoryName>`.
+
+Open the Data Explorer (**Window** → **Core** → **Data Explorer**) and navigate to Home, then "3D RawTile Microscope Samples", and your sample name. Right-click the sample and choose "Open in Horta". This will open the Horta Panel and then from the Horta Panel you have options to create a workspace or to open the 2D or the 3D volume viewer.
 
 ### Troubleshooting
 
