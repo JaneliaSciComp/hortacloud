@@ -12,19 +12,86 @@
  */
 
 const { CognitoIdentityServiceProvider, SecretsManager } = require("aws-sdk");
+const https = require("https");
 
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider();
 const secretsmanager = new SecretsManager();
 
 const userPoolId = process.env.USERPOOL;
+const jacsHostname = process.env.JACS_HOSTNAME;
 
-async function addUser(username) {
+function sendRequest(path, method, body, token) {
+  const data = body ? JSON.stringify(body) : null;
+
+  const options = {
+    hostname: jacsHostname,
+    port: 443,
+    method,
+    path,
+    rejectUnauthorized: false,
+    headers: {}
+  };
+
+  if (token) {
+    options.headers.Authorization = `Bearer ${token}`;
+  }
+
+  if (data) {
+    options.headers["Content-Type"] = "application/json";
+    options.headers["Content-Length"] = data.length;
+  }
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, res => {
+      let rawData = "";
+
+      res.on("data", chunk => {
+        rawData += chunk;
+      });
+
+      res.on("end", () => {
+        try {
+          resolve(rawData);
+        } catch (err) {
+          reject(new Error(err));
+        }
+      });
+    });
+
+    req.on("error", err => {
+      reject(new Error(err));
+    });
+
+    if (data) {
+      req.write(data);
+    }
+
+    req.end();
+  });
+}
+
+async function getAuthToken(username) {
+  console.log({ username });
+  const authResponse = await sendRequest(
+    "/SCSW/AuthenticationService/v1/authenticate",
+    "POST",
+    {
+      username: username,
+      password: ""
+    }
+  );
+  console.log(authResponse);
+  const { token } = JSON.parse(authResponse);
+  return token;
+}
+
+async function addUser(username, authUser) {
   console.log(`Attempting to add ${username} to userpool ${userPoolId}`);
 
   const passwordParams = {
     IncludeSpace: true,
     PasswordLength: 20,
-    RequireEachIncludedType: true,
+    RequireEachIncludedType: true
   };
 
   try {
@@ -40,21 +107,36 @@ async function addUser(username) {
       UserAttributes: [
         {
           Name: "email",
-          Value: username,
+          Value: username
         },
         {
           Name: "email_verified",
-          Value: "True",
-        },
-      ],
+          Value: "True"
+        }
+      ]
     };
     const result = await cognitoIdentityServiceProvider
       .adminCreateUser(params)
       .promise();
     console.log(`Success adding ${username} to userpool ${userPoolId}`);
-    // TODO: add code to connect to Workstation API and add the user.
+
+    // code to connect to Workstation API and add the user.
+    const authToken = await getAuthToken(authUser);
+    const createJACSUser = await sendRequest(
+      "/SCSW/JACS2SyncServices/v2/data/user",
+      "PUT",
+      {
+        key: `user:${username}`,
+        name: username,
+        fullName: username,
+        email: username,
+        class: "org.janelia.model.security.User"
+      },
+      authToken
+    );
+
     return {
-      message: `Success adding ${username} to userpool`,
+      message: `Success adding ${username} to userpool`
     };
   } catch (err) {
     console.log(err);
@@ -62,11 +144,11 @@ async function addUser(username) {
   }
 }
 
-async function addUserToGroup(username, groupname) {
+async function addUserToGroup(username, groupname, authUser) {
   const params = {
     GroupName: groupname,
     UserPoolId: userPoolId,
-    Username: username,
+    Username: username
   };
 
   console.log(`Attempting to add ${username} to ${groupname}`);
@@ -76,9 +158,39 @@ async function addUserToGroup(username, groupname) {
       .adminAddUserToGroup(params)
       .promise();
     console.log(`Success adding ${username} to ${groupname}`);
-    // TODO: add code to connect to Workstation API and add the user to a group.
+
+    if (groupname === "admins") {
+      // code to connect to Workstation API and add the user to a group.
+      const authToken = await getAuthToken(authUser);
+      const currentUserResponse = await sendRequest(
+        `/SCSW/JACS2SyncServices/v2/data/user?subjectKey=${username}`,
+        "GET",
+        undefined,
+        authToken
+      );
+      const currentUser = JSON.parse(currentUserResponse);
+
+      // if admin role is present, then done
+      if (
+        !currentUser.userGroupRoles.find(role => role.groupKey === "group:admin")
+      ) {
+        const updatedRoles = currentUser.userGroupRoles.map(role => {
+          role.role = "Admin";
+          return role;
+        });
+        // if not, push admin role onto list of roles and send it back
+        updatedRoles.push({ groupKey: "group:admin", role: "Admin" });
+        const addUserToAdmin = await sendRequest(
+          `/SCSW/JACS2SyncServices/v2/data/user/roles?userKey=${username}`,
+          "POST",
+          updatedRoles,
+          authToken
+        );
+      }
+    }
+
     return {
-      message: `Success adding ${username} to ${groupname}`,
+      message: `Success adding ${username} to ${groupname}`
     };
   } catch (err) {
     console.log(err);
@@ -89,7 +201,7 @@ async function addUserToGroup(username, groupname) {
 async function removeUser(username) {
   const params = {
     UserPoolId: userPoolId,
-    Username: username,
+    Username: username
   };
 
   console.log(`Attempting to remove ${username} from userpool ${userPoolId}`);
@@ -100,7 +212,7 @@ async function removeUser(username) {
       .promise();
     console.log(`Removed ${username} from userpool ${userPoolId}`);
     return {
-      message: `Removed ${username} from userpool`,
+      message: `Removed ${username} from userpool`
     };
   } catch (err) {
     console.log(err);
@@ -108,11 +220,11 @@ async function removeUser(username) {
   }
 }
 
-async function removeUserFromGroup(username, groupname) {
+async function removeUserFromGroup(username, groupname, authUser) {
   const params = {
     GroupName: groupname,
     UserPoolId: userPoolId,
-    Username: username,
+    Username: username
   };
 
   console.log(`Attempting to remove ${username} from ${groupname}`);
@@ -122,9 +234,35 @@ async function removeUserFromGroup(username, groupname) {
       .adminRemoveUserFromGroup(params)
       .promise();
     console.log(`Removed ${username} from ${groupname}`);
-    // TODO: add code to connect to Workstation API and remove the user from a group.
+
+    if (groupname === "admins") {
+      // code to connect to Workstation API and remove the user from admin group.
+      const authToken = await getAuthToken(authUser);
+      const currentUserResponse = await sendRequest(
+        `/SCSW/JACS2SyncServices/v2/data/user?subjectKey=${username}`,
+        "GET",
+        undefined,
+        authToken
+      );
+      const currentUser = JSON.parse(currentUserResponse);
+      // filter roles to remove admin role
+      const updatedRoles = currentUser.userGroupRoles
+        .filter(role => role.groupKey !== "group:admin")
+        .map(role => {
+          role.role = "Writer";
+          return role;
+        });
+      // send list back
+      const removeUserFromAdmin = await sendRequest(
+        `/SCSW/JACS2SyncServices/v2/data/user/roles?userKey=${username}`,
+        "POST",
+        updatedRoles,
+        authToken
+      );
+    }
+
     return {
-      message: `Removed ${username} from ${groupname}`,
+      message: `Removed ${username} from ${groupname}`
     };
   } catch (err) {
     console.log(err);
@@ -136,7 +274,7 @@ async function removeUserFromGroup(username, groupname) {
 async function confirmUserSignUp(username) {
   const params = {
     UserPoolId: userPoolId,
-    Username: username,
+    Username: username
   };
 
   try {
@@ -145,7 +283,7 @@ async function confirmUserSignUp(username) {
       .promise();
     console.log(`Confirmed ${username} registration`);
     return {
-      message: `Confirmed ${username} registration`,
+      message: `Confirmed ${username} registration`
     };
   } catch (err) {
     console.log(err);
@@ -156,7 +294,7 @@ async function confirmUserSignUp(username) {
 async function disableUser(username) {
   const params = {
     UserPoolId: userPoolId,
-    Username: username,
+    Username: username
   };
 
   try {
@@ -165,7 +303,7 @@ async function disableUser(username) {
       .promise();
     console.log(`Disabled ${username}`);
     return {
-      message: `Disabled ${username}`,
+      message: `Disabled ${username}`
     };
   } catch (err) {
     console.log(err);
@@ -176,7 +314,7 @@ async function disableUser(username) {
 async function enableUser(username) {
   const params = {
     UserPoolId: userPoolId,
-    Username: username,
+    Username: username
   };
 
   try {
@@ -185,7 +323,7 @@ async function enableUser(username) {
       .promise();
     console.log(`Enabled ${username}`);
     return {
-      message: `Enabled ${username}`,
+      message: `Enabled ${username}`
     };
   } catch (err) {
     console.log(err);
@@ -196,7 +334,7 @@ async function enableUser(username) {
 async function getUser(username) {
   const params = {
     UserPoolId: userPoolId,
-    Username: username,
+    Username: username
   };
 
   console.log(`Attempting to retrieve information for ${username}`);
@@ -216,7 +354,7 @@ async function listUsers(Limit, PaginationToken) {
   const params = {
     UserPoolId: userPoolId,
     ...(Limit && { Limit }),
-    ...(PaginationToken && { PaginationToken }),
+    ...(PaginationToken && { PaginationToken })
   };
 
   console.log("Attempting to list users");
@@ -241,7 +379,7 @@ async function listGroups(Limit, PaginationToken) {
   const params = {
     UserPoolId: userPoolId,
     ...(Limit && { Limit }),
-    ...(PaginationToken && { PaginationToken }),
+    ...(PaginationToken && { PaginationToken })
   };
 
   console.log("Attempting to list groups");
@@ -267,7 +405,7 @@ async function listGroupsForUser(username, Limit, NextToken) {
     UserPoolId: userPoolId,
     Username: username,
     ...(Limit && { Limit }),
-    ...(NextToken && { NextToken }),
+    ...(NextToken && { NextToken })
   };
 
   console.log(`Attempting to list groups for ${username}`);
@@ -280,7 +418,7 @@ async function listGroupsForUser(username, Limit, NextToken) {
      * We are filtering out the results that seem to be innapropriate for client applications
      * to prevent any informaiton disclosure. Customers can modify if they have the need.
      */
-    result.Groups.forEach((val) => {
+    result.Groups.forEach(val => {
       delete val.UserPoolId,
         delete val.LastModifiedDate,
         delete val.CreationDate,
@@ -300,7 +438,7 @@ async function listUsersInGroup(groupname, Limit, NextToken) {
     GroupName: groupname,
     UserPoolId: userPoolId,
     ...(Limit && { Limit }),
-    ...(NextToken && { NextToken }),
+    ...(NextToken && { NextToken })
   };
 
   console.log(`Attempting to list users in group ${groupname}`);
@@ -320,7 +458,7 @@ async function listUsersInGroup(groupname, Limit, NextToken) {
 async function signUserOut(username) {
   const params = {
     UserPoolId: userPoolId,
-    Username: username,
+    Username: username
   };
 
   console.log(`Attempting to signout ${username}`);
@@ -331,7 +469,7 @@ async function signUserOut(username) {
       .promise();
     console.log(`Signed out ${username} from all devices`);
     return {
-      message: `Signed out ${username} from all devices`,
+      message: `Signed out ${username} from all devices`
     };
   } catch (err) {
     console.log(err);
@@ -352,5 +490,5 @@ module.exports = {
   listGroups,
   listGroupsForUser,
   listUsersInGroup,
-  signUserOut,
+  signUserOut
 };

@@ -23,9 +23,13 @@
     "aws-sdk": "^2.1063.0",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.0",
-    "open": "^8.4.0"
+    "open": "^8.4.0",
+    "yargs": "^17.3.1"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "eslint": "^8.9.0",
     "prettier": "^2.5.1"
   }
 }
