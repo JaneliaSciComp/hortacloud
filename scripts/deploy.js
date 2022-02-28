@@ -64,7 +64,7 @@ async function deploy_vpc_and_workstation() {
       await sleep(1000 * sleep_duration);
     }
   }
-  console.log(chalk.green("✅ AppStream image found."));
+  console.log(chalk.green("\n✅ AppStream image found."));
 
   console.log(chalk.cyan("🚚 Deploying Workstation stack"));
   exec(`npm run cdk -- deploy --require-approval never Workstation`, {
@@ -124,12 +124,12 @@ async function deploy_vpc_and_workstation() {
     }
   }
 
-  console.log(chalk.green("✅ Found a running fleet, proceeding"));
+  console.log(chalk.green("\n✅ Found a running fleet, proceeding"));
 }
 
 async function deploy_admin_site() {
   // deploy all frontend stacks
-  console.log(chalk.cyan("🚚 Deploying web admin backend stack."));
+  console.log(chalk.cyan("\n🚚 Deploying web admin backend stack."));
   // the Vpc.fromLookup function was looking in the cdk.context.json file
   // to get a cached value. If the vpc stack had been deleted and recreated,
   // the old id was still being used from the context and failed. This
