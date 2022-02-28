@@ -6,7 +6,7 @@ import { createResourceId, getHortaCloudConfig, VpcInstanceProps } from "../../c
 
 export class HortaCloudAppstreamBuilder extends Construct {
 
-    constructor(scope: Construct, 
+    constructor(scope: Construct,
                 id: string,
                 vpcProps: VpcInstanceProps) {
         super(scope, id);
@@ -30,7 +30,7 @@ export class HortaCloudAppstreamBuilder extends Construct {
             value: createResourceId(hortaConfig, 'HortaCloudWorkstation'),
             exportName: createResourceId(hortaConfig, 'HortaCloudImage')
         });
-    
+
     }
 
 }
