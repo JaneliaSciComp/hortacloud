@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { App, Fn, Lazy, Stack, Tags, Token } from "aws-cdk-lib";
+import { App, Fn, Stack, Tags } from "aws-cdk-lib";
 import { HortaCloudWorkstationStack } from "./hortacloud-workstation";
 import {
   getHortaCloudConfig,
