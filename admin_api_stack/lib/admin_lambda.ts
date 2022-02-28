@@ -51,15 +51,6 @@ export class LambdaService extends Construct {
     const asStackName = cdk.Fn.importValue(
       `${props.org}-hc-StackID-${props.stage}`
     );
-    const wsVPCId = cdk.Fn.importValue(
-      `${props.org}-hc-VpcID-${props.stage}`
-    );
-    const wsPrivateSubnetId = cdk.Fn.importValue(
-      `${props.org}-hc-PrivateSubnetID-${props.stage}`
-    );
-    const wsPublicSubnetId = cdk.Fn.importValue(
-      `${props.org}-hc-PublicSubnetID-${props.stage}`
-    );
 
     const authHandler = new lambda.Function(this, "HortaCloudAuthHandler", {
       runtime: lambda.Runtime.NODEJS_14_X, // So we can use async in widget.js
@@ -114,14 +105,10 @@ export class LambdaService extends Construct {
       ]
     });
 
-    const vpcAvailabilityZones = AWS_REGION ? [ AWS_REGION ] : [];
-
     // get the vpc from the vpc-stack
-    const workstationVpc = ec2.Vpc.fromVpcAttributes(this, "ImportedVPC", {
-      vpcId: wsVPCId,
-      availabilityZones: vpcAvailabilityZones,
-      publicSubnetIds: [ wsPublicSubnetId ],
-      privateSubnetIds: [wsPrivateSubnetId ]
+    const workstationVpc = ec2.Vpc.fromLookup(this, "ImportedVPC", {
+      isDefault: false,
+      vpcName: `${props.org}-hc-vpc-${props.stage}`
     });
 
     // add the /user-list resource

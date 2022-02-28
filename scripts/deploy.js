@@ -130,6 +130,13 @@ async function deploy_vpc_and_workstation() {
 async function deploy_admin_site() {
   // deploy all frontend stacks
   console.log(chalk.cyan("🚚 Deploying web admin backend stack."));
+  // the Vpc.fromLookup function was looking in the cdk.context.json file
+  // to get a cached value. If the vpc stack had been deleted and recreated,
+  // the old id was still being used from the context and failed. This
+  // command clears out that context on each deployment.
+  exec(`npm run cdk -- context --clear`, {
+    cwd: "./admin_api_stack/"
+  });
   exec(
     `npm run cdk -- deploy --all --require-approval never -c deploy=admin_api`,
     {
