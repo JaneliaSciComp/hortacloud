@@ -2,7 +2,6 @@ import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
-import * as s3 from "aws-cdk-lib/aws-s3";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Construct } from "constructs";
 import * as cognito from "aws-cdk-lib/aws-cognito";
@@ -102,8 +101,8 @@ export class LambdaService extends Construct {
     });
 
     // creates a custom role that grants the lambda permissions to access the workstation VPC
-    const userListRole = new iam.Role(this, "userListRole", {
-      roleName: "userListRole",
+    const userListRole = new iam.Role(this, `${props.org}-userListRole-${props.stage}`, {
+      roleName:`${props.org}-userListRole-${props.stage}`,
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName(
