@@ -30,6 +30,7 @@ $TmpDir = $env:TEMP
 $ProgressPreference = "SilentlyContinue"
 $AppFolderName = "Horta"
 $AppExeName = "horta"
+$AppIconName = "horta48"
 
 Write-Output "Download certificate"
 $certRes = Invoke-WebRequest `
@@ -49,6 +50,12 @@ $wsInstallerRes = Invoke-WebRequest `
    -Uri https://$ServerIP/files/$AppFolderName-windows.exe `
    -OutFile $TmpDir\jws-installer.exe
 Write-Output "Downloaded installer: $wsInstallerRes"
+
+Write-Output "Download application icon"
+$wsIconRes = Invoke-WebRequest `
+   -Uri https://$ServerIP/files/$AppIconName.png `
+   -OutFile $TmpDir\jws-icon.png
+Write-Output "Downloaded application icon: $wsIconRes"
 
 # Generate the installer state for the silent install
 $InstallerStateContent = @"
@@ -82,6 +89,9 @@ Start-Process -Wait -FilePath $TmpDir\jws-installer.exe -ArgumentList "--silent 
 
 $WSInstallDir = "C:\apps\$AppFolderName"
 
+# Copy the icon
+Copy-Item $TmpDir\jws-icon.png "C:\apps" -Force
+
 $RunScriptContent = @"
 # Set API Gateway
 `$ApiGateway = "$ServerIP"
@@ -96,12 +106,17 @@ Write-Debug "AppUser: `$UserName, WindowsUser: `$WindowsUserName"
 
 `$DataDir = "C:\Users\`$WindowsUserName"
 
+`$WSArgs = "--jdkhome `$JavaDir "
+`$WSArgs += "-J``"-Dapi.gateway=https://`$ApiGateway``" "
 if (!`$UserName) {
     `$UserDir = `$DataDir
-    `$WSArgs = "--jdkhome `$JavaDir -J``"-Dapi.gateway=https://`$ApiGateway``" -J``"-Duser.home=`$UserDir``""
+    `$WSArgs += "-J``"-Duser.home=`$UserDir``" "
 } else {
     `$UserDir = "`$DataDir\`$UserName"
-    `$WSArgs = "--jdkhome `$JavaDir -J``"-Dapi.gateway=https://`$ApiGateway``" -J``"-Duser.home=`$UserDir``" -J``"-Dconsole.serverLogin=`$UserName``" -J``"-Dconsole.rememberPassword=true``""
+    `$WSArgs += "-J``"-Duser.home=`$UserDir``" "
+    `$WSArgs += "-J``"-Dconsole.serverLogin=`$UserName``" "
+    `$WSArgs += "-J``"-Dconsole.rememberPassword=true``" "
+    `$WSArgs += "-J``"-DSessionMgr.ShowReleaseNotes=false``" "
 }
 
 Write-Output "UserDir: `$UserDir"
