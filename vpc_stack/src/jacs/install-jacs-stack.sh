@@ -7,6 +7,8 @@
 
 echo "Installing JACS Stack (install-jacs-stack.sh)... $@"
 
+ADMIN_USER=$1
+shift
 JWT_KEY=$1
 shift
 MONGO_KEY=$1
@@ -173,6 +175,35 @@ function prepareJadeVolumesYML() {
 
 }
 
+function createAdminUser() {
+    local admin_user_json=(
+        "{"
+        "  \"class\" : \"org.janelia.model.security.User\","
+        "  \"key\": \"user:${ADMIN_USER}\","
+        "  \"name\": \"${ADMIN_USER}\","
+        "  \"fullName\": \"Administrator\","
+        "  \"password\": \"\","
+        "  \"email\": \"${ADMIN_USER}\","
+        "  \"userGroupRoles\": ["
+        "    {"
+        "      \"groupKey\": \"group:admin\","
+        "      \"role\": \"Writer\""
+        "    },"
+        "    {"
+        "      \"groupKey\": \"group:mouselight\","
+        "      \"role\": \"Writer\""
+        "    }"
+        "  ]"
+        "}"
+    )
+
+    mkdir -p ${DEPLOY_DIR}/local
+    printf '%s\n' "${admin_user_json[@]}" > ${DEPLOY_DIR}/local/admin_user.json
+
+    echo "Create admin user ${ADMIN_USER} from $(cat ${DEPLOY_DIR}/local/admin_user.json)"
+    ./manage.sh createUserFromJson ${DEPLOY_DIR}/local/admin_user.json
+}
+
 prepareFilesystem
 
 cd $DEPLOY_DIR
@@ -212,5 +243,8 @@ echo ${init_res}
 ./manage.sh compose down
 # bring up all services
 ./manage.sh compose up -d
+
+# create admin user
+createAdminUser
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"

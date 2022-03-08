@@ -1,7 +1,8 @@
 // Common Client/Server Horta Cloud Properties
 export interface HortaCloudConfig {
-    hortaStage: string;
     hortaCloudOrg: string;
+    hortaCloudAdmin: string;
+    hortaStage: string;
     hortaCloudVersion: string;
     developerName: string;
     hortaWorkstationInstanceType: string;
@@ -17,6 +18,7 @@ export interface VpcInstanceProps {
 export function getHortaCloudConfig() : HortaCloudConfig {
     return {
         hortaCloudOrg: process.env.HORTA_ORG || 'janelia',
+        hortaCloudAdmin: process.env.ADMIN_USER_EMAIL || 'horta@test.com',
         hortaStage: process.env.HORTA_STAGE || 'dev',
         hortaCloudVersion: '1.0.0',
         developerName: process.env.USER || "unknown",

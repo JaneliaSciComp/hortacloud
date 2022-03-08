@@ -148,6 +148,7 @@ export class HortaCloudJACS extends Construct {
         name: 'InitJacsStackAsset',
         path: 'jacs/install-jacs-stack.sh',
         arguments: [
+          hortaConfig.hortaCloudAdmin,
           hortaConfig.jwtKey,
           hortaConfig.mongoKey,
           hortaConfig.appPassword,
