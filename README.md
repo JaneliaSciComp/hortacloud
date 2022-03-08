@@ -18,32 +18,27 @@ The deployment uses AWS CDK to create AWS resources on your AWS account as shown
 
 ![Cloud archtecture diagram](docs/images/cloud_architecture.png)
 
-### Deployment examples
-
-The full deployment of the application requires 3 steps. 
-1) Deploy the back-end stacks - this includes the appstream builder
-2) Connect to appstream builder and install the workstation application. This is a semiautomated step that involves copying and running two PowerShell scripts onto the appstream builder instance.
-3) Deploy the front-end stacks 
 
 ### Setting up the environment
 
-Before you can deploy the application, there are a few environment variables that need to be set.
-This can be done by exporting them on the command line
-```shell
-export HORTA_STAGE=prod
-```
-or creating a .env file.
-```
-HORTA_STAGE=prod
-HORTA_ORG=janelia
-ADMIN_USER_EMAIL=<adminuser>@<organization>
-AWS_ACCOUNT=123456789012
-AWS_REGION=us-east-1
-```
-### Deployment
-To deploy the application
 
-Copy env.template to .env and edit it.
+Install AWS CDK by simply running
+```
+npm install
+```
+This command will install CDK in a development environment so you can access its help as below (notice the '--' separator between cdk and cdk options - this is specific to npm not to cdk so all CDK flags must be after the double hyphen separator):
+```
+npm run cdk -- --help
+```
+AWS CDK requires AWS CLI to be installed and configured on the computer from which one runs the deployment procedure.
+
+If you are not familiar how to configure and setup AWS CLI please take a look at how to do that [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+
+
+After CLI and CDK are installed, and before actually deploying the application you need to set up a few environment variables.
+
+You can do that by copying the current template into '.env' file and then editing the '.env' file
+
 ```
 cp env.template .env
 ```
@@ -62,20 +57,58 @@ JACS_APP_PASSWD=<app password>
 RABBITMQ_PASSWD=<rabbitmq password>
 JACS_API_KEY=<jacs api key>
 JADE_API_KEY=<jade api key>
+HORTA_DATA_BUCKETS=<s3 buckets that hold MouseLight data>
 ```
 
-To generate the 32 byte secrets for JWT or mongo you can use:
+For the api keys or for secrets you can generate them using:
 ```
 openssl rand -hex 32
 ```
-It is preferrable to use hex encoding because base64 may have characters that need to be escaped for the sed command, in which case the initialization will fail.
+We prefer this procedure because these values will be handled during the installation using `sed` command and it is preferable not to contain any characters that require to be escaped in a sed command.
 
-If you already have data on some S3 buckets you can add them to `HORTA_DATA_BUCKETS` as a comma separated list. Currently it is set to Janelia's open data MouseLight bucket. Every bucket specified in the 'HORTA_DATA_BUCKETS' list will be available in the workstation as `/<s3BucketName>` directory.
+If you already have data on some S3 buckets you can add them to `HORTA_DATA_BUCKETS` as a comma separated list. For example, if you want to use Janelia's Open Data bucket but in addition you also have your data on a private bucket ('janelia-mouseligh-demo' in this example) you need to set `HORTA_DATA_BUCKETS="janelia-mouselight-imagery,janelia-mouselight-demo"`. Currently it is set to Janelia's open data MouseLight bucket only. Every bucket specified in the 'HORTA_DATA_BUCKETS' list will be available in the workstation as `/<s3BucketName>` directory.
+
+If you want to change the setting for `HORTA_WS_INSTANCE_TYPE`, keep in mind that you may have to change `HORTA_WS_IMAGE_NAME`
+For `HORTA_WS_INSTANCE_TYPE` set to any `stream.graphics.g4dn.*` instances:
+* `stream.graphics.g4dn.xlarge`
+* `stream.graphics.g4dn.2xlarge`
+* `stream.graphics.g4dn.4xlarge`
+* `stream.graphics.g4dn.8xlarge`
+* `stream.graphics.g4dn.12xlarge`
+* `stream.graphics.g4dn.16xlarge`
+use: `HORTA_WS_IMAGE_NAME=AppStream-Graphics-G4dn-WinServer2019-07-19-2021` image.
+
+For `HORTA_WS_INSTANCE_TYPE` set to any `stream.graphics-pro.*` instances:
+* `stream.graphics-pro.4xlarge`
+* `stream.graphics-pro.8xlarge`
+* `stream.graphics-pro.16xlarge`
+use `HORTA_WS_IMAGE_NAME=AppStream-Graphics-Pro-WinServer2019-10-08-2021` image
+
+#### IAM Required Roles
+
+In order to create an AppStream Image Builder - needed in order to create the Workstation Image - you need to have all [roles required by AppStream](https://docs.aws.amazon.com/appstream2/latest/developerguide/roles-required-for-appstream.html). Check that by simply connecting to the AWS console and check if the Roles are available in the IAM Service - select "Services" > "Security, Identity, Compliance" > "IAM" then verify that the required roles are present:
+* AmazonAppStreamServiceAccess
+* ApplicationAutoScalingForAmazonAppStreamAccess
+* AWSServiceRoleForApplicationAutoScaling_AppStreamFleet
+
+#### AWS Limits.
+
+Most AWS services allow you to setup restrictions on the number of active instances. The default limits, especially for some AppStream resources, such as "Maximum ImageBuilders" for some graphics instances - "stream.graphics.g4dn.xlarge" may be really low (0 in some cases). Connect to AWS console "Service Quotas" service and increase the limit for in case you see a `limit was exceeded` error. Typically take a look at the limits setup for your account for EC2, VPC, AppStream, S3. Keep in mind that limits may be different from instance type to instance type for AppStream service, so you may have to adjust the limits based on the appstream instance type selection.
+
+### Deployment
+After the setup is complete, to deploy the application run:
 
 ```bash
 npm run deploy
 ```
+
 There are a few steps during the deployment that require manual intervention. The deploy script will indicate when these steps should be taken with a ⚠️  warning message.
+
+The full deployment of the application is done in 3 steps ran automatically one after the other, but the second step requires a manual intervention: 
+1) Deploy the back-end stacks - this includes the appstream builder
+2) Connect to appstream builder and install the workstation application. This is a semiautomated step that involves copying and running two PowerShell scripts onto the appstream builder instance.
+3) Deploy the front-end stacks 
+
 
 ### Client app installation
 
