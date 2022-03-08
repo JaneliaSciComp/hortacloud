@@ -27,7 +27,7 @@ else
     for dataBucketName in ${dataBucketNames[@]}; do
         mkdir -p "/s3data/${dataBucketName}"
         chmod 777 "/s3data/${dataBucketName}"
-        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,use_path_request_style,umask=0000\t0\t0" | tee -a /etc/fstab
+        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,umask=0000\t0\t0" | tee -a /etc/fstab
     done
 fi
 
