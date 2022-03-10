@@ -17,13 +17,21 @@ add-type @"
 
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
+$Env:SCOOP_GLOBAL = "C:\"
+
+Write-Output "Download scoop"
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://get.scoop.sh")
+# enable powershell
+Set-ExecutionPolicy unrestricted -s cu -f
 
-$env:SCOOP_GLOBAL="C:\"
+Write-Output "Set environment"
 
-scoop install git
-scoop bucket add java
-scoop install -g zulu8-jdk
+Write-Output "Begin tool installation"
+scoop install sudo
+sudo scoop install git -g
+sudo scoop bucket add java
+sudo scoop install zulu8-jdk -g
+$Env:JAVA_HOME = "C:\apps\zulu8-jdk\current"
 
 $TmpDir = $env:TEMP
 
@@ -39,7 +47,7 @@ $certRes = Invoke-WebRequest `
 Write-Output "Downloaded cert: $certRes"
 
 Write-Output "Install certificate"
-c:\apps\zulu8-jdk\current\bin\keytool.exe -import `
+sudo c:\apps\zulu8-jdk\current\bin\keytool.exe -import `
     -noprompt `
     -alias mouse1selfcert -file $TmpDir\cert.crt `
     -keystore "c:\apps\zulu8-jdk\current\jre\lib\security\cacerts" `

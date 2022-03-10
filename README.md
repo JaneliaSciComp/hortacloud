@@ -124,7 +124,7 @@ After you copied or created the scripts:
     * Click on the folder icon at the top left of the window
     * Select the `Temporary Files` folder
     * Use the `Upload Files` icon to find the files on your machine and upload them. 
-* Open the powershell by typing "`Power shell" in the search found at the bottom left of the window. Then right click the Windows Powershell icon and choose "run as administrator". 
+* Open the powershell by typing "`Power shell" in the search found at the bottom left of the window. This step used to require an "Administrator Power Shell" but now it needs only a regular user power sheel and it may actually fail the install if you run it in an Administrator Power Shell. 
 * Change to the directory where you uploaded the installation scripts, eg:<br/> `cd 'C:\Users\ImagebuilderAdmin\My Files\Temporary Files'`
 * Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`. This will install the JDK and the workstation. The installer will run silently and it will install the workstation under the `C:\apps` folder. In case it prompts you for the install directory, select `C:\apps` as the JaneliaWorkstation location. 
 ** Note that if you run the installation scripts in a non-administrator window, the installation will fail and before you try this again check the [troubleshooting section](#troubleshooting-client-app-installation)

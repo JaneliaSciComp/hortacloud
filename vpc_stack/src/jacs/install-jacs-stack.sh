@@ -182,7 +182,6 @@ function createAdminUser() {
         "  \"key\": \"user:${ADMIN_USER}\","
         "  \"name\": \"${ADMIN_USER}\","
         "  \"fullName\": \"Administrator\","
-        "  \"password\": \"\","
         "  \"email\": \"${ADMIN_USER}\","
         "  \"userGroupRoles\": ["
         "    {"
@@ -242,7 +241,12 @@ echo ${init_res}
 # bounce it again after the databases have been initialized
 ./manage.sh compose down
 # bring up all services
+echo "Start up all services"
 ./manage.sh compose up -d
+# sleep for 10s to give time to the service to start
+sleep 60
+./manage.sh compose ps
+./manage.sh compose logs
 
 # create admin user
 createAdminUser
