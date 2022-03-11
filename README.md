@@ -105,7 +105,7 @@ npm run deploy
 There are a few steps during the deployment that require manual intervention. The deploy script will indicate when these steps should be taken with a ⚠️  warning message.
 
 The full deployment of the application is done in 3 steps ran automatically one after the other, but the second step requires a manual intervention: 
-1) Deploy the back-end stacks - this includes the appstream builder
+1) Deploy the back-end stacks - this includes the appstream builder. At the back end deployment the installation process will also create the admin user configured in `ADMIN_USER_EMAIL`.
 2) Connect to appstream builder and install the workstation application. This is a semiautomated step that involves copying and running two PowerShell scripts onto the appstream builder instance.
 3) Deploy the front-end stacks 
 
@@ -129,15 +129,8 @@ After you copied or created the scripts:
 * Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`. This will install the JDK and the workstation. The installer will run silently and it will install the workstation under the `C:\apps` folder. In case it prompts you for the install directory, select `C:\apps` as the JaneliaWorkstation location. 
 ** Note that if you run the installation scripts in a non-administrator window, the installation will fail and before you try this again check the [troubleshooting section](#troubleshooting-client-app-installation)
 * Run `c:\apps\runJaneliaWorkstation.ps1` to start the workstation 
-    * when prompted, login as the root user with password 'root'
-* Add users
-    * Select > window > core > Administration tool
-    * Select Users from the choices
-    * Click on the 'New User' button at the bottom of the screen
-    * Name must be the email address that the user will use to log in.
-    * Password must be empty
-    * Add them to the appropriate groups by seelcting a group from the dropdown menu and clicking 'Add Group'
-    * finally click 'Save User'
+    * when prompted, login as the admin user set in ADMIN_USER_EMAIL (leave the password empty)
+* Navigate through the menus to make sure the workstation is working. You don't have to create any user as they will get created from the Admin UI web application.
 * Close down the workstation
 * Run `createappimage.ps1`. Keep in mind that once you start this step the builder instance begins the snapshotting process and it will not be usable until it completes. After this is completed the appstream image should be available and the builder is in a stop state. To use it again you need to start it and then you can connect to it again.
 * You can now safely close the appstream session and return to the appstream console. There you will see a new image in the image registry with a status of `Pending`.
