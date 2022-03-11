@@ -130,6 +130,7 @@ async function addUser(username, authUser) {
         name: username,
         fullName: username,
         email: username,
+        password: '',
         class: "org.janelia.model.security.User"
       },
       authToken
