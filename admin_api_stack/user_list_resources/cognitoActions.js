@@ -115,14 +115,14 @@ async function addUser(username, authUser) {
         }
       ]
     };
-    const result = await cognitoIdentityServiceProvider
+    await cognitoIdentityServiceProvider
       .adminCreateUser(params)
       .promise();
     console.log(`Success adding ${username} to userpool ${userPoolId}`);
 
     // code to connect to Workstation API and add the user.
     const authToken = await getAuthToken(authUser);
-    const createJACSUser = await sendRequest(
+    await sendRequest(
       "/SCSW/JACS2SyncServices/v2/data/user",
       "PUT",
       {
@@ -155,7 +155,7 @@ async function addUserToGroup(username, groupname, authUser) {
   console.log(`Attempting to add ${username} to ${groupname}`);
 
   try {
-    const result = await cognitoIdentityServiceProvider
+    await cognitoIdentityServiceProvider
       .adminAddUserToGroup(params)
       .promise();
     console.log(`Success adding ${username} to ${groupname}`);
@@ -181,7 +181,7 @@ async function addUserToGroup(username, groupname, authUser) {
         });
         // if not, push admin role onto list of roles and send it back
         updatedRoles.push({ groupKey: "group:admin", role: "Admin" });
-        const addUserToAdmin = await sendRequest(
+        await sendRequest(
           `/SCSW/JACS2SyncServices/v2/data/user/roles?userKey=${username}`,
           "POST",
           updatedRoles,
@@ -208,7 +208,7 @@ async function removeUser(username) {
   console.log(`Attempting to remove ${username} from userpool ${userPoolId}`);
 
   try {
-    const result = await cognitoIdentityServiceProvider
+    await cognitoIdentityServiceProvider
       .adminDeleteUser(params)
       .promise();
     console.log(`Removed ${username} from userpool ${userPoolId}`);
@@ -231,7 +231,7 @@ async function removeUserFromGroup(username, groupname, authUser) {
   console.log(`Attempting to remove ${username} from ${groupname}`);
 
   try {
-    const result = await cognitoIdentityServiceProvider
+    await cognitoIdentityServiceProvider
       .adminRemoveUserFromGroup(params)
       .promise();
     console.log(`Removed ${username} from ${groupname}`);
@@ -254,7 +254,7 @@ async function removeUserFromGroup(username, groupname, authUser) {
           return role;
         });
       // send list back
-      const removeUserFromAdmin = await sendRequest(
+      await sendRequest(
         `/SCSW/JACS2SyncServices/v2/data/user/roles?userKey=${username}`,
         "POST",
         updatedRoles,
@@ -279,7 +279,7 @@ async function confirmUserSignUp(username) {
   };
 
   try {
-    const result = await cognitoIdentityServiceProvider
+    await cognitoIdentityServiceProvider
       .adminConfirmSignUp(params)
       .promise();
     console.log(`Confirmed ${username} registration`);
@@ -299,7 +299,7 @@ async function disableUser(username) {
   };
 
   try {
-    const result = await cognitoIdentityServiceProvider
+    await cognitoIdentityServiceProvider
       .adminDisableUser(params)
       .promise();
     console.log(`Disabled ${username}`);
@@ -319,7 +319,7 @@ async function enableUser(username) {
   };
 
   try {
-    const result = await cognitoIdentityServiceProvider
+    await cognitoIdentityServiceProvider
       .adminEnableUser(params)
       .promise();
     console.log(`Enabled ${username}`);
@@ -465,7 +465,7 @@ async function signUserOut(username) {
   console.log(`Attempting to signout ${username}`);
 
   try {
-    const result = await cognitoIdentityServiceProvider
+    await cognitoIdentityServiceProvider
       .adminUserGlobalSignOut(params)
       .promise();
     console.log(`Signed out ${username} from all devices`);
