@@ -11,7 +11,6 @@ interface AdminAPIStackProps extends cdk.StackProps {
 export class HortaCloudAdminAPIStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: AdminAPIStackProps) {
     super(scope, id, props);
-    // The code that defines your stack goes here
 
     // user pool for auth
     const hortaCloudCognitoPool = new cognitoPool.CognitoPool(
