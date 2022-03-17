@@ -3,29 +3,30 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { HortaCloudAdminAPIStack } from "../lib/adminapi-stack";
 import { HortaCloudWebAppStack } from "../lib/frontend-stack";
+import { getHortaCloudConfig, createResourceId } from "../../common/hortacloud-common";
 
 const app = new cdk.App();
 const deploy = app.node.tryGetContext("deploy");
 
 // set defaults for the org and stage.
 const {
-  HORTA_ORG = "janelia",
-  HORTA_STAGE = "dev",
   AWS_REGION,
   AWS_ACCOUNT
 } = process.env;
 
+const cfg = getHortaCloudConfig();
+
 if (deploy === "admin_api") {
   const backendStack = new HortaCloudAdminAPIStack(
     app,
-    `${HORTA_ORG}-HortaCloudAdminAPIStack-${HORTA_STAGE}`,
+    createResourceId(cfg, 'adminAPI'),
     {
       env: {
         account: AWS_ACCOUNT,
         region: AWS_REGION
       },
-      stage: HORTA_STAGE,
-      org: HORTA_ORG,
+      stage: cfg.hortaStage,
+      org: cfg.hortaCloudOrg,
       description:
         "HortaCloud Admin API stack hosting the cognito pool and lambdas"
     }
@@ -38,14 +39,14 @@ if (deploy === "admin_api") {
 } else if (deploy === "admin_website") {
   const frontendStack = new HortaCloudWebAppStack(
     app,
-    `${HORTA_ORG}-HortaCloudWebAppStack-${HORTA_STAGE}`,
+    createResourceId(cfg, 'adminWebApp'),
     {
       env: {
         account: AWS_ACCOUNT,
         region: AWS_REGION
       },
-      stage: HORTA_STAGE,
-      org: HORTA_ORG,
+      stage: cfg.hortaStage,
+      org: cfg.hortaCloudOrg,
       description: "HortaCloud Web Admin stack hosting the admin website"
     }
   );
