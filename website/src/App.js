@@ -10,6 +10,8 @@ import Debug from "./pages/Debug";
 import PasswordReset from "./pages/PasswordReset";
 import { RequireAuth, RequireAdmin, useAuth } from "./contexts/AuthContext";
 
+import MouseLightLogo from "./logo.svg";
+
 import "./App.css";
 
 const { Header, Content, Footer } = Layout;
@@ -36,7 +38,7 @@ function App() {
           <Col span={18}>
             <div className="logo">
               <img
-                src="http://mouselight.janelia.org/assets/mouselight.svg"
+                src={MouseLightLogo}
                 alt="mouselight logo"
                 style={{ float: "left", height: "60px" }}
               />
