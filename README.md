@@ -152,3 +152,22 @@ scoop uninstall scoop
 del c:\apps
 ```
 When prompted whether you really want to uninstall everything, just select "yes" or "all".
+
+## Customizing the portal URL
+
+By default the application will have a very long url that is not easy to remember, something like:
+http://janelia-hortacloudwebapp-janeliahortacloudwebadmi-yefcny29t8n6.s3-website-us-east-1.amazonaws.com/. Follow these instructions to create a shorter domain for use with your installation.
+
+* Register a domain with Route53 or your domain provider.
+  - The Route53 page in the AWS console has a "Register domain" form.
+  - Alternative providers can also be used, but it requires a little more work.
+* Purchase an SSL certificate for your domain. 
+  - This can be done with [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
+  - or an external certificate provider, often it can be done with the same company that provided your domain registration. Use the "Import a certificte" button to register your certificate with AWS.
+* Use the "Create distribution" button on the CloudFront console to attach your registered domain to the s3 bucket that hosts the admin portal.
+  - the only things that need to be changed from the defaults are
+    - "Origin domain" - this should be the domain that was originally generated for your admin portal.
+    eg: *janelia-hortacloudwebapp-janeliahortacloudwebadmi-yefcny29t8n6.s3-website-us-east-1.amazonaws.com*
+    - "Viewer protocol policy" - Change this to "Redirect HTTP to HTTPS"
+    - "Custom SSL certificate" - Select the certificate that you registered with AWS Certificate Manager
+  - Finally, click the "Create distribution" button.  
