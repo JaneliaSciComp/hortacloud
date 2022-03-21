@@ -1,6 +1,6 @@
 # janeliaHortaCloud
 
-JaneliaHortaCloud is a streaming 3D annotation platform for large microscopy data that runs entirely in the cloud. It is based on the [Janelia Workstation](https://github.com/JaneliaSciComp/workstation) software and was originally developed in support of the [MouseLight Team Project](https://www.janelia.org/project-team/mouselight). 
+JaneliaHortaCloud is a streaming 3D annotation platform for large microscopy data that runs entirely in the cloud. It is based on the [Janelia Workstation](https://github.com/JaneliaSciComp/workstation) software and was originally developed in support of the [MouseLight Team Project](https://www.janelia.org/project-team/mouselight).
 
 It combines state-of-the-art volumetric visualization, advanced features for 3D neuronal annotation, and real-time multi-user collaboration with a set of enterprise-grade backend microservices for moving and processing large amounts of data rapidly and securely. JaneliaHortaCloud takes advantage of cloud-based Virtual Desktop Infrastructure (VDI) to perform all 3D rendering in cloud-leased GPUs which are data-adjacent, and only transfer a high-fidelity interactive video stream to each annotator’s local compute platform through a web browser.
 
@@ -104,10 +104,10 @@ npm run deploy
 
 There are a few steps during the deployment that require manual intervention. The deploy script will indicate when these steps should be taken with a ⚠️  warning message.
 
-The full deployment of the application is done in 3 steps ran automatically one after the other, but the second step requires a manual intervention: 
+The full deployment of the application is done in 3 steps ran automatically one after the other, but the second step requires a manual intervention:
 1) Deploy the back-end stacks - this includes the appstream builder. At the back end deployment the installation process will also create the admin user configured in `ADMIN_USER_EMAIL`.
 2) Connect to appstream builder and install the workstation application. This is a semiautomated step that involves copying and running two PowerShell scripts onto the appstream builder instance.
-3) Deploy the front-end stacks 
+3) Deploy the front-end stacks
 
 
 ### Client app installation
@@ -123,12 +123,12 @@ After you copied or created the scripts:
 * Copy the installation scripts from your local machine to AppStream:
     * Click on the folder icon at the top left of the window
     * Select the `Temporary Files` folder
-    * Use the `Upload Files` icon to find the files on your machine and upload them. 
-* Open the powershell by typing "`Power shell" in the search found at the bottom left of the window. This step used to require an "Administrator Power Shell" but now it needs only a regular user power sheel and it may actually fail the install if you run it in an Administrator Power Shell. 
+    * Use the `Upload Files` icon to find the files on your machine and upload them.
+* Open the powershell by typing "`Power shell" in the search found at the bottom left of the window. This step used to require an "Administrator Power Shell" but now it needs only a regular user power sheel and it may actually fail the install if you run it in an Administrator Power Shell.
 * Change to the directory where you uploaded the installation scripts, eg:<br/> `cd 'C:\Users\ImagebuilderAdmin\My Files\Temporary Files'`
-* Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`. This will install the JDK and the workstation. The installer will run silently and it will install the workstation under the `C:\apps` folder. In case it prompts you for the install directory, select `C:\apps` as the JaneliaWorkstation location. 
+* Run `installcmd.ps1 <serverName>` where &lt;serverName&gt; is the name of the backend EC2 instance - typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`. This will install the JDK and the workstation. The installer will run silently and it will install the workstation under the `C:\apps` folder. In case it prompts you for the install directory, select `C:\apps` as the JaneliaWorkstation location.
 ** Note that if you run the installation scripts in a non-administrator window, the installation will fail and before you try this again check the [troubleshooting section](#troubleshooting-client-app-installation)
-* Run `c:\apps\runJaneliaWorkstation.ps1` to start the workstation 
+* Run `c:\apps\runJaneliaWorkstation.ps1` to start the workstation
     * when prompted, login as the admin user set in ADMIN_USER_EMAIL (leave the password empty)
 * Navigate through the menus to make sure the workstation is working. You don't have to create any user as they will get created from the Admin UI web application.
 * Close down the workstation
@@ -161,7 +161,7 @@ http://janelia-hortacloudwebapp-janeliahortacloudwebadmi-yefcny29t8n6.s3-website
 * Register a domain with Route53 or your domain provider.
   - The Route53 page in the AWS console has a "Register domain" form.
   - Alternative providers can also be used, but it requires a little more work.
-* Purchase an SSL certificate for your domain. 
+* Purchase an SSL certificate for your domain.
   - This can be done with [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
   - or an external certificate provider, often it can be done with the same company that provided your domain registration. Use the "Import a certificte" button to register your certificate with AWS.
 * Use the "Create distribution" button on the CloudFront console to attach your registered domain to the s3 bucket that hosts the admin portal.
@@ -170,4 +170,4 @@ http://janelia-hortacloudwebapp-janeliahortacloudwebadmi-yefcny29t8n6.s3-website
     eg: *janelia-hortacloudwebapp-janeliahortacloudwebadmi-yefcny29t8n6.s3-website-us-east-1.amazonaws.com*
     - "Viewer protocol policy" - Change this to "Redirect HTTP to HTTPS"
     - "Custom SSL certificate" - Select the certificate that you registered with AWS Certificate Manager
-  - Finally, click the "Create distribution" button.  
+  - Finally, click the "Create distribution" button.
