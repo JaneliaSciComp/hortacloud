@@ -17,6 +17,7 @@ export class HortaCloudWebAppStack extends cdk.Stack {
       websiteIndexDocument: "index.html",
       websiteErrorDocument: "index.html",
       publicReadAccess: true,
+      bucketName: `${props.org}-hc-webadmin-${props.stage}`,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true
     });

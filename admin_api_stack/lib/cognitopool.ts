@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import { Construct } from "constructs";
+import { getHortaCloudConfig } from '../../common/hortacloud-common';
 
 const adminGroupName = 'admins';
 
@@ -10,6 +11,10 @@ export class CognitoPool extends Construct {
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
+
+    const props = getHortaCloudConfig();
+
+    const adminBucketUrl = `${props.hortaCloudOrg}-hc-webadmin-${props.hortaStage}.s3-website-${process.env.AWS_REGION}.amazonaws.com`;
 
     this.pool = new cognito.UserPool(this, 'HortaCloudUsers', {
       selfSignUpEnabled: false,
@@ -28,7 +33,7 @@ export class CognitoPool extends Construct {
       // The no-reply@verificationemail.com domain does not inspire confidence.
       userInvitation: {
         emailSubject: 'HortaCloud Invite',
-        emailBody: "Hello {username}, you have been invited to work with our HortaCloud service. Your temporary password is '{####}'.",
+        emailBody: `Hello {username}, you have been invited to work with our HortaCloud service. Your temporary password is '{####}'. Please login at ${adminBucketUrl}`,
         smsMessage: "Hello {username}, you have been invited to work with our HortaCloud service. Your temporary password is '{####}'.",
       },
       autoVerify: { email: true },
