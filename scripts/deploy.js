@@ -172,7 +172,7 @@ async function install(argv) {
   const cloudformation = new CloudFormation({ AWS_REGION });
   const apiStack = await cloudformation
     .describeStacks({
-      StackName: `${HORTA_ORG}-HortaCloudWebAppStack-${HORTA_STAGE}`
+      StackName: `${HORTA_ORG}-hc-adminWebApp-${HORTA_STAGE}`
     })
     .promise();
 

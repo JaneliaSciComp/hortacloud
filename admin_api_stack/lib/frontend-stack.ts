@@ -13,7 +13,7 @@ export class HortaCloudWebAppStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WebAppStackProps) {
     super(scope, id, props);
     // create a bucket to store the websites static contents
-    const siteBucket = new s3.Bucket(this, `${props.org}-HortaCloudWebAdminBucket-${props.stage}`, {
+    const siteBucket = new s3.Bucket(this, `${props.org}-hc-webadmin-${props.stage}`, {
       websiteIndexDocument: "index.html",
       websiteErrorDocument: "index.html",
       publicReadAccess: true,
