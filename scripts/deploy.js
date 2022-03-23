@@ -26,17 +26,22 @@ async function deploy_vpc_and_workstation() {
   });
 
   console.log(chalk.green("✅ Image builder is ready for your input."));
-  console.log(chalk.yellow("⚠️  Please follow the instructions at: "));
+  console.log(
+    chalk.yellow(
+      "⚠️  Please make a note of the JACS server ip in the output above. It will be required to complete the installation. It will look like ip-10-0-0-90.ec2.internal"
+    )
+  );
+  console.log(
+    chalk.yellow(
+      "⚠️  Please follow the instructions in our README to complete the workstation client configuration. This script will now wait until your configured AppStream image is available."
+    )
+  );
   console.log(
     chalk.white(
       "https://github.com/JaneliaSciComp/hortacloud/blob/main/README.md#client-app-installation"
     )
   );
-  console.log(
-    chalk.yellow(
-      "to complete workstation client configuration. This script will now wait until your configured AppStream image is available."
-    )
-  );
+  console.log(chalk.yellow());
 
   // check that the appStream image is available
   const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
