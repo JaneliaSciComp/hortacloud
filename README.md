@@ -4,7 +4,7 @@ JaneliaHortaCloud is a streaming 3D annotation platform for large microscopy dat
 
 It combines state-of-the-art volumetric visualization, advanced features for 3D neuronal annotation, and real-time multi-user collaboration with a set of enterprise-grade backend microservices for moving and processing large amounts of data rapidly and securely. JaneliaHortaCloud takes advantage of cloud-based Virtual Desktop Infrastructure (VDI) to perform all 3D rendering in cloud-leased GPUs which are data-adjacent, and only transfer a high-fidelity interactive video stream to each annotator’s local compute platform through a web browser.
 
-![System archtecture diagram](docs/images/system_architecture.png)
+![System architecture diagram](docs/images/system_architecture.png)
 
 ## Getting Started
 
@@ -19,7 +19,7 @@ After cloning this repo, run the following command to download dependencies.
 
 The deployment uses AWS CDK to create AWS resources on your AWS account as shown in the diagram below. All services run in a secured Virtual Private Cloud (VPC).
 
-![Cloud archtecture diagram](docs/images/cloud_architecture.png)
+![Cloud architecture diagram](docs/images/cloud_architecture.png)
 
 
 ## Setting up the environment
@@ -38,13 +38,7 @@ The deployment uses AWS CDK to create AWS resources on your AWS account as shown
 
 After the CLI and CDK are installed, and before actually deploying the application you need to set up a few environment variables.
 
-You can do that by copying the current template into '.env' file and then editing the '.env' file
-
-```bash
-cp env.template .env
-```
-
-The following values must be set in the .env file:
+The following values must be set in the `.env` file:
 ```env
 AWS_REGION=<your aws region>
 AWS_ACCOUNT=<your aws account>
@@ -61,7 +55,7 @@ JADE_API_KEY=<jade api key>
 HORTA_DATA_BUCKETS=<s3 buckets that hold MouseLight data>
 ```
 
-For the api keys or for secrets you can generate them using:
+The api keys and secrets have been randomly generated during the setup step, but you can generate new ones with the following command:
 ```
 openssl rand -hex 32
 ```
@@ -117,7 +111,7 @@ The full deployment of the application is done in 3 steps run automatically one 
 3) **Deploy the user login and administration stack.**
 
 
-### Client app installation
+### Workstation app installation
 
 For client installation start and connect to the AppStream builder instance then copy the following scripts from this repo to the AppStream instance:
 - [installcmd.ps1](vpc_stack/src/asbuilder/installcmd.ps1) - installs JDK and the workstation
@@ -136,14 +130,14 @@ After you copied or created the scripts:
 ```
   cd 'C:\Users\ImagebuilderAdmin\My Files\Temporary Files'
 ```
-* Run the installcmd script to install the workstation. &lt;serverName&gt; is the name of the backend EC2 instance, typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`.
+* Run the installcmd script to install the workstation. &lt;serverName&gt; is the name of the backend EC2 instance, typically it looks like ` ip-<ip4 with dashes instead of dots>.ec2.internal`. Instructions for locating this are provided as output from the installer script.
 
   ```
   installcmd.ps1 <serverName>
   ``` 
   This will install the JDK and the workstation. The installer will run silently and it will install the workstation under the `C:\apps` folder. If it prompts you for the install directory, select `C:\apps` as the JaneliaWorkstation location.
 
-  * To start the workstation for testing, run:
+  * *Optional* - To start the workstation for testing, run:
     ```shell
     c:\apps\runJaneliaWorkstation.ps1
     ``` 
@@ -155,7 +149,7 @@ After you copied or created the scripts:
   ```
   createappimage.ps1
   ``` 
-  Keep in mind that once you start this step the builder instance begins the snapshotting process and it will not be usable until it completes. After this is completed the AppStream image should be available and the builder will be in a stop state. To use it again you need to start it and then you can connect.
+  Keep in mind that once you start this step the builder instance begins the snap shotting process and it will not be usable until it completes. After this is completed the AppStream image should be available and the builder will be in a stop state. To use it again you need to start it and then you can connect.
 
 * You can now safely close the AppStream session and return to the AppStream console. There you will see a new image in the image registry with a status of `Pending`.
 
@@ -163,7 +157,7 @@ After you copied or created the scripts:
 
   * Select your fleet from the list of fleets and then select 'Start' from the `Action` menu.
 
-* At this point the installtion script you started on your host machine, should continue to completion.
+* At this point the installation script you started on your host machine, should continue to completion.
 
 ## Import imagery into the Workstation
 
@@ -193,7 +187,7 @@ http://janelia-hortacloudwebapp-janeliahortacloudwebadmi-yefcny29t8n6.s3-website
 
 * Purchase an SSL certificate for your domain.
   - This can be done with [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
-  - or an external certificate provider, often it can be done with the same company that provided your domain registration. Use the "Import a certificte" button to register your certificate with AWS.
+  - or an external certificate provider, often it can be done with the same company that provided your domain registration. Use the "Import a certificate" button to register your certificate with AWS.
 
 * Use the "Create distribution" button on the CloudFront console to attach your registered domain to the s3 bucket that hosts the admin portal.
   - the only things that need to be changed from the defaults are
