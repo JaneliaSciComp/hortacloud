@@ -18,7 +18,8 @@ const vpc = new HortaCloudVPC(app, "VPC", {
     account: AWS_ACCOUNT,
     region: AWS_REGION
   },
-  stackName: createResourceId(hortaConfig, "vpc")
+  stackName: createResourceId(hortaConfig, "vpc"),
+  description: "HortaCloud VPC stack"
 });
 
 const servicesStack = new HortaCloudServicesStack(app, "Services", {
@@ -27,7 +28,8 @@ const servicesStack = new HortaCloudServicesStack(app, "Services", {
     region: AWS_REGION
   },
   stackName: createResourceId(hortaConfig, "services"),
-  vpc: vpc.vpc
+  vpc: vpc.vpc,
+  description: "HortaCloud stack hosting JACS services"
 });
 
 applyTags([servicesStack, vpc]);
