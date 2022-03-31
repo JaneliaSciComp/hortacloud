@@ -8,6 +8,7 @@ import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import Debug from "./pages/Debug";
 import PasswordReset from "./pages/PasswordReset";
+import PasswordChange from "./pages/PasswordChange";
 import { RequireAuth, RequireAdmin, useAuth } from "./contexts/AuthContext";
 
 import MouseLightLogo from "./logo.svg";
@@ -87,6 +88,14 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/password-reset" element={<PasswordReset />} />
+                <Route
+                  path="/password-change"
+                  element={
+                    <RequireAuth>
+                      <PasswordChange />
+                    </RequireAuth>
+                  }
+                />
                 <Route
                   path="/debug"
                   element={

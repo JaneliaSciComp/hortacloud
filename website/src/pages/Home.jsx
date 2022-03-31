@@ -1,6 +1,7 @@
+import { Card } from "antd";
+import { Link } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
 import AppStreamButton from "../components/AppStreamButton";
-import { Card } from "antd";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
@@ -8,8 +9,10 @@ export default function Home() {
   const { user } = auth;
 
   return (
-    <Card>
-      <h2>Home</h2>
+    <Card
+      title="Home"
+      extra={<Link to="/password-change">Change Password</Link>}
+    >
       {user ? (
         <>
           <h4>Welcome {user}</h4>
