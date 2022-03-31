@@ -1,9 +1,16 @@
 import { Card, Form, Input, Button, message } from "antd";
 import { Auth } from "aws-amplify";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function PasswordChange() {
   const [resettingPassword, setResetting] = useState(false);
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    Auth.currentAuthenticatedUser().then((user) => {
+      setUsername(user.username);
+    });
+  }, []);
 
   async function handleChangeForm(values) {
     setResetting(true);
@@ -30,6 +37,14 @@ export default function PasswordChange() {
         layout="vertical"
         onFinish={handleChangeForm}
       >
+        <input
+          readOnly
+          autoComplete="username"
+          hidden
+          name="username"
+          id="username"
+          value={username}
+        />
         <h2>Change your password</h2>
         <Form.Item
           label="Current Password"
