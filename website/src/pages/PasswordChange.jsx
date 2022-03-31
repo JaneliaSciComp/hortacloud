@@ -38,7 +38,11 @@ export default function PasswordChange() {
             { required: true, message: "Please input your current password" },
           ]}
         >
-          <Input type="password" autoFocus placeholder="current password" />
+          <Input.Password
+            autoComplete="current-password"
+            autoFocus
+            placeholder="current password"
+          />
         </Form.Item>
         <Form.Item
           label="New Password"
@@ -47,7 +51,10 @@ export default function PasswordChange() {
             { required: true, message: "Please input your new password" },
           ]}
         >
-          <Input.Password placeholder="new password" />
+          <Input.Password
+            autoComplete="new-password"
+            placeholder="new password"
+          />
         </Form.Item>
         <Form.Item
           name="confirm"
@@ -57,7 +64,7 @@ export default function PasswordChange() {
           rules={[
             {
               required: true,
-              message: "Please confirm your password!",
+              message: "Please confirm your password",
             },
             ({ getFieldValue }) => ({
               validator(_, value) {
@@ -71,7 +78,10 @@ export default function PasswordChange() {
             }),
           ]}
         >
-          <Input.Password placeHolder="confirm password" />
+          <Input.Password
+            autoComplete="new-password"
+            placeholder="confirm password"
+          />
         </Form.Item>
         <Button loading={resettingPassword} type="primary" htmlType="submit">
           Reset Password
