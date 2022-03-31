@@ -32,9 +32,10 @@ export default function PasswordReset() {
           layout="vertical"
           onFinish={handleEmailForm}
         >
+          <h2>Forgot your password?</h2>
           <p>
-            <b>Forgot your password?</b> Enter your email address and we will
-            send you a reset confirmation code.
+            Enter your email address and we will send you a reset confirmation
+            code.
           </p>
           <Form.Item
             label="Email"
