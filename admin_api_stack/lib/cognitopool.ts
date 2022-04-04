@@ -32,12 +32,11 @@ export class CognitoPool extends Construct {
       // TODO: change the fromEmail address to a less opaque domain name.
       // The no-reply@verificationemail.com domain does not inspire confidence.
       userInvitation: {
-        emailSubject: "HortaCloud Invite",
-        emailBody: `Hello {username}, you have been invited to work with our HortaCloud service. <br/>
-        Your temporary password is '{####}'.<br/>
-        Please login at ${adminBucketUrl}`,
-        smsMessage:
-          "Hello {username}, you have been invited to work with our HortaCloud service. Your temporary password is '{####}'."
+        emailSubject: "Your temporary janeliaHortaCloud password",
+        emailBody: `Dear {username}, you have been invited to join Janelia's HortaCloud service. <br/>
+        Your temporary password is {####}<br/>
+        Please login at ${adminBucketUrl} to change your password and access the service.`,
+        smsMessage: ""
       },
       autoVerify: { email: true },
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY
