@@ -25,10 +25,13 @@ shift
 SEARCH_MEM_GB=$1
 shift
 BACKUP_BUCKET=
+BACKUP_FOLDER=
 if [[ "$1" == "--no-backup" ]]; then
     shift
 else if [[ "$1" == "--backup-bucket" ]]; then
     BACKUP_BUCKET=$2
+    BACKUP_FOLDER=$3
+    shift
     shift
     shift
 fi
@@ -223,7 +226,7 @@ function createAdminUser() {
 function createBackupJob() {
     if [[ -n ${BACKUP_BUCKET} ]]; then
         # create a cronjob to backup mongo regularly
-        cronentry="0 3 * * * root cd ${DEPLOY_DIR} && ./manage.sh /s3data/${BACKUP_BUCKET}"
+        cronentry="0 3 * * * root cd ${DEPLOY_DIR} && ./manage.sh /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
         echo -e "${cronentry}" | tee -a /etc/crontab
     fi
 }
