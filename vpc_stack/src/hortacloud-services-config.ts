@@ -14,6 +14,8 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig {
     jadeAPIKey: string;
     searchMemGB: string;
     hortaDataBuckets?: string;
+    hortaBackupBucket?: string;
+    hortaRestoreFolder?: string;
 }
 
 export function getHortaServicesConfig() : HortaCloudServicesConfig {
@@ -31,5 +33,7 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         jadeAPIKey: process.env.JADE_API_KEY || 'changeJadeAPIKeyInenv',
         searchMemGB: process.env.SEARCH_MEM_SIZE || '1',
         hortaDataBuckets: process.env.HORTA_DATA_BUCKETS || 'janelia-mouselight-imagery',
+        hortaBackupBucket: process.env.HORTA_BACKUP_BUCKET,
+        hortaRestoreFolder: process.env.HORTA_RESTORE_FOLDER,
     };
 }

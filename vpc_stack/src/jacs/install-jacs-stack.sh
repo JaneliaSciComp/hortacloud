@@ -24,6 +24,22 @@ JADE_API_KEY=$1
 shift
 SEARCH_MEM_GB=$1
 shift
+BACKUP_BUCKET=
+if [[ "$1" == "--no-backup" ]]; then
+    shift
+else if [[ "$1" == "--backup-bucket" ]]; then
+    BACKUP_BUCKET=$2
+    shift
+    shift
+fi
+RESTORE_DB_FOLDER=
+if [[ "$1" == "--no-restore" ]]; then
+    shift
+else if [[ "$1" == "--restore-folder" ]]; then
+    RESTORE_DB_FOLDER=$2
+    shift
+    shift
+fi
 JADE_DATA_BUCKETS=("$@")
 JADE_DATA_BUCKETS_NAMES_WITH_SPACES=${JADE_DATA_BUCKETS[@]}     # space delimited string from array
 JADE_DATA_BUCKETS_NAMES_WITH_COMMA=${JADE_DATA_BUCKETS_NAMES_WITH_SPACES// /,}   # comma delimited string
@@ -204,6 +220,21 @@ function createAdminUser() {
     ./manage.sh createUserFromJson ${DEPLOY_DIR}/local/admin_user.json
 }
 
+function createBackupJob() {
+    if [[ -n ${BACKUP_BUCKET} ]]; then
+        # create a cronjob to backup mongo regularly
+        cronentry="0 3 * * * root cd ${DEPLOY_DIR} && ./manage.sh /s3data/${BACKUP_BUCKET}"
+        echo -e "${cronentry}" | tee -a /etc/crontab
+    fi
+}
+
+function restoreDatabase() {
+    if [[ -n ${RESTORE_DB_FOLDER} ]]; then
+        # Restore database
+        echo "TODO: This is not implemented yet"
+    fi
+}
+
 prepareFilesystem
 
 cd $DEPLOY_DIR
@@ -251,5 +282,9 @@ sleep 60
 
 # create admin user
 createAdminUser
+# create the backup job
+createBackupJob
+# restore database
+restoreDatabase
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"

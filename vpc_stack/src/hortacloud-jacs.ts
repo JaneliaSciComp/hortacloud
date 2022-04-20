@@ -136,8 +136,26 @@ export class HortaCloudJACS extends Construct {
       externalBucket.grantReadWrite(this.server.role);
     })
 
-    const dataBucketNames = [ ...externalDataBuckets, defaultDataBucketName];
+    if (hortaConfig.hortaBackupBucket) {
+      const backupBucket = s3.Bucket.fromBucketName(this, hortaConfig.hortaBackupBucket, hortaConfig.hortaBackupBucket);
+      backupBucket.grantReadWrite(this.server.role);
+    }
 
+    const backupBucketName = hortaConfig.hortaBackupBucket ? hortaConfig.hortaBackupBucket : '';
+
+    const dataBucketNames = backupBucketName
+      ? [ ...externalDataBuckets, defaultDataBucketName]
+      : [ ...externalDataBuckets, defaultDataBucketName, backupBucketName]
+      ;
+
+    const backupArgs = backupBucketName
+      ? [ '--backup-bucket', backupBucketName]
+      : [ '--no-backup'];
+
+    const dataRestoreFolder = hortaConfig.hortaRestoreFolder ? hortaConfig.hortaRestoreFolder : ''; 
+    const restoreArgs = dataRestoreFolder
+      ? [ '--restore-folder', dataRestoreFolder ]
+      : [ '--no-restore' ]
     createAssets(this, this.server, [
       {
         name: 'InitInstanceAsset',
@@ -156,6 +174,8 @@ export class HortaCloudJACS extends Construct {
           hortaConfig.jacsAPIKey,
           hortaConfig.jadeAPIKey,
           hortaConfig.searchMemGB,
+          ...backupArgs,
+          ...restoreArgs,
           ...dataBucketNames
         ]
       },
