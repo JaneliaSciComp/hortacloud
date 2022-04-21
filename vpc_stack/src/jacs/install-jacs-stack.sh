@@ -28,7 +28,7 @@ BACKUP_BUCKET=
 BACKUP_FOLDER=
 if [[ "$1" == "--no-backup" ]]; then
     shift
-else if [[ "$1" == "--backup-bucket" ]]; then
+elif [[ "$1" == "--backup-bucket" ]]; then
     BACKUP_BUCKET=$2
     BACKUP_FOLDER=$3
     shift
@@ -38,7 +38,7 @@ fi
 RESTORE_DB_FOLDER=
 if [[ "$1" == "--no-restore" ]]; then
     shift
-else if [[ "$1" == "--restore-folder" ]]; then
+elif [[ "$1" == "--restore-folder" ]]; then
     RESTORE_DB_FOLDER=$2
     shift
     shift
@@ -226,6 +226,7 @@ function createAdminUser() {
 function createBackupJob() {
     if [[ -n ${BACKUP_BUCKET} ]]; then
         # create a cronjob to backup mongo regularly
+        echo "Create backup job to /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
         cronentry="0 3 * * * root cd ${DEPLOY_DIR} && ./manage.sh /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
         echo -e "${cronentry}" | tee -a /etc/crontab
     fi
