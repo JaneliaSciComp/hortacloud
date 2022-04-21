@@ -144,8 +144,8 @@ export class HortaCloudJACS extends Construct {
     const backupBucketName = hortaConfig.hortaBackupBucket ? hortaConfig.hortaBackupBucket : '';
 
     const dataBucketNames = backupBucketName
-      ? [ ...externalDataBuckets, defaultDataBucketName]
-      : [ ...externalDataBuckets, defaultDataBucketName, backupBucketName]
+      ? [ ...new Set([ ...externalDataBuckets, defaultDataBucketName]) ]
+      : [ ...new Set([ ...externalDataBuckets, defaultDataBucketName, backupBucketName]) ]
       ;
 
     const dataBackupFolder = hortaConfig.hortaBackupFolder ? hortaConfig.hortaBackupFolder : '/hortacloud/backups';
