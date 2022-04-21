@@ -125,9 +125,13 @@ export class HortaCloudJACS extends Construct {
     });
     this.defaultDataBucket.grantReadWrite(this.server.role);
 
-    const externalDataBuckets = hortaConfig.hortaDataBuckets 
-      ? hortaConfig.hortaDataBuckets.split(',').map(s => s.trim())
+    const backupBucketName = hortaConfig.hortaBackupBucket ? hortaConfig.hortaBackupBucket : '';
+
+    const externalDataBucketsCandidates = hortaConfig.hortaDataBuckets
+      ? [ ...hortaConfig.hortaDataBuckets.split(',').map(s => s.trim()), backupBucketName ]
       : [];
+
+    const externalDataBuckets = [ ...new Set(externalDataBucketsCandidates.filter(s => s)) ];
     console.log('External buckets:', externalDataBuckets);
 
     externalDataBuckets.forEach(bn => {
@@ -136,17 +140,7 @@ export class HortaCloudJACS extends Construct {
       externalBucket.grantReadWrite(this.server.role);
     })
 
-    if (hortaConfig.hortaBackupBucket) {
-      const backupBucket = s3.Bucket.fromBucketName(this, hortaConfig.hortaBackupBucket, hortaConfig.hortaBackupBucket);
-      backupBucket.grantReadWrite(this.server.role);
-    }
-
-    const backupBucketName = hortaConfig.hortaBackupBucket ? hortaConfig.hortaBackupBucket : '';
-
-    const dataBucketNames = backupBucketName
-      ? [ ...new Set([ ...externalDataBuckets, defaultDataBucketName]) ]
-      : [ ...new Set([ ...externalDataBuckets, defaultDataBucketName, backupBucketName]) ]
-      ;
+    const dataBucketNames = [ ...externalDataBuckets, defaultDataBucketName ];
 
     const dataBackupFolder = hortaConfig.hortaBackupFolder ? hortaConfig.hortaBackupFolder : '/hortacloud/backups';
     const backupArgs = backupBucketName
