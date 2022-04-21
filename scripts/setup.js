@@ -3,21 +3,29 @@ const chalk = require("chalk");
 const fs = require("fs");
 const crypto = require("crypto");
 
-const exec = command => {
-  execSync(command, {
-    stdio: [0, 1, 2]
-  });
+const exec = (command, options = {}) => {
+  const combinedOptions = { stdio: [0, 1, 2], ...options };
+  execSync(command, combinedOptions);
 };
 
-/*
-console.log(chalk.cyan("🛠  Installing dependencies"));
-exec("npm install");
-exec("npm install --prefix ./vpc_stack");
-exec("npm install --prefix ./workstation_stack");
-exec("npm install --prefix ./admin_api_stack");
-exec("npm install --prefix ./admin_api_stack/user_list_resources");
-exec("npm install --prefix ./website");
-*/
+const argv = require("yargs/yargs")(process.argv.slice(2))
+  .usage("$0 [options]")
+  .boolean(["i"])
+  .describe(
+    "i",
+    "Install node modules."
+  )
+  .alias("i", "with-install").argv;
+
+if (argv.withInstall) {
+  console.log(chalk.cyan("🛠  Installing dependencies"));
+  exec("npm install");
+  exec("npm install --prefix ./vpc_stack");
+  exec("npm install --prefix ./workstation_stack");
+  exec("npm install --prefix ./admin_api_stack");
+  exec("npm install --prefix ./admin_api_stack/user_list_resources");
+  exec("npm install --prefix ./website");
+}
 
 // pre-populate the keys with openssl or javascript equivalent function
 function generateSecrets() {
