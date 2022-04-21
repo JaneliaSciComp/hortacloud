@@ -227,7 +227,7 @@ function createBackupJob() {
     if [[ -n ${BACKUP_BUCKET} ]]; then
         # create a cronjob to backup mongo regularly
         echo "Create backup job to /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
-        cronentry="0 3 * * * root cd ${DEPLOY_DIR} && ./manage.sh /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
+        cronentry="0 3 * * * root cd ${DEPLOY_DIR} && ./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
         echo -e "${cronentry}" | tee -a /etc/crontab
     fi
 }
