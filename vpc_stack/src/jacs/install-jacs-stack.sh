@@ -191,7 +191,6 @@ function prepareJadeVolumesYML() {
 
     mkdir -p ${DEPLOY_DIR}/local
     printf '%s\n' "${jade_vols_yml[@]}" > ${DEPLOY_DIR}/local/docker-jade-volumes.yml
-
 }
 
 function createAdminUser() {
@@ -227,8 +226,25 @@ function createBackupJob() {
     if [[ -n ${BACKUP_BUCKET} ]]; then
         # create a cronjob to backup mongo regularly
         echo "Create backup job to /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
-        cronentry="0 3 * * * root cd ${DEPLOY_DIR} && ./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
-        echo -e "${cronentry}" | tee -a /etc/crontab
+
+        local mongo_backup_script=(
+            "#!/bin/sh"
+            "cd ${DEPLOY_DIR}"
+            "./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER} > ${DEPLOY_DIR}/local/latest-mongo-backup.log 2>&1"
+        )
+        # create the script
+        mkdir -p ${DEPLOY_DIR}/local
+        printf '%s\n' "${mongo_backup_script[@]}" > ${DEPLOY_DIR}/local/mongo-backup.sh
+        # allow exec
+        chmod 755 ${DEPLOY_DIR}/local/mongo-backup.sh
+        # cron job entry - run this at 3AM
+        local cron_job_entry=(
+            "SHELL=/bin/bash"
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            "0 3 * * * root ${DEPLOY_DIR}/local/mongo-backup.sh"
+        )
+        # create the cronjob
+        printf '%s\n' "${cron_job_entry[@]}" > /etc/cron.d/mongo-backup
     fi
 }
 
