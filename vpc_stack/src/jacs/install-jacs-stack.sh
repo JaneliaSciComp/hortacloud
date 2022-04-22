@@ -35,11 +35,14 @@ elif [[ "$1" == "--backup-bucket" ]]; then
     shift
     shift
 fi
-RESTORE_DB_FOLDER=
+RESTORE_BUCKET=
+RESTORE_FOLDER=
 if [[ "$1" == "--no-restore" ]]; then
     shift
 elif [[ "$1" == "--restore-folder" ]]; then
-    RESTORE_DB_FOLDER=$2
+    RESTORE_BUCKET=$2
+    RESTORE_FOLDER=$3
+    shift
     shift
     shift
 fi
@@ -249,7 +252,8 @@ function createBackupJob() {
 }
 
 function restoreDatabase() {
-    ./manage.sh mongo-restore "/s3data/${BACKUP_BUCKET}${RESTORE_DB_FOLDER}/jacs"
+    echo "Restore database from /s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
+    ./manage.sh mongo-restore "/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
 }
 
 prepareFilesystem
@@ -300,7 +304,9 @@ sleep 60
 # create the backup job
 createBackupJob
 
-if [[ -n ${RESTORE_DB_FOLDER} && -e "/s3data/${BACKUP_BUCKET}${RESTORE_DB_FOLDER}/jacs" ]]; then
+restore_data_folder="/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
+echo "Check restore bucket -> ${RESTORE_BUCKET} and restore folder -> ${restore_data_folder}"
+if [[ -n ${RESTORE_BUCKET} && -e ${restore_data_folder} ]]; then
     # if the restore folder was specified and if it exists
     # restore database 
     # because some groups have already been created there will some clash but that is acceptable

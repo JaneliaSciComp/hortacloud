@@ -126,9 +126,10 @@ export class HortaCloudJACS extends Construct {
     this.defaultDataBucket.grantReadWrite(this.server.role);
 
     const backupBucketName = hortaConfig.hortaBackupBucket ? hortaConfig.hortaBackupBucket : '';
+    const restoreBucketName = hortaConfig.hortaRestoreBucket ? hortaConfig.hortaRestoreBucket : '';
 
     const externalDataBucketsCandidates = hortaConfig.hortaDataBuckets
-      ? [ ...hortaConfig.hortaDataBuckets.split(',').map(s => s.trim()), backupBucketName ]
+      ? [ ...hortaConfig.hortaDataBuckets.split(',').map(s => s.trim()), backupBucketName, restoreBucketName ]
       : [];
 
     const externalDataBuckets = [ ...new Set(externalDataBucketsCandidates.filter(s => s)) ];
@@ -147,9 +148,11 @@ export class HortaCloudJACS extends Construct {
       ? [ '--backup-bucket', backupBucketName, dataBackupFolder]
       : [ '--no-backup'];
 
-    const dataRestoreFolder = hortaConfig.hortaRestoreFolder ? hortaConfig.hortaRestoreFolder : ''; 
+    const dataRestoreFolder = hortaConfig.hortaRestoreBucket && hortaConfig.hortaRestoreFolder
+      ? hortaConfig.hortaRestoreFolder
+      : '';
     const restoreArgs = dataRestoreFolder
-      ? [ '--restore-folder', dataRestoreFolder ]
+      ? [ '--restore-folder', restoreBucketName, dataRestoreFolder ]
       : [ '--no-restore' ]
     createAssets(this, this.server, [
       {

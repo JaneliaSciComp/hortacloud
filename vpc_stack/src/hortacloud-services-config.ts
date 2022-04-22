@@ -16,6 +16,7 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig {
     hortaDataBuckets?: string;
     hortaBackupBucket?: string;
     hortaBackupFolder?: string;
+    hortaRestoreBucket?: string;
     hortaRestoreFolder?: string;
 }
 
@@ -36,6 +37,7 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         hortaDataBuckets: process.env.HORTA_DATA_BUCKETS || 'janelia-mouselight-imagery',
         hortaBackupBucket: process.env.HORTA_BACKUP_BUCKET,
         hortaBackupFolder: process.env.HORTA_BACKUP_FOLDER,
+        hortaRestoreBucket: process.env.HORTA_RESTORE_BUCKET,
         hortaRestoreFolder: process.env.HORTA_RESTORE_FOLDER,
     };
 }
