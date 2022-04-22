@@ -28,7 +28,7 @@ BACKUP_BUCKET=
 BACKUP_FOLDER=
 if [[ "$1" == "--no-backup" ]]; then
     shift
-elif [[ "$1" == "--backup-bucket" ]]; then
+elif [[ "$1" == "--backup" ]]; then
     BACKUP_BUCKET=$2
     BACKUP_FOLDER=$3
     shift
@@ -39,7 +39,7 @@ RESTORE_BUCKET=
 RESTORE_FOLDER=
 if [[ "$1" == "--no-restore" ]]; then
     shift
-elif [[ "$1" == "--restore-folder" ]]; then
+elif [[ "$1" == "--restore" ]]; then
     RESTORE_BUCKET=$2
     RESTORE_FOLDER=$3
     shift

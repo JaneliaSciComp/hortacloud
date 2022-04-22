@@ -145,14 +145,14 @@ export class HortaCloudJACS extends Construct {
 
     const dataBackupFolder = hortaConfig.hortaBackupFolder ? hortaConfig.hortaBackupFolder : '/hortacloud/backups';
     const backupArgs = backupBucketName
-      ? [ '--backup-bucket', backupBucketName, dataBackupFolder]
+      ? [ '--backup', backupBucketName, dataBackupFolder]
       : [ '--no-backup'];
 
     const dataRestoreFolder = hortaConfig.hortaRestoreBucket && hortaConfig.hortaRestoreFolder
       ? hortaConfig.hortaRestoreFolder
       : '';
     const restoreArgs = dataRestoreFolder
-      ? [ '--restore-folder', restoreBucketName, dataRestoreFolder ]
+      ? [ '--restore', restoreBucketName, dataRestoreFolder ]
       : [ '--no-restore' ]
     createAssets(this, this.server, [
       {
