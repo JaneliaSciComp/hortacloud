@@ -249,10 +249,7 @@ function createBackupJob() {
 }
 
 function restoreDatabase() {
-    if [[ -n ${RESTORE_DB_FOLDER} ]]; then
-        # Restore database
-        echo "TODO: This is not implemented yet"
-    fi
+    ./manage.sh mongo-restore "/s3data/${BACKUP_BUCKET}${RESTORE_DB_FOLDER}/jacs"
 }
 
 prepareFilesystem
@@ -300,11 +297,17 @@ sleep 60
 ./manage.sh compose ps
 ./manage.sh compose logs
 
-# create admin user
-createAdminUser
 # create the backup job
 createBackupJob
-# restore database
-restoreDatabase
+
+if [[ -n ${RESTORE_DB_FOLDER} && -e "/s3data/${BACKUP_BUCKET}${RESTORE_DB_FOLDER}/jacs" ]]; then
+    # if the restore folder was specified and if it exists
+    # restore database 
+    # because some groups have already been created there will some clash but that is acceptable
+    restoreDatabase
+else
+    # create admin user only if we are not restoring a previous database
+    createAdminUser
+fi
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"
