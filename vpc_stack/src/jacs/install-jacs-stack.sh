@@ -283,6 +283,7 @@ prepareJadeConfig
 # pull db images
 ./manage.sh compose pull
 
+echo "Start services for database setup"
 ./manage.sh compose up -d
 ./manage.sh compose ps
 
@@ -292,21 +293,20 @@ echo ${init_res}
 ./manage.sh compose logs
 
 # bounce it again after the databases have been initialized
+echo "Bounce services"
 ./manage.sh compose down
+sleep 10
 # bring up all services
 echo "Start up all services"
 ./manage.sh compose up -d
-# sleep for 10s to give time to the service to start
-sleep 60
+# sleep for 30s to give time to the service to start
+sleep 30
 ./manage.sh compose ps
 ./manage.sh compose logs
 
-# create the backup job
-createBackupJob
-
 restore_data_folder="/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
 echo "Check restore bucket -> ${RESTORE_BUCKET} and restore folder -> ${restore_data_folder}"
-if [[ -n ${RESTORE_BUCKET} && -e ${restore_data_folder} ]]; then
+if [[ -n "${RESTORE_BUCKET}" && -e "${restore_data_folder}" ]]; then
     # if the restore folder was specified and if it exists
     # restore database 
     # because some groups have already been created there will some clash but that is acceptable
@@ -315,5 +315,8 @@ else
     # create admin user only if we are not restoring a previous database
     createAdminUser
 fi
+
+# create the backup job
+createBackupJob
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"
