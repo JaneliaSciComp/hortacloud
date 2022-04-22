@@ -281,20 +281,19 @@ prepareJacsConfig jacs-sync
 prepareJadeConfig
 
 # pull db images
-./manage.sh compose pull
+time ./manage.sh compose pull
 
 echo "Start services for database setup"
-./manage.sh compose up -d
+time ./manage.sh compose up -d
 ./manage.sh compose ps
 
-init_res=`./manage.sh init-databases`
-echo ${init_res}
+time ./manage.sh init-databases
 
-./manage.sh compose logs
+sleep 90
 
 # bounce it again after the databases have been initialized
 echo "Bounce services"
-./manage.sh compose down
+./manage.sh compose down || true
 sleep 10
 # bring up all services
 echo "Start up all services"
