@@ -225,8 +225,21 @@ function createAdminUser() {
     ./manage.sh createUserFromJson ${DEPLOY_DIR}/local/admin_user.json
 }
 
+function backupSystemConfig() {
+    local installDate=$(date +%Y%m%d%H%M%S)
+    local installConfigBackupDir="/s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}/installs/${installDate}"
+    echo "Backup system configuration to ${installConfigBackupDir}"
+    mkdir -p ${installConfigBackupDir}
+    cp -a ${CONFIG_DIR} ${installConfigBackupDir}
+    cp "${DEPLOY_DIR}/.env.config" "${installConfigBackupDir}/env.config"
+    chmod -R g-rwx,o-rwx ${installConfigBackupDir}
+}
+
 function createBackupJob() {
     if [[ -n ${BACKUP_BUCKET} ]]; then
+        # backup current system config
+        backupSystemConfig
+
         # create a cronjob to backup mongo regularly
         echo "Create backup job to /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
 
