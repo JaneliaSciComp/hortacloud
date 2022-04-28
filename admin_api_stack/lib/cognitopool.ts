@@ -35,8 +35,7 @@ export class CognitoPool extends Construct {
         emailSubject: "Your temporary janeliaHortaCloud password",
         emailBody: `Dear {username}, you have been invited to join Janelia's HortaCloud service. <br/>
         Your temporary password is {####}<br/>
-        Please login at ${adminBucketUrl} to change your password and access the service.`,
-        smsMessage: ""
+        Please login at ${adminBucketUrl} to change your password and access the service.`
       },
       autoVerify: { email: true },
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY
