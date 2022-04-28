@@ -165,6 +165,13 @@ If you already have the data on the S3 buckets in the Workstation, select **File
 
 Open the Data Explorer (**Window** → **Core** → **Data Explorer**) and navigate to Home, then "3D RawTile Microscope Samples", and your sample name. Right-click the sample and choose "Open in Horta". This will open the Horta Panel and then from the Horta Panel you have options to create a workspace or to open the 2D or the 3D volume viewer.
 
+## System backup
+
+The system can be configured to run nightly backups. All it is needed is to specify a writeable bucket (HORTA_BACKUP_BUCKET) and a prefix (HORTA_BACKUP_FOLDER) that will hold the backups. Currently we only backup the Mongo database that contains samples info and tracing data and each backup will be stored in a timestamp ('yyyyMMddHHmmss') folder under the base backup prefix.
+
+## System restore
+If system backups are available the sample and tracing data can be restored from a specified backup bucket (HORTA_RESTORE_BUCKET) and prefix (HORTA_RESTORE_FOLDER) which typically was created by the nightly backup job.
+
 ## Troubleshooting
 
 ### Troubleshooting client app installation
