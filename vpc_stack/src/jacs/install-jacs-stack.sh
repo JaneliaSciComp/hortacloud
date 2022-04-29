@@ -266,6 +266,8 @@ function createBackupJob() {
 
 function restoreDatabase() {
     echo "Restore database from /s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
+    # drop the treeNode so that the workspace and treeNode entries get restored with the previous IDs
+    ./manage.sh mongo -notty --eval "db.treeNode.drop()"
     ./manage.sh mongo-restore "/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
 }
 
