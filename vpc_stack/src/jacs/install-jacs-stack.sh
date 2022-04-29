@@ -225,6 +225,44 @@ function createAdminUser() {
     ./manage.sh createUserFromJson ${DEPLOY_DIR}/local/admin_user.json
 }
 
+function createScheduledJobs() {
+    local scheduled_jobs_json=(
+        "{"
+        "    \"_id\" : { \"\$numberLong\": \"2736342547164094475\" }, "
+        "    \"name\": \"FullSolrReindex\", "
+        "    \"serviceName\": \"solrIndexBuilder\", "
+        "    \"ownerKey\" : \"user:root\", "
+        "    \"serviceArgs\" : [ "
+        "       \"-clearIndex\" "
+        "    ], "
+        "    \"cronScheduleDescriptor\": \"40 1 * * *\", "
+        "    \"entityName\" : \"JacsScheduledServiceData\" "
+        "}"
+        "{"
+        "    \"_id\": { \"\$numberLong\": \"2736342547164102667\" }, "
+        "    \"name\" : \"DBMaintanance\", "
+        "    \"serviceName\" : \"dbMaintenance\", "
+        "    \"ownerKey\" : \"user:root\", "
+        "    \"serviceArgs\" : [ "
+        "       \"-refreshTmSampleSync\", "
+        "       \"-refreshPermissions\", "
+        "       \"-refreshIndexes\" "
+        "    ], "
+        "    \"cronScheduleDescriptor\" : \"0 23 * * *\", "
+        "    \"entityName\" : \"JacsScheduledServiceData\" "
+        "}"
+    )
+
+    mkdir -p ${DEPLOY_DIR}/local
+    printf '%s\n' "${scheduled_jobs_json[@]}" > ${DEPLOY_DIR}/local/scheduled_jobs.json
+
+    echo "Create scheduled jobs from $(cat ${DEPLOY_DIR}/local/scheduled_jobs.json)"
+    ./manage.sh mongo \
+    -tool mongoimport \
+    -run-opts "-v ${DEPLOY_DIR}/local:/local" \
+    --collection jacsScheduledService /local/scheduled_jobs.json
+}
+
 function backupSystemConfig() {
     local installDate=$(date +%Y%m%d%H%M%S)
     local installConfigBackupDir="/s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}/installs/${installDate}"
@@ -318,11 +356,13 @@ sleep 30
 ./manage.sh compose ps
 ./manage.sh compose logs
 
+# create scheduled jobs
+createScheduledJobs
+
 restore_data_folder="/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
 echo "Check restore bucket -> ${RESTORE_BUCKET} and restore folder -> ${restore_data_folder}"
 if [[ -n "${RESTORE_BUCKET}" && -e "${restore_data_folder}" ]]; then
-    # if the restore folder was specified and if it exists
-    # restore database 
+    # if the restore folder was specified and if it exists restore database 
     # because some groups have already been created there will some clash but that is acceptable
     restoreDatabase
 else
