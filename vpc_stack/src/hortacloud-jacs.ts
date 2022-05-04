@@ -8,7 +8,6 @@ import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { getHortaServicesConfig, HortaCloudServicesConfig } from './hortacloud-services-config';
 
 import { createResourceId } from '../../common/hortacloud-common';
-import { CfnDisk } from 'aws-cdk-lib/aws-lightsail';
 import { IVpc } from 'aws-cdk-lib/aws-ec2';
 
 interface HortaCloudMachine {

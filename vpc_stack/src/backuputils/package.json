@@ -1,0 +1,7 @@
+{
+    "name": "cognito-backup-tools",
+    "version": "1.0.0",
+    "devDependencies": {
+        "typescript": "~3.9.7"
+    }
+}
