@@ -27,18 +27,30 @@ export class HortaCloudCognitoBackup extends Construct {
             entry: path.join(__dirname, 'backuputils', 'cognito_backup_tools.ts'),
             handler: 'cognitoExport',
             functionName: createResourceId(hortaConfig, 'cognito-backup'),
-            projectRoot: __dirname
+            environment: {
+                COGNITO_POOL_ID: userPoolId
+            },
+            projectRoot: path.join(__dirname, 'backuputils'),
+            depsLockFilePath: path.join(__dirname, 'backuputils', 'package-lock.json'),
         });
 
-        this.backupHandler.addToRolePolicy(
+        this.addPolicies(this.backupHandler, [
             new PolicyStatement({
                 actions: [ 'cognito-idp:ListUsers' ],
                 effect: Effect.ALLOW,
                 resources: [
                     `arn:aws:cognito-idp:${AWS_REGION}:${AWS_ACCOUNT}:userpool/${userPoolId}`
                 ]
+            }),
+            new PolicyStatement({
+                actions: [ 's3:GetObject', 's3:PutObject' ],
+                effect: Effect.ALLOW,
+                resources: [
+                    'arn:aws:s3:::janelia-mouselight-demo/',
+                    'arn:aws:s3:::janelia-mouselight-demo/*'
+                ]
             })
-        );
+        ]);
 
         this.restoreHandler = new Function(this, 'RestoreHandler', {
             runtime: Runtime.NODEJS_14_X,
@@ -49,4 +61,7 @@ export class HortaCloudCognitoBackup extends Construct {
 
     }
 
+    addPolicies(f: Function, policies: PolicyStatement[]) : void {
+        policies.forEach(p => f.addToRolePolicy(p));
+    }
 }

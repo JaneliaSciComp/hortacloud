@@ -1,9 +1,11 @@
 !jest.config.js
 !scripts/*.js
-**/*.js
+build/**/*.js
 *.d.ts
 node_modules
 .vscode
+*.bak
+*~
 # CDK asset staging directory
 .cdk.staging
 cdk.out

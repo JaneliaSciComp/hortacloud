@@ -21,6 +21,7 @@ if (argv.withInstall) {
   console.log(chalk.cyan("🛠  Installing dependencies"));
   exec("npm install");
   exec("npm install --prefix ./vpc_stack");
+  exec("npm install --prefix ./vpc_stack/src/backuputils");
   exec("npm install --prefix ./workstation_stack");
   exec("npm install --prefix ./admin_api_stack");
   exec("npm install --prefix ./admin_api_stack/user_list_resources");
