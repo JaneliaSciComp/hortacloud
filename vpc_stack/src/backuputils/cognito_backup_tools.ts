@@ -5,6 +5,12 @@ type ListUsersRequestTypes = CognitoIdentityServiceProvider.Types.ListUsersReque
 type UserType = CognitoIdentityServiceProvider.UserType;
 type S3Body = S3.Types.Body;
 
+interface BackupParameters<T> {
+    backupBucket: string;
+    backupFile: string;
+    backupData: AsyncIterable<T>;
+}
+
 export const cognitoExport = async (event: any) : Promise<any> => {
 
     const { backupBucket, backupPrefix } = event;
@@ -16,69 +22,12 @@ export const cognitoExport = async (event: any) : Promise<any> => {
     const cognito = new CognitoIdentityServiceProvider();
     const s3 = new S3();
 
-    // const writeStream = new stream.PassThrough();
-    const fname = 'users.txt';
-    const backupLocation = backupPrefix ? `${backupPrefix}/${fname}` : fname;
-
-    // const JSONStream = require('JSONStream');
-    const uploadStream = new PassThrough();
-
-    const upload = s3.upload({
-        Bucket: backupBucket,
-        Key: backupLocation,
-        Body: uploadStream,
-        ContentType: 'plain/text'
+    await exportData(s3, {
+        backupBucket: backupBucket,
+        backupFile: createLocation(backupPrefix, 'users.json'),
+        backupData: fetchAllUsers(cognito, process.env.COGNITO_POOL_ID),
     });
 
-    const dataStream = Readable.from(new CognitoUsersJSONArrayStream(cognito, process.env.COGNITO_POOL_ID));
-    dataStream.pipe(uploadStream);
-    dataStream.on('end', () => {
-        console.log('Finished writing the data stream');
-    });
-
-    // const listUserParams : ListUsersRequestTypes = {
-    //     UserPoolId: process.env.COGNITO_POOL_ID
-    // }
-    // try {
-    //     dataStream.push('[');
-
-    //     const paginatedCalls = async (page:number) => {
-    //         const { Users = [], PaginationToken } = await cognito.listUsers(listUserParams).promise();
-
-    //         Users.forEach((u, i) => {
-
-    //             if (page == 0 && i == 0) {
-    //                 dataStream.push(asString(u));
-    //             } else {
-    //                 dataStream.push(',');
-    //                 dataStream.push(asString(u));
-    //             }
-    //             // const ustring = asString(u);
-    //             // content = `${content}\n${ustring}`;
-    //             // console.log('Current user', u);
-    //         });
-    //         if (PaginationToken) {
-    //             // continue if not all user
-    //             listUserParams.PaginationToken = PaginationToken;
-    //             await paginatedCalls(page + 1);
-    //         } else {
-    //             dataStream.push(null);
-    //         };
-    //     };
-
-    //     await paginatedCalls(0);
-
-    //     dataStream.push(']');
-    //     console.log('Wait for upload to finish');
-    //     await upload.promise();
-
-    // } catch (error) {
-    //     throw error;
-    // } finally {
-    //     // close the stream
-    //     dataStream.push(null);
-    // }    
-    await upload.promise();
     return {
         statusCode: 200
     };
@@ -94,80 +43,81 @@ export const cognitoImport = async (event:any) : Promise<any> => {
     };
 }
 
-const asString = (u:UserType) : string => {
-    return JSON.stringify(u);
-};
+const createLocation = (prefix: string, name: string) : string => {
+    const location = prefix ? `${prefix}/${name}` : name;
+    return location.startsWith('/') ? location.substring(0) : location;
+}
 
-class CognitoUsersJSONArrayStream {
-    readonly cognito: CognitoIdentityServiceProvider;
-    readonly userPoolId: string;
-    // cachedUsers: UserType[] | undefined;
+async function exportData<T>(s3:S3, backupParams: BackupParameters<T>) {
+    const uploadStream = new PassThrough();
 
-    constructor(cognito: CognitoIdentityServiceProvider, userPoolId: string) {
-        this.cognito = cognito;
-        this.userPoolId = userPoolId;
+    const upload = s3.upload({
+        Bucket: backupParams.backupBucket,
+        Key: backupParams.backupFile,
+        Body: uploadStream,
+        ContentType: 'application/json'
+    });
+
+    const dataStream = Readable.from(jsonArrayStream(backupParams.backupData));
+
+    dataStream.pipe(uploadStream);
+    dataStream.on('end', () => {
+        console.log('Finished writing the data stream');
+    });
+
+    try {
+        await upload.promise();
+    } catch (error) {
+        throw error;
     }
-    
-    [Symbol.asyncIterator]() {
-        let cachedUsers: UserType[] = [];
-        let start = true;
-        let end = false;
-        let page = 0;
-        let userIndex = 0;
-        const cognito = this.cognito;
-        const listUserParams:ListUsersRequestTypes = {
-            UserPoolId: this.userPoolId,
+}
+
+async function* jsonArrayStream<T>(iterableData: AsyncIterable<T>) {
+    yield '[';
+    let i = 0;
+    for await (const d of iterableData) {
+        const s = asString(d);
+        if (i === 0) {
+            yield s;
+        } else {
+            yield `,\n${s}`;
         }
-        const retrieveNextUsers = async () => {
+        i++;
+    }
+    yield ']';
+    console.log(`Fetched ${i} cognito users`);
+}
+
+async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolId: string) {
+    let cachedUsers: UserType[] | undefined = undefined;
+    let userIndex: number = 0;
+    const listUserParams:ListUsersRequestTypes = {
+        UserPoolId: userPoolId,
+    }
+    let count = 0;
+    while (true) {
+        if (cachedUsers === undefined || (userIndex >= cachedUsers.length && listUserParams.PaginationToken)) {
             const { Users = [], PaginationToken } = await cognito.listUsers(listUserParams).promise();
             listUserParams.PaginationToken = PaginationToken;
             cachedUsers = Users;
             userIndex = 0;
-            page++;
         }
-        return {
-            async next() {
-                if (start) {
-                    start = false;
-                    // retrieve the first batch
-                    await retrieveNextUsers();
-                    return {
-                        value: '[',
-                        done: false
-                    }
-                }
-                if (end) {
-                    return {
-                        done: true
-                    };
-                }
-                if (userIndex >= cachedUsers.length && listUserParams.PaginationToken) {
-                    // if it reached the end of the cachedUsers but AWS told us that we should go back for more
-                    await retrieveNextUsers();
-                }
-                if (userIndex < cachedUsers.length) {
-                    const currentUserIndex = userIndex;
-                    const nextUser = JSON.stringify(cachedUsers[currentUserIndex]);
-                    const value = currentUserIndex > 0 || page > 1
-                        ? `,\n${nextUser}`
-                        : nextUser;
-                    userIndex++;
-                    return {
-                        value: value,
-                        done: false
-                    }
-                } else {
-                    // reached the end, i.e. userIndex is past the end of the buffer and there is no 
-                    end = true;
-                    return {
-                        value: ']',
-                        done: false
-                    }
-                }
-            }
+        if (userIndex < cachedUsers.length) {
+            const nextUser = cachedUsers[userIndex++];
+            console.log('User:', nextUser);
+            count++;
+            yield nextUser;
+        } else if (!listUserParams.PaginationToken) {
+            // done
+            break;
         }
     }
+    return count;
 }
+
+function asString<T>(d:T) : string {
+    return JSON.stringify(d);
+};
 
 const putS3Content = async (s3:S3, Bucket:string, Key:string, contentType:string, content: S3Body) : Promise<string> => {
     try {
