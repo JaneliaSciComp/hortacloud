@@ -1,8 +1,10 @@
 import { CognitoIdentityServiceProvider, S3 } from 'aws-sdk';
 import { PassThrough, Readable } from 'stream';
 
-type ListUsersRequestTypes = CognitoIdentityServiceProvider.Types.ListUsersRequest;
+type ListUsersRequestType = CognitoIdentityServiceProvider.Types.ListUsersRequest;
+type ListGroupsRequestType = CognitoIdentityServiceProvider.Types.ListGroupsRequest;
 type UserType = CognitoIdentityServiceProvider.UserType;
+type GroupType = CognitoIdentityServiceProvider.GroupType;
 type S3Body = S3.Types.Body;
 
 interface BackupParameters<T> {
@@ -26,6 +28,12 @@ export const cognitoExport = async (event: any) : Promise<any> => {
         backupBucket: backupBucket,
         backupFile: createLocation(backupPrefix, 'users.json'),
         backupData: fetchAllUsers(cognito, process.env.COGNITO_POOL_ID),
+    });
+
+    await exportData(s3, {
+        backupBucket: backupBucket,
+        backupFile: createLocation(backupPrefix, 'groups.json'),
+        backupData: fetchAllGroups(cognito, process.env.COGNITO_POOL_ID),
     });
 
     return {
@@ -85,13 +93,12 @@ async function* jsonArrayStream<T>(iterableData: AsyncIterable<T>) {
         i++;
     }
     yield ']';
-    console.log(`Fetched ${i} cognito users`);
 }
 
 async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolId: string) {
     let cachedUsers: UserType[] | undefined = undefined;
     let userIndex: number = 0;
-    const listUserParams:ListUsersRequestTypes = {
+    const listUserParams:ListUsersRequestType = {
         UserPoolId: userPoolId,
     }
     let count = 0;
@@ -104,7 +111,6 @@ async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolI
         }
         if (userIndex < cachedUsers.length) {
             const nextUser = cachedUsers[userIndex++];
-            console.log('User:', nextUser);
             count++;
             yield nextUser;
         } else if (!listUserParams.PaginationToken) {
@@ -112,6 +118,34 @@ async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolI
             break;
         }
     }
+    console.log(`Fetched ${count} cognito users`);
+    return count;
+}
+
+async function* fetchAllGroups(cognito: CognitoIdentityServiceProvider, userPoolId: string) {
+    let cachedGroups: GroupType[] | undefined = undefined;
+    let groupIndex: number = 0;
+    const listGroupsParams:ListGroupsRequestType = {
+        UserPoolId: userPoolId,
+    }
+    let count = 0;
+    while (true) {
+        if (cachedGroups === undefined || (groupIndex >= cachedGroups.length && listGroupsParams.NextToken)) {
+            const { Groups = [], NextToken } = await cognito.listGroups(listGroupsParams).promise();
+            listGroupsParams.NextToken = NextToken;
+            cachedGroups = Groups;
+            groupIndex = 0;
+        }
+        if (groupIndex < cachedGroups.length) {
+            const nextUser = cachedGroups[groupIndex++];
+            count++;
+            yield nextUser;
+        } else if (!listGroupsParams.NextToken) {
+            // done
+            break;
+        }
+    }
+    console.log(`Fetched ${count} cognito groups`);
     return count;
 }
 

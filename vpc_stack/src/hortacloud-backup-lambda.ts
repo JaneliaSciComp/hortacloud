@@ -36,7 +36,10 @@ export class HortaCloudCognitoBackup extends Construct {
 
         this.addPolicies(this.backupHandler, [
             new PolicyStatement({
-                actions: [ 'cognito-idp:ListUsers' ],
+                actions: [ 
+                    'cognito-idp:ListUsers', 
+                    'cognito-idp:ListGroups' 
+                ],
                 effect: Effect.ALLOW,
                 resources: [
                     `arn:aws:cognito-idp:${AWS_REGION}:${AWS_ACCOUNT}:userpool/${userPoolId}`
