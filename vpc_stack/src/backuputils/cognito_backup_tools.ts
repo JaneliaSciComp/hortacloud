@@ -106,7 +106,6 @@ async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolI
     let userIndex: number = 0;
     const listUserParams:ListUsersRequestType = {
         UserPoolId: userPoolId,
-        Limit: 5,
     }
     let count = 0;
     while (true) {
@@ -114,7 +113,6 @@ async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolI
             const { Users = [], PaginationToken } = await cognito.listUsers(listUserParams).promise();
             listUserParams.PaginationToken = PaginationToken;
             cachedUsers = Users;
-            console.log('!!!!! Fetch user page', Users);
             userIndex = 0;
         }
         if (userIndex < cachedUsers.length) {

@@ -49,11 +49,14 @@ export class HortaCloudCognitoBackup extends Construct {
                 ]
             }),
             new PolicyStatement({
-                actions: [ 's3:GetObject', 's3:PutObject' ],
+                actions: [
+                    's3:GetObject',
+                    's3:PutObject'
+                ],
                 effect: Effect.ALLOW,
                 resources: [
-                    'arn:aws:s3:::janelia-mouselight-demo/',
-                    'arn:aws:s3:::janelia-mouselight-demo/*'
+                    `arn:aws:s3:::*/`,
+                    `arn:aws:s3:::*/*`
                 ]
             })
         ]);
