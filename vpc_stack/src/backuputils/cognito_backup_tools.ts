@@ -7,7 +7,6 @@ type ListUserGroupsType = CognitoIdentityServiceProvider.Types.AdminListGroupsFo
 type UserType = CognitoIdentityServiceProvider.UserType;
 type GroupType = CognitoIdentityServiceProvider.GroupType;
 type GroupListType = CognitoIdentityServiceProvider.GroupListType;
-type S3Body = S3.Types.Body;
 
 interface BackupParameters<T> {
     backupBucket: string;
@@ -18,6 +17,9 @@ interface BackupParameters<T> {
 interface UserWithGroups extends UserType {
     UserGroups?: GroupListType;
 }
+
+const USERS_FILENAME:string = 'users.json';
+const GROUPS_FILENAME:string = 'groups.json';
 
 export const cognitoExport = async (event: any) : Promise<any> => {
 
@@ -32,13 +34,13 @@ export const cognitoExport = async (event: any) : Promise<any> => {
 
     await exportData(s3, {
         backupBucket: backupBucket,
-        backupFile: createLocation(backupPrefix, 'users.json'),
+        backupFile: createLocation(backupPrefix, USERS_FILENAME),
         backupData: fetchAllUsers(cognito, process.env.COGNITO_POOL_ID),
     });
 
     await exportData(s3, {
         backupBucket: backupBucket,
-        backupFile: createLocation(backupPrefix, 'groups.json'),
+        backupFile: createLocation(backupPrefix, GROUPS_FILENAME),
         backupData: fetchAllGroups(cognito, process.env.COGNITO_POOL_ID),
     });
 
@@ -48,10 +50,13 @@ export const cognitoExport = async (event: any) : Promise<any> => {
 }
 
 export const cognitoImport = async (event:any) : Promise<any> => {
-    const { cognitoPoolId } = event;
+    const { cognitoPoolId, backupBucket, backupPrefix } = event;
 
     const cognito = new CognitoIdentityServiceProvider();
+    const s3 = new S3();
 
+    await importGroups(cognito, await getS3Content(s3, backupBucket, createLocation(backupPrefix, GROUPS_FILENAME)));
+    await importUsers(cognito, await getS3Content(s3, backupBucket, createLocation(backupPrefix, USERS_FILENAME)));
     return {
         statusCode: 200
     };
@@ -59,7 +64,7 @@ export const cognitoImport = async (event:any) : Promise<any> => {
 
 const createLocation = (prefix: string, name: string) : string => {
     const location = prefix ? `${prefix}/${name}` : name;
-    return location.startsWith('/') ? location.substring(0) : location;
+    return location.startsWith('/') ? location.substring(1) : location;
 }
 
 async function exportData<T>(s3:S3, backupParams: BackupParameters<T>) {
@@ -174,19 +179,30 @@ function asString<T>(d:T) : string {
     return JSON.stringify(d);
 };
 
-const putS3Content = async (s3:S3, Bucket:string, Key:string, contentType:string, content: S3Body) : Promise<string> => {
+async function importGroups(cognito: CognitoIdentityServiceProvider, groups: GroupListType) {
+    groups.forEach(g => {
+        console.log('!!!! Group', g);
+    })
+}
+
+async function importUsers(cognito: CognitoIdentityServiceProvider, users: UserWithGroups[]) {
+    users.forEach(u => {
+        console.log('!!!! User', u);
+    })
+}
+
+async function getS3Content(s3: S3, Bucket:string, Key:string) : Promise<any> {
     try {
-        console.log(`Putting content to ${Bucket}:${Key}`);
-        const res = await s3.putObject({
+        console.log(`Getting content from ${Bucket}:${Key}`);
+        const response = await s3.getObject({
             Bucket,
-            Key,
-            Body: content,
-            ContentType: contentType
+            Key
         }).promise();
-        console.log(`Put content to ${Bucket}:${Key}`, res);
+        return response.Body 
+            ? JSON.parse(response.Body?.toString())
+            : null;
     } catch (e) {
-        console.error('Error putting content', `to ${Bucket}:${Key}`, e);
-        throw e;
+        console.error(`Error getting content ${Bucket}:${Key}`, e);
+        throw e; // rethrow it
     }
-    return `s3://${Bucket}/${Key}`;
 };

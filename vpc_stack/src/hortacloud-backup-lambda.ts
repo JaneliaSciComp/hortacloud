@@ -50,7 +50,6 @@ export class HortaCloudCognitoBackup extends Construct {
             }),
             new PolicyStatement({
                 actions: [
-                    's3:GetObject',
                     's3:PutObject'
                 ],
                 effect: Effect.ALLOW,
@@ -61,12 +60,31 @@ export class HortaCloudCognitoBackup extends Construct {
             })
         ]);
 
-        this.restoreHandler = new Function(this, 'RestoreHandler', {
+        this.restoreHandler = new NodejsFunction(this, 'RestoreHandler', {
             runtime: Runtime.NODEJS_14_X,
-            code: new AssetCode(path.join(__dirname, "backuputils")),
-            handler: 'cognito_backup_tools.cognitoExport', // !!! FIXME !!!!!!
+            entry: path.join(__dirname, 'backuputils', 'cognito_backup_tools.ts'),
+            handler: 'cognitoImport',
             functionName: createResourceId(hortaConfig, 'cognito-restore'),
+            environment: {
+                COGNITO_POOL_ID: userPoolId
+            },
+            projectRoot: path.join(__dirname, 'backuputils'),
+            depsLockFilePath: path.join(__dirname, 'backuputils', 'package-lock.json'),
+            timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
+
+        this.addPolicies(this.restoreHandler, [
+            new PolicyStatement({
+                actions: [
+                    's3:GetObject'
+                ],
+                effect: Effect.ALLOW,
+                resources: [
+                    `arn:aws:s3:::*/`,
+                    `arn:aws:s3:::*/*`
+                ]
+            })
+        ]);
 
     }
 
