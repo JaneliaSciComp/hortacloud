@@ -1,12 +1,11 @@
 import { Construct } from 'constructs';
-import { AssetCode, Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 import * as path from 'path';
 
-import { getHortaServicesConfig } from './hortacloud-services-config';
-import { createResourceId } from '../../common/hortacloud-common';
+import { createResourceId, getHortaCloudConfig } from '../../common/hortacloud-common';
 import { Duration } from 'aws-cdk-lib';
 
 const { AWS_ACCOUNT, AWS_REGION } = process.env;
@@ -21,18 +20,20 @@ export class HortaCloudCognitoBackup extends Construct {
                 userPoolId: string) {
         super(scope, id);
 
-        const hortaConfig = getHortaServicesConfig();
+        const hortaConfig = getHortaCloudConfig();
+
+        const cognitoBackupResourcesDir = path.join(__dirname, 'cognito-backup-resources');
 
         this.backupHandler = new NodejsFunction(this, 'BackupHandler', {
             runtime: Runtime.NODEJS_14_X,
-            entry: path.join(__dirname, 'backuputils', 'cognito_backup_tools.ts'),
+            entry: path.join(cognitoBackupResourcesDir, 'index.ts'),
             handler: 'cognitoExport',
             functionName: createResourceId(hortaConfig, 'cognito-backup'),
             environment: {
                 COGNITO_POOL_ID: userPoolId
             },
-            projectRoot: path.join(__dirname, 'backuputils'),
-            depsLockFilePath: path.join(__dirname, 'backuputils', 'package-lock.json'),
+            projectRoot: cognitoBackupResourcesDir,
+            depsLockFilePath: path.join(cognitoBackupResourcesDir, 'package-lock.json'),
             timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
 
@@ -62,14 +63,14 @@ export class HortaCloudCognitoBackup extends Construct {
 
         this.restoreHandler = new NodejsFunction(this, 'RestoreHandler', {
             runtime: Runtime.NODEJS_14_X,
-            entry: path.join(__dirname, 'backuputils', 'cognito_backup_tools.ts'),
+            entry: path.join(cognitoBackupResourcesDir, 'index.ts'),
             handler: 'cognitoImport',
             functionName: createResourceId(hortaConfig, 'cognito-restore'),
             environment: {
                 COGNITO_POOL_ID: userPoolId
             },
-            projectRoot: path.join(__dirname, 'backuputils'),
-            depsLockFilePath: path.join(__dirname, 'backuputils', 'package-lock.json'),
+            projectRoot: cognitoBackupResourcesDir,
+            depsLockFilePath: path.join(cognitoBackupResourcesDir, 'package-lock.json'),
             timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
 

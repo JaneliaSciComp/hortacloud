@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import * as adminLambda from "./admin_lambda";
+import * as adminLambda from "./admin-lambda";
 import * as cognitoPool from "./cognitopool";
 
 interface AdminAPIStackProps extends cdk.StackProps {

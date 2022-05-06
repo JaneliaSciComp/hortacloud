@@ -1,23 +1,22 @@
 {
-  "name": "vpc_stack",
+  "name": "cognito_stack",
   "version": "0.1.0",
   "scripts": {
     "build": "tsc",
-    "postbuild": "cpy '**/*' '!**/*.ts' '../build/' --cwd=src --parents",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "clean": "del build cdk.out",
-    "cleancdk": "npm run clean && npm run cdk"
+    "deploy": "node scripts/deploy"
   },
   "devDependencies": {
+    "@types/jest": "^26.0.10",
+    "@types/node": "10.17.27",
     "aws-cdk": "^2.22.0",
     "aws-cdk-lib": "^2.22.0",
     "constructs": "^10.0.127",
-    "crypto": "^1.0.1",
-    "cpy-cli": "^3.1.1",
-    "del-cli": "^4.0.1",
     "jest": "^26.4.2",
+    "prettier": "2.5.1",
+    "source-map-support": "^0.5.16",
     "ts-jest": "^26.2.0",
     "ts-node": "^9.0.0",
     "typescript": "~3.9.7"
