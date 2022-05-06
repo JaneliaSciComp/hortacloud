@@ -3,14 +3,20 @@ import { PassThrough, Readable } from 'stream';
 
 type ListUsersRequestType = CognitoIdentityServiceProvider.Types.ListUsersRequest;
 type ListGroupsRequestType = CognitoIdentityServiceProvider.Types.ListGroupsRequest;
+type ListUserGroupsType = CognitoIdentityServiceProvider.Types.AdminListGroupsForUserRequest;
 type UserType = CognitoIdentityServiceProvider.UserType;
 type GroupType = CognitoIdentityServiceProvider.GroupType;
+type GroupListType = CognitoIdentityServiceProvider.GroupListType;
 type S3Body = S3.Types.Body;
 
 interface BackupParameters<T> {
     backupBucket: string;
     backupFile: string;
     backupData: AsyncIterable<T>;
+}
+
+interface UserWithGroups extends UserType {
+    UserGroups?: GroupListType;
 }
 
 export const cognitoExport = async (event: any) : Promise<any> => {
@@ -96,10 +102,11 @@ async function* jsonArrayStream<T>(iterableData: AsyncIterable<T>) {
 }
 
 async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolId: string) {
-    let cachedUsers: UserType[] | undefined = undefined;
+    let cachedUsers: UserWithGroups[] | undefined = undefined;
     let userIndex: number = 0;
     const listUserParams:ListUsersRequestType = {
         UserPoolId: userPoolId,
+        Limit: 5,
     }
     let count = 0;
     while (true) {
@@ -107,10 +114,15 @@ async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolI
             const { Users = [], PaginationToken } = await cognito.listUsers(listUserParams).promise();
             listUserParams.PaginationToken = PaginationToken;
             cachedUsers = Users;
+            console.log('!!!!! Fetch user page', Users);
             userIndex = 0;
         }
         if (userIndex < cachedUsers.length) {
             const nextUser = cachedUsers[userIndex++];
+            if (!nextUser.Username) {
+                continue;
+            }
+            nextUser.UserGroups = await fetchUserGroups(cognito, userPoolId, nextUser.Username);
             count++;
             yield nextUser;
         } else if (!listUserParams.PaginationToken) {
@@ -147,6 +159,17 @@ async function* fetchAllGroups(cognito: CognitoIdentityServiceProvider, userPool
     }
     console.log(`Fetched ${count} cognito groups`);
     return count;
+}
+
+async function fetchUserGroups(cognito: CognitoIdentityServiceProvider, userPoolId:string, username: string) : Promise<GroupListType> {
+    console.log(`Fetch user groups for ${username}`);
+    const listUserGroupsParams:ListUserGroupsType = {
+        UserPoolId: userPoolId,
+        Username: username
+    }
+    // This is typically small so I am not using any pagination here
+    const { Groups = [] } = await cognito.adminListGroupsForUser(listUserGroupsParams).promise();
+    return Groups;
 }
 
 function asString<T>(d:T) : string {

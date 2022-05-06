@@ -7,6 +7,7 @@ import * as path from 'path';
 
 import { getHortaServicesConfig } from './hortacloud-services-config';
 import { createResourceId } from '../../common/hortacloud-common';
+import { Duration } from 'aws-cdk-lib';
 
 const { AWS_ACCOUNT, AWS_REGION } = process.env;
 
@@ -32,13 +33,15 @@ export class HortaCloudCognitoBackup extends Construct {
             },
             projectRoot: path.join(__dirname, 'backuputils'),
             depsLockFilePath: path.join(__dirname, 'backuputils', 'package-lock.json'),
+            timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
 
         this.addPolicies(this.backupHandler, [
             new PolicyStatement({
                 actions: [ 
                     'cognito-idp:ListUsers', 
-                    'cognito-idp:ListGroups' 
+                    'cognito-idp:ListGroups',
+                    'cognito-idp:AdminListGroupsForUser'
                 ],
                 effect: Effect.ALLOW,
                 resources: [
