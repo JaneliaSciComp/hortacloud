@@ -56,7 +56,8 @@ class HortaCloudCognito extends Construct {
         Please login at ${adminBucketUrl} to change your password and access the service.`
       },
       autoVerify: { email: true },
-      accountRecovery: AccountRecovery.EMAIL_ONLY
+      accountRecovery: AccountRecovery.EMAIL_ONLY,
+      userPoolName: createResourceId(hortaCloudConfig, 'UserPool'),
     });
 
     if (!hortaCloudConfig.restoreCognitoFromBackup) {

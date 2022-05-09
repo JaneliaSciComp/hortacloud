@@ -6,6 +6,7 @@ import {
   createResourceId,
   HortaCloudConfig
 } from "../../common/hortacloud-common";
+import { HortaCloudCognitoStack } from "./hortacloud-cognito";
 
 const hortaConfig = getHortaCloudConfig();
 
@@ -13,16 +14,15 @@ const app = new App();
 
 const { AWS_REGION, AWS_ACCOUNT } = process.env;
 
-const userProviderStack = new HortaCloudCognitoStack(app, "Workstation", {
+const cognitoStack = new HortaCloudCognitoStack(app, "Workstation", {
   env: {
     account: AWS_ACCOUNT,
     region: AWS_REGION
   },
   stackName: createResourceId(hortaConfig, "cognito"),
-  ...importVPCProps(hortaConfig)
 });
 
-applyTags([workstationStack]);
+applyTags([cognitoStack]);
 
 function applyTags(stacks: Stack[]) {
   stacks.forEach(s => {
@@ -31,16 +31,4 @@ function applyTags(stacks: Stack[]) {
     Tags.of(s).add("STAGE", hortaConfig.hortaStage);
     Tags.of(s).add("VERSION", hortaConfig.hortaCloudVersion);
   });
-}
-
-function importVPCProps(hortaConfig: HortaCloudConfig): VpcInstanceProps {
-  return {
-    vpcId: Fn.importValue(createResourceId(hortaConfig, "VpcID")),
-    privateSubnetIds: [
-      Fn.importValue(createResourceId(hortaConfig, "PrivateSubnetID"))
-    ],
-    publicSubnetIds: [
-      Fn.importValue(createResourceId(hortaConfig, "PublicSubnetID"))
-    ]
-  };
 }

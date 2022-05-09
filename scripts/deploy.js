@@ -214,7 +214,7 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     type: 'boolean',
     describe:  'Only deploy the admin website. Requires a deployed workstation stack.'
   })
-  .option('c', {
+  .option('u', {
     alias: 'include-cognito',
     type: 'boolean',
     describe: 'Include the cognito stack in the deployment'

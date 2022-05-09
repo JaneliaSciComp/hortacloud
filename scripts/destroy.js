@@ -3,6 +3,15 @@ const { AppStream } = require("aws-sdk");
 const chalk = require("chalk");
 const dotenv = require('dotenv')
 
+const argv = require("yargs/yargs")(process.argv.slice(2))
+  .usage("$0 [options]")
+  .option('u', {
+    alias: 'undeploy-cognito',
+    type: 'boolean',
+    describe: 'Undeploy the cognito stack as well'
+  })
+  .argv;
+
 // set env from .env file if present
 dotenv.config()
 
@@ -59,6 +68,14 @@ exec(
   `npm run cdk -- destroy -f --all --require-approval never`,
   { cwd: "./vpc_stack/" }
 );
+
+if (argv.undeployCognito) {
+  console.log(chalk.yellow("⚠️  Removing Cognito stack."));
+  exec(
+    `npm run cdk -- destroy -f --all --require-approval never`,
+    { cwd: "./cognito_stack/" }
+  );
+}
 
 console.log(chalk.green("✅ All stacks have been removed."));
 removeAppStreamImage();

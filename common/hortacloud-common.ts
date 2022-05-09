@@ -25,7 +25,7 @@ export function getHortaCloudConfig() : HortaCloudConfig {
         developerName: process.env.USER || "unknown",
         hortaWorkstationInstanceType: process.env.HORTA_WS_INSTANCE_TYPE || 'stream.graphics.g4dn.xlarge',
         hortaWorkstationImageName: process.env.HORTA_WS_IMAGE_NAME || 'AppStream-Graphics-G4dn-WinServer2019-03-03-2022',
-        restoreCognitoFromBackup: process.env.HORTA_RESTORE_COGNITO_FLAG?.toLowerCase() == 'true' ? true : false;
+        restoreCognitoFromBackup: process.env.HORTA_RESTORE_COGNITO_FLAG?.toLowerCase() == 'true' ? true : false,
     };
 }
 
