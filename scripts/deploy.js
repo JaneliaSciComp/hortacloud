@@ -15,6 +15,14 @@ function sleep(ms) {
   });
 }
 
+async function deploy_cognito() {
+    // deploy the Cognito stack
+    console.log(chalk.cyan("🚚 Deploying Cognito"));
+    exec(`npm run cdk -- deploy --all --require-approval never`, {
+      cwd: "./cognito_stack/"
+    });
+}
+
 async function deploy_vpc_and_workstation() {
   const appstream = new AppStream({ AWS_REGION });
   const sleep_duration = 2;
@@ -165,6 +173,9 @@ async function deploy_admin_site() {
 }
 
 async function install(argv) {
+  if (argv.includeCognito) {
+    await deploy_cognito();
+  }
   if (!argv.adminOnly) {
     await deploy_vpc_and_workstation();
   }
@@ -198,12 +209,17 @@ async function install(argv) {
 
 const argv = require("yargs/yargs")(process.argv.slice(2))
   .usage("$0 [options]")
-  .boolean(["a"])
-  .describe(
-    "a",
-    "Only deploy the admin website. Requires a deployed workstation stack."
-  )
-  .alias("a", "admin-only").argv;
+  .option('a', {
+    alias: 'admin-only',
+    type: 'boolean',
+    describe:  'Only deploy the admin website. Requires a deployed workstation stack.'
+  })
+  .option('c', {
+    alias: 'include-cognito',
+    type: 'boolean',
+    describe: 'Include the cognito stack in the deployment'
+  })
+  .argv;
 
 // set env from .env file if present
 dotenv.config();
