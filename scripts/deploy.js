@@ -1,6 +1,7 @@
 const execSync = require("child_process").execSync;
 const chalk = require("chalk");
 const open = require("open");
+const prompts = require("prompts");
 const { CloudFormation, AppStream } = require("aws-sdk");
 const dotenv = require("dotenv");
 
@@ -10,17 +11,17 @@ const exec = (command, options = {}) => {
 };
 
 function sleep(ms) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 }
 
 async function deploy_cognito() {
-    // deploy the Cognito stack
-    console.log(chalk.cyan("🚚 Deploying Cognito"));
-    exec(`npm run cdk -- deploy --all --require-approval never`, {
-      cwd: "./cognito_stack/"
-    });
+  // deploy the Cognito stack
+  console.log(chalk.cyan("🚚 Deploying Cognito"));
+  exec(`npm run cdk -- deploy --all --require-approval never`, {
+    cwd: "./cognito_stack/",
+  });
 }
 
 async function deploy_vpc_and_workstation() {
@@ -30,7 +31,7 @@ async function deploy_vpc_and_workstation() {
   // deploy the VPC stack
   console.log(chalk.cyan("🚚 Deploying VPC stack"));
   exec(`npm run cdk -- deploy --all --require-approval never`, {
-    cwd: "./vpc_stack/"
+    cwd: "./vpc_stack/",
   });
 
   console.log(chalk.green("✅ Image builder is ready for your input."));
@@ -59,7 +60,7 @@ async function deploy_vpc_and_workstation() {
     try {
       const images = await appstream
         .describeImages({
-          Names: [imageName]
+          Names: [imageName],
         })
         .promise();
       const [image] = images.Images;
@@ -81,7 +82,7 @@ async function deploy_vpc_and_workstation() {
 
   console.log(chalk.cyan("🚚 Deploying Workstation stack"));
   exec(`npm run cdk -- deploy --require-approval never Workstation`, {
-    cwd: "./workstation_stack/"
+    cwd: "./workstation_stack/",
   });
 
   // check that the appStream fleet is up and ready
@@ -89,12 +90,13 @@ async function deploy_vpc_and_workstation() {
   console.log(chalk.cyan(`🔎 Looking for AppStream fleet ${fleetName}...`));
   console.log(chalk.white("This could take 10-20 minutes"));
 
+
   let fleetRunning = false;
   while (!fleetRunning) {
     try {
       const fleets = await appstream
         .describeFleets({
-          Names: [fleetName]
+          Names: [fleetName],
         })
         .promise();
       const [fleet] = fleets.Fleets;
@@ -104,7 +106,7 @@ async function deploy_vpc_and_workstation() {
         } else if (fleet.State === "STOPPED") {
           // Start the fleet
           const startFleetReq = appstream.startFleet({
-            Name: fleetName
+            Name: fleetName,
           });
           startFleetReq.send();
         } else {
@@ -148,12 +150,12 @@ async function deploy_admin_site() {
   // the old id was still being used from the context and failed. This
   // command clears out that context on each deployment.
   exec(`npm run cdk -- context --clear`, {
-    cwd: "./admin_api_stack/"
+    cwd: "./admin_api_stack/",
   });
   exec(
     `npm run cdk -- deploy --all --require-approval never -c deploy=admin_api`,
     {
-      cwd: "./admin_api_stack/"
+      cwd: "./admin_api_stack/",
     }
   );
 
@@ -167,7 +169,7 @@ async function deploy_admin_site() {
   exec(
     `npm run cdk -- deploy --all --require-approval never -c deploy=admin_website`,
     {
-      cwd: "./admin_api_stack/"
+      cwd: "./admin_api_stack/",
     }
   );
 }
@@ -188,7 +190,7 @@ async function install(argv) {
   const cloudformation = new CloudFormation({ AWS_REGION });
   const apiStack = await cloudformation
     .describeStacks({
-      StackName: `${HORTA_ORG}-hc-adminWebApp-${HORTA_STAGE}`
+      StackName: `${HORTA_ORG}-hc-adminWebApp-${HORTA_STAGE}`,
     })
     .promise();
 
@@ -212,7 +214,12 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
   .option('a', {
     alias: 'admin-only',
     type: 'boolean',
-    describe:  'Only deploy the admin website. Requires a deployed workstation stack.'
+    describe: 'Only deploy the admin website. Requires a deployed workstation stack.'
+  })
+  .option('c', {
+    alias: 'confirm',
+    type: 'boolean',
+    describe: 'Auto reply to all confirmation prompts.'
   })
   .option('u', {
     alias: 'include-cognito',
@@ -232,12 +239,12 @@ const expectedEnvVars = [
   "HORTA_STAGE",
   "ADMIN_USER_EMAIL",
   "AWS_REGION",
-  "AWS_ACCOUNT"
+  "AWS_ACCOUNT",
 ];
 
 let missingVarsCount = 0;
 
-expectedEnvVars.forEach(envVar => {
+expectedEnvVars.forEach((envVar) => {
   if (!process.env[envVar]) {
     console.log(chalk.red(`🚨 Environment variable ${envVar} was not set.`));
     missingVarsCount += 1;
@@ -250,4 +257,27 @@ if (missingVarsCount > 0) {
 
 console.log(chalk.green("✅ environment looks good."));
 
-install(argv);
+console.log(
+  chalk.cyan(
+    `Installing to ORG: ${process.env.HORTA_ORG}, ENV: ${process.env.HORTA_STAGE}`
+  )
+);
+
+prompts.override(argv);
+
+(async () => {
+  const response = await prompts({
+    type: 'confirm',
+    name: 'confirm',
+    message: 'Do you wish to continue?',
+    initial: false
+  });
+
+  if (response.confirm) {
+    install(argv);
+  } else {
+    console.log(chalk.red("🚨 installation aborted"));
+    process.exit(0);
+  }
+
+})();

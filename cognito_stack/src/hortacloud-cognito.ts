@@ -1,9 +1,10 @@
 import { Construct } from 'constructs';
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
-import { AccountRecovery, CfnUserPoolGroup,
-         CfnUserPoolUser, CfnUserPoolUserToGroupAttachment,
-         UserPool
-       } from 'aws-cdk-lib/aws-cognito';
+import {
+  AccountRecovery, CfnUserPoolGroup,
+  CfnUserPoolUser, CfnUserPoolUserToGroupAttachment,
+  UserPool
+} from 'aws-cdk-lib/aws-cognito';
 import { createResourceId, getHortaCloudConfig } from '../../common/hortacloud-common';
 import { HortaCloudCognitoBackup } from './cognito-backup-lambda';
 
@@ -57,6 +58,14 @@ class HortaCloudCognito extends Construct {
       },
       autoVerify: { email: true },
       accountRecovery: AccountRecovery.EMAIL_ONLY,
+      passwordPolicy: {
+        minLength: 14,
+        requireLowercase: false,
+        requireUppercase: false,
+        requireDigits: false,
+        requireSymbols: false,
+        tempPasswordValidity: cdk.Duration.days(7),
+      },
       userPoolName: createResourceId(hortaCloudConfig, 'UserPool'),
     });
 
@@ -66,37 +75,37 @@ class HortaCloudCognito extends Construct {
       }
       // add the admins group
       const adminGroup = new CfnUserPoolGroup(this, 'AdminsUserPoolGroup', {
-          userPoolId: this.userPool.userPoolId,
-          // the properties below are optional
-          description: "Adminsitrative users",
-          groupName: ADMIN_GROUP_NAME,
-          precedence: 0,
-        }
+        userPoolId: this.userPool.userPoolId,
+        // the properties below are optional
+        description: "Adminsitrative users",
+        groupName: ADMIN_GROUP_NAME,
+        precedence: 0,
+      }
       );
       // add the default admin user for first access.
       const adminUser = new CfnUserPoolUser(this, 'DefaultAdminUserPoolUser', {
-          userPoolId: this.userPool.userPoolId,
-          // the properties below are optional
-          username: process.env.ADMIN_USER_EMAIL,
-          userAttributes: [
-            {
-              name: "email",
-              value: process.env.ADMIN_USER_EMAIL
-            },
-            {
-              name: "email_verified",
-              value: "True"
-            }
-          ]
-        }
+        userPoolId: this.userPool.userPoolId,
+        // the properties below are optional
+        username: process.env.ADMIN_USER_EMAIL,
+        userAttributes: [
+          {
+            name: "email",
+            value: process.env.ADMIN_USER_EMAIL
+          },
+          {
+            name: "email_verified",
+            value: "True"
+          }
+        ]
+      }
       );
 
       // add admin user to the admins group
       const addAdminUserToAdminsGroup = new CfnUserPoolUserToGroupAttachment(this, "AdminUsertoAdminGroupAttachment", {
-          groupName: ADMIN_GROUP_NAME,
-          username: process.env.ADMIN_USER_EMAIL,
-          userPoolId: this.userPool.userPoolId,
-        }
+        groupName: ADMIN_GROUP_NAME,
+        username: process.env.ADMIN_USER_EMAIL,
+        userPoolId: this.userPool.userPoolId,
+      }
       );
 
       // need to make sure the admin user has been created,

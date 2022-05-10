@@ -20,6 +20,7 @@ const {
   addUserToGroup,
   removeUser,
   removeUserFromGroup,
+  resetUserPassword,
   confirmUserSignUp,
   disableUser,
   enableUser,
@@ -80,7 +81,7 @@ app.post('/addUserToGroup', async (req, res, next) => {
   }
 
   try {
-    const {email: authUser} = req.apiGateway.event.requestContext.authorizer.claims;
+    const { email: authUser } = req.apiGateway.event.requestContext.authorizer.claims;
     const response = await addUserToGroup(req.body.username, req.body.groupname, authUser);
     res.status(200).json(response);
   } catch (err) {
@@ -89,7 +90,7 @@ app.post('/addUserToGroup', async (req, res, next) => {
 });
 
 app.post('/addUser', async (req, res, next) => {
-  if (!req.body.username ) {
+  if (!req.body.username) {
     const err = new Error('username is required');
     err.statusCode = 400;
     return next(err);
@@ -97,8 +98,8 @@ app.post('/addUser', async (req, res, next) => {
 
   try {
     // fetch the authorized user for contacting the JACS API.
-    const {email: authUser} = req.apiGateway.event.requestContext.authorizer.claims;
-    const response = await addUser(req.body.username, authUser);
+    const { email: authUser } = req.apiGateway.event.requestContext.authorizer.claims;
+    const response = await addUser(req.body.username, authUser, req.body.resend);
     res.status(200).json(response);
   } catch (err) {
     next(err);
@@ -113,7 +114,7 @@ app.post('/removeUserFromGroup', async (req, res, next) => {
   }
 
   try {
-    const {email: authUser} = req.apiGateway.event.requestContext.authorizer.claims;
+    const { email: authUser } = req.apiGateway.event.requestContext.authorizer.claims;
     const response = await removeUserFromGroup(req.body.username, req.body.groupname, authUser);
     res.status(200).json(response);
   } catch (err) {
@@ -122,7 +123,7 @@ app.post('/removeUserFromGroup', async (req, res, next) => {
 });
 
 app.post('/removeUser', async (req, res, next) => {
-  if (!req.body.username ) {
+  if (!req.body.username) {
     const err = new Error('username is required');
     err.statusCode = 400;
     return next(err);
@@ -130,6 +131,21 @@ app.post('/removeUser', async (req, res, next) => {
 
   try {
     const response = await removeUser(req.body.username);
+    res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/resetUserPassword', async (req, res, next) => {
+  if (!req.body.username) {
+    const err = new Error('username is required');
+    err.statusCode = 400;
+    return next(err);
+  }
+
+  try {
+    const response = await resetUserPassword(req.body.username);
     res.status(200).json(response);
   } catch (err) {
     next(err);
