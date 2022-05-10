@@ -20,6 +20,7 @@ const {
   addUserToGroup,
   removeUser,
   removeUserFromGroup,
+  resetUserPassword,
   confirmUserSignUp,
   disableUser,
   enableUser,
@@ -98,7 +99,7 @@ app.post('/addUser', async (req, res, next) => {
   try {
     // fetch the authorized user for contacting the JACS API.
     const {email: authUser} = req.apiGateway.event.requestContext.authorizer.claims;
-    const response = await addUser(req.body.username, authUser);
+    const response = await addUser(req.body.username, authUser, req.body.resend);
     res.status(200).json(response);
   } catch (err) {
     next(err);
@@ -130,6 +131,21 @@ app.post('/removeUser', async (req, res, next) => {
 
   try {
     const response = await removeUser(req.body.username);
+    res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/resetUserPassword', async (req, res, next) => {
+  if (!req.body.username ) {
+    const err = new Error('username is required');
+    err.statusCode = 400;
+    return next(err);
+  }
+
+  try {
+    const response = await resetUserPassword(req.body.username);
     res.status(200).json(response);
   } catch (err) {
     next(err);

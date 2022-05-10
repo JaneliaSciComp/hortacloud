@@ -149,6 +149,7 @@ export class LambdaService extends Construct {
           "cognito-idp:AdminEnableUser",
           "cognito-idp:AdminDisableUser",
           "cognito-idp:AdminRemoveUserFromGroup",
+          "cognito-idp:AdminResetUserPassword",
           "cognito-idp:AdminAddUserToGroup",
           "cognito-idp:AdminListGroupsForUser",
           "cognito-idp:AdminGetUser",

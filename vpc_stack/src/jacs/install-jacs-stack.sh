@@ -259,7 +259,7 @@ function createScheduledJobs() {
     echo "Create scheduled jobs from $(cat ${DEPLOY_DIR}/local/scheduled_jobs.json)"
     ./manage.sh mongo \
     -tool mongoimport \
-    -run-opts "-v ${DEPLOY_DIR}/local:/local" \
+    -notty -run-opts "-v ${DEPLOY_DIR}/local:/local" \
     --collection jacsScheduledService /local/scheduled_jobs.json
 }
 

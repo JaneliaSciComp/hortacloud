@@ -85,7 +85,8 @@ async function getAuthToken(username) {
   return token;
 }
 
-async function addUser(username, authUser) {
+async function addUser(username, authUser, resend) {
+  console.log({resend});
   console.log(`Attempting to add ${username} to userpool ${userPoolId}`);
 
   const passwordParams = {
@@ -115,30 +116,38 @@ async function addUser(username, authUser) {
         }
       ]
     };
+
+    if (resend) {
+      params.MessageAction = 'RESEND';
+      delete params.UserAttributes;
+    }
+
     await cognitoIdentityServiceProvider
       .adminCreateUser(params)
       .promise();
     console.log(`Success adding ${username} to userpool ${userPoolId}`);
 
     // code to connect to Workstation API and add the user.
-    const authToken = await getAuthToken(authUser);
-    await sendRequest(
-      "/SCSW/JACS2SyncServices/v2/data/user",
-      "PUT",
-      {
-        key: `user:${username}`,
-        name: username,
-        fullName: username,
-        email: username,
-        password: '',
-        class: "org.janelia.model.security.User"
-      },
-      authToken
-    );
+    if (!resend) {
+      const authToken = await getAuthToken(authUser);
+      await sendRequest(
+        "/SCSW/JACS2SyncServices/v2/data/user",
+        "PUT",
+        {
+          key: `user:${username}`,
+          name: username,
+          fullName: username,
+          email: username,
+          password: '',
+          class: "org.janelia.model.security.User"
+        },
+        authToken
+      );
 
-    return {
-      message: `Success adding ${username} to userpool`
-    };
+      return {
+        message: `Success adding ${username} to userpool`
+      };
+    }
   } catch (err) {
     console.log(err);
     throw err;
@@ -192,6 +201,27 @@ async function addUserToGroup(username, groupname, authUser) {
 
     return {
       message: `Success adding ${username} to ${groupname}`
+    };
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+async function resetUserPassword(username) {
+  const params = {
+    UserPoolId: userPoolId,
+    Username: username
+  };
+
+  console.log(`Attempting to reset password for ${username}`);
+  try {
+    await cognitoIdentityServiceProvider
+      .adminResetUserPassword(params)
+      .promise();
+    console.log(`Reset password for ${username} in userpool ${userPoolId}`);
+    return {
+      message: `Reset password for ${username}`
     };
   } catch (err) {
     console.log(err);
@@ -482,6 +512,7 @@ module.exports = {
   addUser,
   addUserToGroup,
   removeUser,
+  resetUserPassword,
   removeUserFromGroup,
   confirmUserSignUp,
   disableUser,
