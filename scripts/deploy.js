@@ -258,7 +258,7 @@ prompts.override(argv);
     install(argv);
   } else {
     console.log(chalk.red("🚨 installation aborted"));
-    process.exit(1);
+    process.exit(0);
   }
 
 })();
