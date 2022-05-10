@@ -209,25 +209,6 @@ async function install(argv) {
   open(postOutputs.SiteBucketUrl);
 }
 
-const argv = require("yargs/yargs")(process.argv.slice(2))
-  .usage("$0 [options]")
-  .option('a', {
-    alias: 'admin-only',
-    type: 'boolean',
-    describe: 'Only deploy the admin website. Requires a deployed workstation stack.'
-  })
-  .option('c', {
-    alias: 'confirm',
-    type: 'boolean',
-    describe: 'Auto reply to all confirmation prompts.'
-  })
-  .option('u', {
-    alias: 'include-cognito',
-    type: 'boolean',
-    describe: 'Include the cognito stack in the deployment'
-  })
-  .argv;
-
 // set env from .env file if present
 dotenv.config();
 
@@ -262,6 +243,25 @@ console.log(
     `Installing to ORG: ${process.env.HORTA_ORG}, ENV: ${process.env.HORTA_STAGE}`
   )
 );
+
+const argv = require("yargs/yargs")(process.argv.slice(2))
+  .usage("$0 [options]")
+  .option('a', {
+    alias: 'admin-only',
+    type: 'boolean',
+    describe: 'Only deploy the admin website. Requires a deployed workstation stack.'
+  })
+  .option('c', {
+    alias: 'confirm',
+    type: 'boolean',
+    describe: 'Auto reply to all confirmation prompts.'
+  })
+  .option('u', {
+    alias: 'include-cognito',
+    type: 'boolean',
+    describe: 'Include the cognito stack in the deployment'
+  })
+  .argv;
 
 prompts.override(argv);
 
