@@ -31,6 +31,10 @@ if [[ "$1" == "--no-backup" ]]; then
 elif [[ "$1" == "--backup" ]]; then
     BACKUP_BUCKET=$2
     BACKUP_FOLDER=$3
+    AWS_REGION=$4
+    COGNITO_BACKUP_FUNCTION=$5
+    shift
+    shift
     shift
     shift
     shift
@@ -259,7 +263,7 @@ function createScheduledJobs() {
     echo "Create scheduled jobs from $(cat ${DEPLOY_DIR}/local/scheduled_jobs.json)"
     ./manage.sh mongo \
     -tool mongoimport \
-    -run-opts "-v ${DEPLOY_DIR}/local:/local" \
+    -notty -run-opts "-v ${DEPLOY_DIR}/local:/local" \
     --collection jacsScheduledService /local/scheduled_jobs.json
 }
 
@@ -284,7 +288,22 @@ function createBackupJob() {
         local mongo_backup_script=(
             "#!/bin/sh"
             "cd ${DEPLOY_DIR}"
-            "./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER} > ${DEPLOY_DIR}/local/latest-mongo-backup.log 2>&1"
+            "current_date=\$(date +%Y%m%d%H%M%S)"
+            "backup_location=${BACKUP_FOLDER}/\${current_date}"
+            "backup_data=\"{ \
+                \\\"backupBucket\\\": \\\"${BACKUP_BUCKET}\\\", \
+                \\\"backupPrefix\\\": \\\"\${backup_location}/cognito\\\" \
+            }\""
+            "./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}\${backup_location} > ${DEPLOY_DIR}/local/latest-mongo-backup.log 2>&1"
+            "echo \"\${backup_data}\" > ${DEPLOY_DIR}/local/cognito-backup-input.json"
+            "aws lambda invoke \
+            --function-name ${COGNITO_BACKUP_FUNCTION} \
+            --payload fileb://${DEPLOY_DIR}/local/cognito-backup-input.json \
+            --region ${AWS_REGION} \
+            ${DEPLOY_DIR}/local/latest-cognito-backup.json"
+            "cd /s3data/${BACKUP_BUCKET}/${BACKUP_FOLDER}"
+            "rm -f latest"
+            "ln -s \${current_date} latest"
         )
         # create the script
         mkdir -p ${DEPLOY_DIR}/local

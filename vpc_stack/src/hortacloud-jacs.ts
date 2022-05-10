@@ -1,7 +1,7 @@
 import { Construct } from 'constructs';
 import { RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as iam from 'aws-cdk-lib/aws-iam';
+import { Role, PolicyStatement, ServicePrincipal, ManagedPolicy, Effect } from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as path from 'path';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
@@ -27,18 +27,20 @@ interface SecurityRules {
   description: string;
 }
 
+const { AWS_REGION } = process.env;
+
 export class HortaCloudJACS extends Construct {
 
   public readonly server: ec2.Instance;
   public readonly defaultDataBucket: s3.Bucket;
 
-  constructor(scope: Construct, 
-              id: string,
-              hortaVpc: IVpc) {
+  constructor(scope: Construct,
+    id: string,
+    hortaVpc: IVpc) {
     super(scope, id);
 
     const hortaConfig = getHortaServicesConfig();
- 
+
     // create Security Group for the Instance
     const serverSG = createSecurityGroup(this, hortaVpc, [
       {
@@ -76,23 +78,35 @@ export class HortaCloudJACS extends Construct {
     ]);
 
     // create a Role for the EC2 Instance
-    const serverRole = new iam.Role(this, 'jacs-role', {
-      assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+    const serverRole = new Role(this, 'jacs-role', {
+      assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
-        iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy'),
+        ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+        ManagedPolicy.fromAwsManagedPolicyName('CloudWatchAgentServerPolicy'),
       ],
     });
+
+    addRolePolicies(serverRole, [
+      new PolicyStatement({
+        actions: [
+          'lambda:InvokeFunction'
+        ],
+        effect: Effect.ALLOW,
+        resources: [
+          '*'
+        ]
+      })
+    ]);
 
     const jacsMachineImage = createJacsMachineImage(hortaConfig);
 
     const jacsNodeInstanceName = createResourceId(hortaConfig, 'jacs-node');
     this.server = new ec2.Instance(this, jacsNodeInstanceName, {
-      vpc : hortaVpc,
-      vpcSubnets : {
-        subnetType: hortaConfig.withPublicAccess 
-                      ? ec2.SubnetType.PUBLIC
-                      : ec2.SubnetType.PRIVATE_WITH_NAT
+      vpc: hortaVpc,
+      vpcSubnets: {
+        subnetType: hortaConfig.withPublicAccess
+          ? ec2.SubnetType.PUBLIC
+          : ec2.SubnetType.PRIVATE_WITH_NAT
       },
       role: serverRole,
       securityGroup: serverSG,
@@ -109,8 +123,8 @@ export class HortaCloudJACS extends Construct {
     // output instance IP
     new CfnOutput(this, 'ServerIP', {
       value: hortaConfig.withPublicAccess
-                ? this.server.instancePublicDnsName
-                : this.server.instancePrivateDnsName,
+        ? this.server.instancePublicDnsName
+        : this.server.instancePrivateDnsName,
       exportName: createResourceId(hortaConfig, 'ServerIP')
     });
 
@@ -128,10 +142,10 @@ export class HortaCloudJACS extends Construct {
     const restoreBucketName = hortaConfig.hortaRestoreBucket ? hortaConfig.hortaRestoreBucket : '';
 
     const externalDataBucketsCandidates = hortaConfig.hortaDataBuckets
-      ? [ ...hortaConfig.hortaDataBuckets.split(',').map(s => s.trim()), backupBucketName, restoreBucketName ]
+      ? [...hortaConfig.hortaDataBuckets.split(',').map(s => s.trim()), backupBucketName, restoreBucketName]
       : [];
 
-    const externalDataBuckets = [ ...new Set(externalDataBucketsCandidates.filter(s => s)) ];
+    const externalDataBuckets = [...new Set(externalDataBucketsCandidates.filter(s => s))];
     console.log('External buckets:', externalDataBuckets);
 
     externalDataBuckets.forEach(bn => {
@@ -140,19 +154,25 @@ export class HortaCloudJACS extends Construct {
       externalBucket.grantReadWrite(this.server.role);
     })
 
-    const dataBucketNames = [ ...externalDataBuckets, defaultDataBucketName ];
+    const dataBucketNames = [...externalDataBuckets, defaultDataBucketName];
 
     const dataBackupFolder = hortaConfig.hortaBackupFolder ? hortaConfig.hortaBackupFolder : '/hortacloud/backups';
     const backupArgs = backupBucketName
-      ? [ '--backup', backupBucketName, dataBackupFolder]
-      : [ '--no-backup'];
+      ? [
+         '--backup',
+         backupBucketName,
+         dataBackupFolder,
+         AWS_REGION || 'unknown',
+         createResourceId(hortaConfig, 'cognito-backup')
+        ]
+      : ['--no-backup'];
 
     const dataRestoreFolder = hortaConfig.hortaRestoreBucket && hortaConfig.hortaRestoreFolder
       ? hortaConfig.hortaRestoreFolder
       : '';
     const restoreArgs = dataRestoreFolder
-      ? [ '--restore', restoreBucketName, dataRestoreFolder ]
-      : [ '--no-restore' ]
+      ? ['--restore', restoreBucketName, dataRestoreFolder]
+      : ['--no-restore']
     createAssets(this, this.server, [
       {
         name: 'InitInstanceAsset',
@@ -184,7 +204,11 @@ export class HortaCloudJACS extends Construct {
   }
 }
 
-function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, sgRules: SecurityRules[]) :ec2.ISecurityGroup {
+function addRolePolicies(r: Role, policies: PolicyStatement[]): void {
+  policies.forEach(p => r.addToPolicy(p));
+}
+
+function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, sgRules: SecurityRules[]): ec2.ISecurityGroup {
   const serverSG = new ec2.SecurityGroup(scope, 'server-sg', {
     vpc: vpc,
     allowAllOutbound: true,
@@ -192,20 +216,20 @@ function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, sgRules: SecurityR
 
 
   sgRules
-      .filter(r => r.port > 0)
-      .forEach(r => {
-          serverSG.addIngressRule(
-              ec2.Peer.anyIpv4(),
-              ec2.Port.tcp(r.port),
-              r.description
-          );
-      })
-      ;
+    .filter(r => r.port > 0)
+    .forEach(r => {
+      serverSG.addIngressRule(
+        ec2.Peer.anyIpv4(),
+        ec2.Port.tcp(r.port),
+        r.description
+      );
+    })
+    ;
 
   return serverSG;
 }
 
-function createJacsMachineImage(cfg: HortaCloudServicesConfig) : HortaCloudMachine {
+function createJacsMachineImage(cfg: HortaCloudServicesConfig): HortaCloudMachine {
   const jacsMachineImage = ec2.MachineImage.latestAmazonLinux({
     generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
     edition: ec2.AmazonLinuxEdition.STANDARD,
@@ -231,11 +255,11 @@ function createAssets(scope: Construct, instance: ec2.Instance, assetsOpts: Asse
       bucket: asset.bucket,
       bucketKey: asset.s3ObjectKey,
     });
-    const args = opts.arguments 
-                  ? opts.arguments.map(s => {
-                      return s === '' ? '""' : s
-                  }).join(' ')
-                  : undefined;
+    const args = opts.arguments
+      ? opts.arguments.map(s => {
+        return s === '' ? '""' : s
+      }).join(' ')
+      : undefined;
     instance.userData.addExecuteFileCommand({
       filePath: localPath,
       arguments: args
