@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Form, Button, Input } from "antd";
+import { Form, Button, Input, message } from "antd";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
@@ -18,9 +18,11 @@ export default function LoginForm() {
       values.username,
       values.password,
       values.newPassword,
-      (userObject) => {
+      (userObject, error) => {
         setIsLoading(false);
-        if (
+        if (error) {
+          message.error(error.message);
+        } else if (
           userObject &&
           userObject.challengeName === "NEW_PASSWORD_REQUIRED"
         ) {
@@ -59,7 +61,7 @@ export default function LoginForm() {
       {passwordUpdate ? (
         <Form.Item
           label="New Password"
-          extra="You are required to change you password. Please enter a new one here."
+          extra="You are required to change you password. Please enter a new one here. minimum length: 14 characters"
           name="newPassword"
           rules={[{ required: true, message: "Please create a new password!" }]}
         >

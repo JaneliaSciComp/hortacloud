@@ -32,12 +32,14 @@ function AuthProvider({ children }) {
               userObject, // the Cognito User Object
               newPassword, // the new password
               requiredAttributes
-            ).then((updatedUser) => {
-              // at this time the user is logged in if no MFA required
-              setUser(user);
-              checkAdminStatus(() => setIsAdmin(true));
-              callback(updatedUser);
-            });
+            )
+              .then((updatedUser) => {
+                // at this time the user is logged in if no MFA required
+                setUser(user);
+                checkAdminStatus(() => setIsAdmin(true));
+                callback(updatedUser);
+              })
+              .catch((error) => callback(null, error));
           } else {
             callback(userObject);
           }

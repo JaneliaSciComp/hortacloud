@@ -143,6 +143,7 @@ async function addUser(username, authUser, resend) {
         },
         authToken
       );
+
       return {
         message: `Success adding ${username} to userpool`
       };

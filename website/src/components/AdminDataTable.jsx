@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import AdminStatus from "./AdminStatus";
 import ActiveStatus from "./ActiveStatus";
 import DeleteUser from "./DeleteUser";
+import ResetUser from "./ResetUser";
 
 export default function AdminDataTable({ loading, dataSource }) {
   const columns = [
@@ -35,7 +36,12 @@ export default function AdminDataTable({ loading, dataSource }) {
       title: "Action",
       key: "action",
       render: (text, record) => {
-        return <DeleteUser username={record.Username} />;
+        return (
+          <>
+            <DeleteUser username={record.Username} />
+            <ResetUser username={record.Username} status={record.UserStatus} />
+          </>
+        );
       },
     },
   ];
