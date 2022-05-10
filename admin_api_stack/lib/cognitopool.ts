@@ -38,7 +38,15 @@ export class CognitoPool extends Construct {
         Please login at ${adminBucketUrl} to change your password and access the service.`
       },
       autoVerify: { email: true },
-      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      passwordPolicy: {
+        minLength: 14,
+        requireLowercase: false,
+        requireUppercase: false,
+        requireDigits: false,
+        requireSymbols: false,
+        tempPasswordValidity: cdk.Duration.days(7),
+      },
     });
 
     // this generates the clientId that will be used by the admin site
