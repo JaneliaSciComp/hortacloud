@@ -2,7 +2,7 @@ const execSync = require("child_process").execSync;
 const chalk = require("chalk");
 const open = require("open");
 const prompts = require("prompts");
-const { CloudFormation, AppStream } = require("aws-sdk");
+const { CloudFormation, AppStream, Lambda } = require("aws-sdk");
 const dotenv = require("dotenv");
 
 const exec = (command, options = {}) => {
@@ -22,6 +22,21 @@ async function deploy_cognito() {
   exec(`npm run cdk -- deploy --all --require-approval never`, {
     cwd: "./cognito_stack/",
   });
+}
+
+async function restore_cognito_users(backupBucket, backupPrefix) {
+  const cognitoRestoreLambda = `${HORTA_ORG}-hc-cognito-restore-${HORTA_STAGE}`;
+  console.log(chalk.cyan(`🚚 Restore cognito users from s3://${backupBucket}/${backupPrefix} using ${cognitoRestoreLambda}`));
+
+  const lambda = new Lambda({});
+  await lambda.invoke({
+    FunctionName: cognitoRestoreLambda,
+    Payload: JSON.stringify({
+      backupBucket,
+      backupPrefix
+    }),
+    LogType: 'Tail',
+  }).promise();
 }
 
 async function deploy_vpc_and_workstation() {
@@ -178,10 +193,15 @@ async function install(argv) {
   if (argv.includeCognito) {
     await deploy_cognito();
   }
-  if (!argv.adminOnly) {
-    await deploy_vpc_and_workstation();
+
+  if (argv.restoreUsers) {
+    await restore_cognito_users(argv.restoreUsersBucket, argv.restoreUsersFolder);
   }
-  await deploy_admin_site();
+
+  // if (!argv.adminOnly) {
+  //   await deploy_vpc_and_workstation();
+  // }
+  // await deploy_admin_site();
 
   // post install directions
   const postOutputs = {};
@@ -249,18 +269,48 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
   .option('a', {
     alias: 'admin-only',
     type: 'boolean',
-    describe: 'Only deploy the admin website. Requires a deployed workstation stack.'
+    describe: 'Only deploy the admin website. Requires a deployed workstation stack.',
   })
   .option('c', {
     alias: 'confirm',
     type: 'boolean',
-    describe: 'Auto reply to all confirmation prompts.'
+    describe: 'Auto reply to all confirmation prompts.',
   })
   .option('u', {
     alias: 'include-cognito',
     type: 'boolean',
-    describe: 'Include the cognito stack in the deployment'
+    describe: 'Include the cognito stack in the deployment',
   })
+  .option('r', {
+    alias: 'restore-users',
+    type: 'boolean',
+    describe: 'Restore cognito users from a backup',
+  })
+  .option('b', {
+    alias: 'restore-users-bucket',
+    type: 'string',
+    coerce: (v) => {
+      if (!v) {
+        throw new Error('Restore users bucket is not set')
+      }
+      return v;
+    },
+    describe: 'Bucket that has the Cognito backup '
+  })
+  .option('f', {
+    alias: 'restore-users-folder',
+    type: 'string',
+    coerce: (v) => {
+      if (!v) {
+        throw new Error('Restore users folder is not set')
+      }
+      return v;
+    },
+    describe: 'Folder on the provided bucket that containes a Cognito backup'
+  })
+  .string(['restore-users-bucket', 'restore-users-folder'])
+  .implies('restore-users', 'restore-users-bucket')
+  .implies('restore-users', 'restore-users-folder')
   .argv;
 
 prompts.override(argv);

@@ -19,7 +19,6 @@ exports.handler = (event, context, callback) => {
     };
 
     createas2streamingurl(params, context.awsRequestId, callback);
-
 };
 
 function errorResponse(errorMessage, awsRequestId, callback) { //Function for handling error messaging back to client

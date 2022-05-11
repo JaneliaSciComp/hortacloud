@@ -35,6 +35,10 @@ async function cognitoExport(event) {
 async function cognitoImport(event) {
     const { backupBucket, backupPrefix } = event;
 
+    if (!process.env.COGNITO_POOL_ID) {
+        throw new Error("The environment does not contain a value for Cognito pool ID");
+    }
+
     const cognito = new CognitoIdentityServiceProvider();
     const s3 = new S3();
 
@@ -163,14 +167,35 @@ function asString(d) {
 };
 
 async function importGroups(cognito, groups) {
-    groups.forEach(g => {
-        console.log('!!!! Group', g);
-    })
+    await groups.forEach(async g => {
+        const newGroup = {
+            UserPoolId: process.env.COGNITO_POOL_ID,
+            GroupName: g.GroupName,
+            Description: g.Description,
+            Precedence: g.Precedence,
+        };
+        console.log('Create group:', newGroup);
+        await cognito.createGroup(newGroup).promise();
+    });
 }
 
 async function importUsers(cognito, users) {
-    users.forEach(u => {
-        console.log('!!!! User', u);
+    await users.forEach(async u => {
+        const newUser = {
+            UserPoolId: process.env.COGNITO_POOL_ID,
+            Username: u.Username,
+            UserAttributes: u.Attributes,
+        };
+        console.log('Create user', newUser);
+        await cognito.adminCreateUser(newUser).promise();
+        await u.UserGroups.forEach(async ug => {
+            console.log(`Add ${u.Username} to ${ug.GroupName} group`);
+            await cognito.adminAddUserToGroup({
+                UserPoolId: process.env.COGNITO_POOL_ID,
+                GroupName: ug.GroupName,
+                Username: u.Username,
+            }).promise();
+        });
     })
 }
 

@@ -36,7 +36,7 @@ export class HortaCloudCognitoBackup extends Construct {
 
         this.addPolicies(this.backupHandler, [
             new PolicyStatement({
-                actions: [ 
+                actions: [
                     'cognito-idp:ListUsers', 
                     'cognito-idp:ListGroups',
                     'cognito-idp:AdminListGroupsForUser'
@@ -70,6 +70,17 @@ export class HortaCloudCognitoBackup extends Construct {
         });
 
         this.addPolicies(this.restoreHandler, [
+            new PolicyStatement({
+                actions: [
+                    'cognito-idp:AdminCreateUser', 
+                    'cognito-idp:CreateGroup',
+                    'cognito-idp:AdminAddUserToGroup'
+                ],
+                effect: Effect.ALLOW,
+                resources: [
+                    `arn:aws:cognito-idp:${AWS_REGION}:${AWS_ACCOUNT}:userpool/${userPoolId}`
+                ]
+            }),
             new PolicyStatement({
                 actions: [
                     's3:GetObject'

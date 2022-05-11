@@ -7,7 +7,13 @@ export interface HortaCloudConfig {
     developerName: string;
     hortaWorkstationInstanceType: string;
     hortaWorkstationImageName: string; // the workstation image name and instance type are correlated
-    restoreCognitoFromBackup: boolean;
+}
+
+export interface HortaBackupConfig {
+    hortaBackupBucket?: string;
+    hortaBackupFolder?: string;
+    hortaRestoreBucket?: string;
+    hortaRestoreFolder?: string;
 }
 
 export interface VpcInstanceProps {
@@ -25,7 +31,15 @@ export function getHortaCloudConfig() : HortaCloudConfig {
         developerName: process.env.USER || "unknown",
         hortaWorkstationInstanceType: process.env.HORTA_WS_INSTANCE_TYPE || 'stream.graphics.g4dn.xlarge',
         hortaWorkstationImageName: process.env.HORTA_WS_IMAGE_NAME || 'AppStream-Graphics-G4dn-WinServer2019-03-03-2022',
-        restoreCognitoFromBackup: process.env.HORTA_RESTORE_COGNITO_FLAG?.toLowerCase() == 'true' ? true : false,
+    };
+}
+
+export function getHortaBackupConfig() : HortaBackupConfig {
+    return {
+        hortaBackupBucket: process.env.HORTA_BACKUP_BUCKET,
+        hortaBackupFolder: process.env.HORTA_BACKUP_FOLDER,
+        hortaRestoreBucket: process.env.HORTA_RESTORE_BUCKET,
+        hortaRestoreFolder: process.env.HORTA_RESTORE_FOLDER,
     };
 }
 

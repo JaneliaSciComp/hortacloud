@@ -1,7 +1,8 @@
-import { HortaCloudConfig, getHortaCloudConfig } from '../../common/hortacloud-common';
+import { HortaCloudConfig, getHortaCloudConfig,
+         HortaBackupConfig, getHortaBackupConfig } from '../../common/hortacloud-common';
 
 // Horta Services Config
-export interface HortaCloudServicesConfig extends HortaCloudConfig {
+export interface HortaCloudServicesConfig extends HortaCloudConfig, HortaBackupConfig {
     hortaServerInstanceType: string;
     hortaServerKeyPairName?: string;
     hortaDataVolumeSizeGB: number;
@@ -14,15 +15,12 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig {
     jadeAPIKey: string;
     searchMemGB: string;
     hortaDataBuckets?: string;
-    hortaBackupBucket?: string;
-    hortaBackupFolder?: string;
-    hortaRestoreBucket?: string;
-    hortaRestoreFolder?: string;
 }
 
 export function getHortaServicesConfig() : HortaCloudServicesConfig {
     return {
         ...getHortaCloudConfig(),
+        ...getHortaBackupConfig(),
         hortaServerInstanceType: process.env.HORTA_SERVER_INSTANCE_TYPE || 't2.xlarge',
         hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || '',
         hortaDataVolumeSizeGB: 30,
@@ -34,10 +32,6 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         jacsAPIKey: process.env.JACS_API_KEY || 'changeJacsAPIKeyInenv',
         jadeAPIKey: process.env.JADE_API_KEY || 'changeJadeAPIKeyInenv',
         searchMemGB: process.env.SEARCH_MEM_SIZE || '1',
-        hortaDataBuckets: process.env.HORTA_DATA_BUCKETS || 'janelia-mouselight-imagery',
-        hortaBackupBucket: process.env.HORTA_BACKUP_BUCKET,
-        hortaBackupFolder: process.env.HORTA_BACKUP_FOLDER,
-        hortaRestoreBucket: process.env.HORTA_RESTORE_BUCKET,
-        hortaRestoreFolder: process.env.HORTA_RESTORE_FOLDER,
+        hortaDataBuckets: process.env.HORTA_DATA_BUCKETS,
     };
 }

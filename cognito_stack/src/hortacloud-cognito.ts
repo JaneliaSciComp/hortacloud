@@ -24,6 +24,7 @@ export class HortaCloudCognitoStack extends Stack {
 }
 
 const ADMIN_GROUP_NAME = "admins";
+const DO_NOT_CREATE_ADMIN_USER:boolean = process.env.HORTA_NO_ADMIN_USER_FLAG?.toLowerCase() == 'true' ? true : false;
 
 class HortaCloudCognito extends Construct {
 
@@ -69,48 +70,10 @@ class HortaCloudCognito extends Construct {
       userPoolName: createResourceId(hortaCloudConfig, 'UserPool'),
     });
 
-    if (!hortaCloudConfig.restoreCognitoFromBackup) {
-      if (!process.env.ADMIN_USER_EMAIL) {
-        throw new Error("Admin user must be set");
-      }
-      // add the admins group
-      const adminGroup = new CfnUserPoolGroup(this, 'AdminsUserPoolGroup', {
-        userPoolId: this.userPool.userPoolId,
-        // the properties below are optional
-        description: "Adminsitrative users",
-        groupName: ADMIN_GROUP_NAME,
-        precedence: 0,
-      }
-      );
-      // add the default admin user for first access.
-      const adminUser = new CfnUserPoolUser(this, 'DefaultAdminUserPoolUser', {
-        userPoolId: this.userPool.userPoolId,
-        // the properties below are optional
-        username: process.env.ADMIN_USER_EMAIL,
-        userAttributes: [
-          {
-            name: "email",
-            value: process.env.ADMIN_USER_EMAIL
-          },
-          {
-            name: "email_verified",
-            value: "True"
-          }
-        ]
-      }
-      );
-
-      // add admin user to the admins group
-      const addAdminUserToAdminsGroup = new CfnUserPoolUserToGroupAttachment(this, "AdminUsertoAdminGroupAttachment", {
-        groupName: ADMIN_GROUP_NAME,
-        username: process.env.ADMIN_USER_EMAIL,
-        userPoolId: this.userPool.userPoolId,
-      }
-      );
-
-      // need to make sure the admin user has been created,
-      // before adding it to the admin group.
-      addAdminUserToAdminsGroup.node.addDependency(adminUser);
+    // if no admin user flag is set do not create the admin user
+    // that should only be done if cognito users are imported from a backup
+    if (!DO_NOT_CREATE_ADMIN_USER) {
+      this.createAdminUser();
     }
 
     // export user pool
@@ -118,6 +81,46 @@ class HortaCloudCognito extends Construct {
       value: this.userPool.userPoolId,
       exportName: createResourceId(hortaCloudConfig, 'UserPoolId')
     });
+  }
+
+  createAdminUser() {
+    if (!process.env.ADMIN_USER_EMAIL) {
+      throw new Error("Admin user must be set");
+    }
+    // create the admins group
+    const adminGroup = new CfnUserPoolGroup(this, 'AdminsUserPoolGroup', {
+      userPoolId: this.userPool.userPoolId,
+      // the properties below are optional
+      description: "Adminsitrative users",
+      groupName: ADMIN_GROUP_NAME,
+      precedence: 0,
+    });
+    // add the default admin user for first access.
+    const adminUser = new CfnUserPoolUser(this, 'DefaultAdminUserPoolUser', {
+      userPoolId: this.userPool.userPoolId,
+      // the properties below are optional
+      username: process.env.ADMIN_USER_EMAIL,
+      userAttributes: [
+        {
+          name: "email",
+          value: process.env.ADMIN_USER_EMAIL
+        },
+        {
+          name: "email_verified",
+          value: "True"
+        }
+      ]
+    });
+    // add admin user to the admins group
+    const addAdminUserToAdminsGroup = new CfnUserPoolUserToGroupAttachment(this, "AdminUsertoAdminGroupAttachment", {
+      groupName: ADMIN_GROUP_NAME,
+      username: process.env.ADMIN_USER_EMAIL,
+      userPoolId: this.userPool.userPoolId,
+    });
+
+    // need to make sure the admin user has been created,
+    // before adding it to the admin group.
+    addAdminUserToAdminsGroup.node.addDependency(adminUser, adminGroup);
   }
 
 }
