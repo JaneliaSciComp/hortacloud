@@ -167,36 +167,48 @@ function asString(d) {
 };
 
 async function importGroups(cognito, groups) {
-    await groups.forEach(async g => {
-        const newGroup = {
+    const createGroupPromises = await groups.map(async g => {
+        const newGroupParams = {
             UserPoolId: process.env.COGNITO_POOL_ID,
             GroupName: g.GroupName,
             Description: g.Description,
             Precedence: g.Precedence,
         };
-        console.log('Create group:', newGroup);
-        await cognito.createGroup(newGroup).promise();
+        console.log('Create group:', newGroupParams);
+        return await cognito.createGroup(newGroupParams).promise();
     });
+    const newGroups = await Promise.all(createGroupPromises);
+    console.log('Created new groups', newGroups);
+    return newGroups;
 }
 
 async function importUsers(cognito, users) {
-    await users.forEach(async u => {
-        const newUser = {
+    const createUserPromises = await users.map(async u => {
+        const newUserParams = {
             UserPoolId: process.env.COGNITO_POOL_ID,
             Username: u.Username,
-            UserAttributes: u.Attributes,
+            UserAttributes: u.Attributes.filter(attr => attr.Name != 'sub'),
         };
-        console.log('Create user', newUser);
-        await cognito.adminCreateUser(newUser).promise();
-        await u.UserGroups.forEach(async ug => {
+        console.log('Create user', newUserParams);
+        const newUserData = await cognito.adminCreateUser(newUserParams).promise();
+        console.log(`Add user groups to ${u.Username}`, u.UserGroups);
+        const userGroupsPromises = await u.UserGroups.map(async ug => {
             console.log(`Add ${u.Username} to ${ug.GroupName} group`);
-            await cognito.adminAddUserToGroup({
+            return await cognito.adminAddUserToGroup({
                 UserPoolId: process.env.COGNITO_POOL_ID,
                 GroupName: ug.GroupName,
                 Username: u.Username,
             }).promise();
         });
-    })
+        const userGroups = await Promise.all(userGroupsPromises);
+        return {
+            UserGroups: userGroups,
+            ...newUserData.User,
+        };
+    });
+    const newUsers = await Promise.all(createUserPromises);
+    console.log('Created new users', newUsers);
+    return newUsers;
 }
 
 async function getS3Content(s3, Bucket, Key) {
