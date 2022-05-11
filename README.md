@@ -6,6 +6,8 @@ It combines state-of-the-art volumetric visualization, advanced features for 3D 
 
 ![System architecture diagram](docs/images/system_architecture_800.png)
 
+More information is available on the [HortaCloud website](https://hortacloud.janelia.org).
+
 ## Deployment
 
 Visit the [documentation website](https://hortacloud.janelia.org/docs/administration/aws/) to learn how to deploy this system to your AWS account.
