@@ -1,6 +1,5 @@
 import { Construct } from 'constructs';
-import { Function, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 import * as path from 'path';
@@ -24,16 +23,14 @@ export class HortaCloudCognitoBackup extends Construct {
 
         const cognitoBackupResourcesDir = path.join(__dirname, 'cognito-backup-resources');
 
-        this.backupHandler = new NodejsFunction(this, 'BackupHandler', {
+        this.backupHandler = new Function(this, 'BackupHandler', {
             runtime: Runtime.NODEJS_14_X,
-            entry: path.join(cognitoBackupResourcesDir, 'index.ts'),
-            handler: 'cognitoExport',
+            code: Code.fromAsset(cognitoBackupResourcesDir),
+            handler: 'index.cognitoExport',
             functionName: createResourceId(hortaConfig, 'cognito-backup'),
             environment: {
                 COGNITO_POOL_ID: userPoolId
             },
-            projectRoot: cognitoBackupResourcesDir,
-            depsLockFilePath: path.join(cognitoBackupResourcesDir, 'package-lock.json'),
             timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
 
@@ -61,16 +58,14 @@ export class HortaCloudCognitoBackup extends Construct {
             })
         ]);
 
-        this.restoreHandler = new NodejsFunction(this, 'RestoreHandler', {
+        this.restoreHandler = new Function(this, 'RestoreHandler', {
             runtime: Runtime.NODEJS_14_X,
-            entry: path.join(cognitoBackupResourcesDir, 'index.ts'),
-            handler: 'cognitoImport',
+            code: Code.fromAsset(cognitoBackupResourcesDir),
+            handler: 'index.cognitoImport',
             functionName: createResourceId(hortaConfig, 'cognito-restore'),
             environment: {
                 COGNITO_POOL_ID: userPoolId
             },
-            projectRoot: cognitoBackupResourcesDir,
-            depsLockFilePath: path.join(cognitoBackupResourcesDir, 'package-lock.json'),
             timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
 

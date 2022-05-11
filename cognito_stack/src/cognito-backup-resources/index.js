@@ -1,27 +1,10 @@
-import { CognitoIdentityServiceProvider, S3 } from 'aws-sdk';
-import { PassThrough, Readable } from 'stream';
+const { CognitoIdentityServiceProvider, S3 } = require('aws-sdk');
+const { PassThrough, Readable } = require('stream');
 
-type ListUsersRequestType = CognitoIdentityServiceProvider.Types.ListUsersRequest;
-type ListGroupsRequestType = CognitoIdentityServiceProvider.Types.ListGroupsRequest;
-type ListUserGroupsType = CognitoIdentityServiceProvider.Types.AdminListGroupsForUserRequest;
-type UserType = CognitoIdentityServiceProvider.UserType;
-type GroupType = CognitoIdentityServiceProvider.GroupType;
-type GroupListType = CognitoIdentityServiceProvider.GroupListType;
+const USERS_FILENAME = 'users.json';
+const GROUPS_FILENAME = 'groups.json';
 
-interface BackupParameters<T> {
-    backupBucket: string;
-    backupFile: string;
-    backupData: AsyncIterable<T>;
-}
-
-interface UserWithGroups extends UserType {
-    UserGroups?: GroupListType;
-}
-
-const USERS_FILENAME:string = 'users.json';
-const GROUPS_FILENAME:string = 'groups.json';
-
-export const cognitoExport = async (event: any) : Promise<any> => {
+async function cognitoExport(event) {
 
     const { backupBucket, backupPrefix } = event;
 
@@ -49,25 +32,26 @@ export const cognitoExport = async (event: any) : Promise<any> => {
     };
 }
 
-export const cognitoImport = async (event:any) : Promise<any> => {
-    const { cognitoPoolId, backupBucket, backupPrefix } = event;
+async function cognitoImport(event) {
+    const { backupBucket, backupPrefix } = event;
 
     const cognito = new CognitoIdentityServiceProvider();
     const s3 = new S3();
 
     await importGroups(cognito, await getS3Content(s3, backupBucket, createLocation(backupPrefix, GROUPS_FILENAME)));
     await importUsers(cognito, await getS3Content(s3, backupBucket, createLocation(backupPrefix, USERS_FILENAME)));
+
     return {
         statusCode: 200
     };
 }
 
-const createLocation = (prefix: string, name: string) : string => {
+function createLocation(prefix, name) {
     const location = prefix ? `${prefix}/${name}` : name;
     return location.startsWith('/') ? location.substring(1) : location;
 }
 
-async function exportData<T>(s3:S3, backupParams: BackupParameters<T>) {
+async function exportData(s3, backupParams) {
     const uploadStream = new PassThrough();
 
     const upload = s3.upload({
@@ -76,7 +60,6 @@ async function exportData<T>(s3:S3, backupParams: BackupParameters<T>) {
         Body: uploadStream,
         ContentType: 'application/json'
     });
-
     const dataStream = Readable.from(jsonArrayStream(backupParams.backupData));
 
     dataStream.pipe(uploadStream);
@@ -91,7 +74,7 @@ async function exportData<T>(s3:S3, backupParams: BackupParameters<T>) {
     }
 }
 
-async function* jsonArrayStream<T>(iterableData: AsyncIterable<T>) {
+async function* jsonArrayStream(iterableData) {
     yield '[';
     let i = 0;
     for await (const d of iterableData) {
@@ -106,10 +89,10 @@ async function* jsonArrayStream<T>(iterableData: AsyncIterable<T>) {
     yield ']';
 }
 
-async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolId: string) {
-    let cachedUsers: UserWithGroups[] | undefined = undefined;
-    let userIndex: number = 0;
-    const listUserParams:ListUsersRequestType = {
+async function* fetchAllUsers(cognito, userPoolId) {
+    let cachedUsers = undefined;
+    let userIndex = 0;
+    const listUserParams = {
         UserPoolId: userPoolId,
     }
     let count = 0;
@@ -137,10 +120,10 @@ async function* fetchAllUsers(cognito: CognitoIdentityServiceProvider, userPoolI
     return count;
 }
 
-async function* fetchAllGroups(cognito: CognitoIdentityServiceProvider, userPoolId: string) {
-    let cachedGroups: GroupType[] | undefined = undefined;
-    let groupIndex: number = 0;
-    const listGroupsParams:ListGroupsRequestType = {
+async function* fetchAllGroups(cognito, userPoolId) {
+    let cachedGroups = undefined;
+    let groupIndex = 0;
+    const listGroupsParams = {
         UserPoolId: userPoolId,
     }
     let count = 0;
@@ -164,9 +147,9 @@ async function* fetchAllGroups(cognito: CognitoIdentityServiceProvider, userPool
     return count;
 }
 
-async function fetchUserGroups(cognito: CognitoIdentityServiceProvider, userPoolId:string, username: string) : Promise<GroupListType> {
+async function fetchUserGroups(cognito, userPoolId, username) {
     console.log(`Fetch user groups for ${username}`);
-    const listUserGroupsParams:ListUserGroupsType = {
+    const listUserGroupsParams = {
         UserPoolId: userPoolId,
         Username: username
     }
@@ -175,34 +158,39 @@ async function fetchUserGroups(cognito: CognitoIdentityServiceProvider, userPool
     return Groups;
 }
 
-function asString<T>(d:T) : string {
+function asString(d) {
     return JSON.stringify(d);
 };
 
-async function importGroups(cognito: CognitoIdentityServiceProvider, groups: GroupListType) {
+async function importGroups(cognito, groups) {
     groups.forEach(g => {
         console.log('!!!! Group', g);
     })
 }
 
-async function importUsers(cognito: CognitoIdentityServiceProvider, users: UserWithGroups[]) {
+async function importUsers(cognito, users) {
     users.forEach(u => {
         console.log('!!!! User', u);
     })
 }
 
-async function getS3Content(s3: S3, Bucket:string, Key:string) : Promise<any> {
+async function getS3Content(s3, Bucket, Key) {
     try {
         console.log(`Getting content from ${Bucket}:${Key}`);
         const response = await s3.getObject({
             Bucket,
             Key
         }).promise();
-        return response.Body 
+        return response.Body
             ? JSON.parse(response.Body?.toString())
             : null;
     } catch (e) {
         console.error(`Error getting content ${Bucket}:${Key}`, e);
         throw e; // rethrow it
     }
+}
+
+module.exports = {
+    cognitoExport,
+    cognitoImport
 };

@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib';
 import {
   AccountRecovery, CfnUserPoolGroup,
   CfnUserPoolUser, CfnUserPoolUserToGroupAttachment,
@@ -64,7 +64,7 @@ class HortaCloudCognito extends Construct {
         requireUppercase: false,
         requireDigits: false,
         requireSymbols: false,
-        tempPasswordValidity: cdk.Duration.days(7),
+        tempPasswordValidity: Duration.days(7),
       },
       userPoolName: createResourceId(hortaCloudConfig, 'UserPool'),
     });

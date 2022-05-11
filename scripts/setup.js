@@ -20,6 +20,7 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
 if (argv.withInstall) {
   console.log(chalk.cyan("🛠  Installing dependencies"));
   exec("npm install --prefix ./cognito_stack");
+  exec("npm install --prefix ./cognito_stack/src/cognito-backup-resources");
   exec("npm install --prefix ./vpc_stack");
   exec("npm install --prefix ./workstation_stack");
   exec("npm install --prefix ./admin_api_stack");
