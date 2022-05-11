@@ -198,10 +198,11 @@ async function install(argv) {
     await restore_cognito_users(argv.restoreUsersBucket, argv.restoreUsersFolder);
   }
 
-  // if (!argv.adminOnly) {
-  //   await deploy_vpc_and_workstation();
-  // }
-  // await deploy_admin_site();
+  if (!argv.adminOnly) {
+    await deploy_vpc_and_workstation();
+  }
+
+  await deploy_admin_site();
 
   // post install directions
   const postOutputs = {};
