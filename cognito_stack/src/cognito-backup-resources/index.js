@@ -191,18 +191,18 @@ async function importUsers(cognito, users) {
         };
         console.log('Create user', newUserParams);
         const newUserData = await cognito.adminCreateUser(newUserParams).promise();
-        console.log(`Add user groups to ${u.Username}`, u.UserGroups);
+        console.log(`Add user ${u.Username} to groups:`, u.UserGroups);
         const userGroupsPromises = await u.UserGroups.map(async ug => {
-            console.log(`Add ${u.Username} to ${ug.GroupName} group`);
+            console.log(`Add '${u.Username}' to '${ug.GroupName}' group`);
             return await cognito.adminAddUserToGroup({
                 UserPoolId: process.env.COGNITO_POOL_ID,
                 GroupName: ug.GroupName,
                 Username: u.Username,
             }).promise();
         });
-        const userGroups = await Promise.all(userGroupsPromises);
+        await Promise.all(userGroupsPromises);
         return {
-            UserGroups: userGroups,
+            UserGroups: u.UserGroups,
             ...newUserData.User,
         };
     });
