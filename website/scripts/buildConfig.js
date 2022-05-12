@@ -9,19 +9,11 @@ const region = process.env.AWS_REGION;
 const cloudformation = new CloudFormation({ region });
 
 async function main() {
-  const outputs = {};
 
-  // get stack info
-  const apiStack = await cloudformation
-    .describeStacks({
-      StackName: `${HORTA_ORG}-hc-adminAPI-${HORTA_STAGE}`,
-    })
-    .promise();
+  // dump stack outputs
+  const outputs = await dumpCFStacksOutputs(['cognito', 'adminAPI']);
 
-  // build the outputs into a simple object
-  apiStack.Stacks[0].Outputs.forEach(({ OutputKey, OutputValue }) => {
-    outputs[OutputKey] = OutputValue;
-  });
+  console.log('Stacks outputs', outputs);
 
   // read existing config or create a new one
   const configFilePath = path.join(__dirname, "..", "src", "config.json");
@@ -49,4 +41,29 @@ async function main() {
   // update the file
   fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2));
 }
+
+async function dumpCFStacksOutputs(stackNames) {
+
+  const outputs = {};
+
+  const stackPromises = await stackNames.map(async stackName => {
+    return await cloudformation
+      .describeStacks({
+        StackName: `${HORTA_ORG}-hc-${stackName}-${HORTA_STAGE}`,
+      })
+      .promise();
+  });
+
+  const stacks = await Promise.all(stackPromises);
+
+  stacks.forEach(stack => {
+    // dump the outputs into a simple object
+    stack.Stacks[0].Outputs.forEach(({ OutputKey, OutputValue }) => {
+      outputs[OutputKey] = OutputValue;
+    });
+  });
+
+  return outputs;
+}
+
 main();

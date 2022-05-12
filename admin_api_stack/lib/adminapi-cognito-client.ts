@@ -10,8 +10,6 @@ export class AdminApiCognitoClient extends Construct {
   constructor(scope: Construct, id: string, userPool: IUserPool) {
     super(scope, id);
 
-    const props = getHortaCloudConfig();
-
     // this generates the clientId that will be used by the admin site
     this.userPoolClient = new UserPoolClient(
       this,
@@ -20,9 +18,5 @@ export class AdminApiCognitoClient extends Construct {
         userPool: userPool
       }
     );
-
-    new cdk.CfnOutput(this, 'UserPoolClientId', {
-      value: this.userPoolClient.userPoolClientId
-    });
   }
 }

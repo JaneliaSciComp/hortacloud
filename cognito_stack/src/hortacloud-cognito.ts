@@ -5,7 +5,7 @@ import {
   CfnUserPoolUser, CfnUserPoolUserToGroupAttachment,
   UserPool
 } from 'aws-cdk-lib/aws-cognito';
-import { createResourceId, getHortaCloudConfig } from '../../common/hortacloud-common';
+import { createResourceId, getHortaCloudConfig, HortaCloudConfig } from '../../common/hortacloud-common';
 import { HortaCloudCognitoBackup } from './cognito-backup-lambda';
 
 export class HortaCloudCognitoStack extends Stack {
@@ -18,8 +18,16 @@ export class HortaCloudCognitoStack extends Stack {
     props?: StackProps) {
     super(scope, id, props);
 
-    this.cognito = new HortaCloudCognito(this, 'Cognito');
+    const hortaCloudConfig = getHortaCloudConfig();
+
+    this.cognito = new HortaCloudCognito(this, 'Cognito', hortaCloudConfig);
     this.cognitoBackup = new HortaCloudCognitoBackup(this, 'CognitoBackup', this.cognito.userPool.userPoolId);
+
+    // export user pool
+    new CfnOutput(this, 'UserPoolId', {
+      value: this.cognito.userPool.userPoolId,
+      exportName: createResourceId(hortaCloudConfig, 'UserPoolId')
+    });
   }
 }
 
@@ -30,9 +38,8 @@ class HortaCloudCognito extends Construct {
 
   public readonly userPool: UserPool;
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, hortaCloudConfig: HortaCloudConfig) {
     super(scope, id);
-    const hortaCloudConfig = getHortaCloudConfig();
 
     const adminBucketUrl = `${hortaCloudConfig.hortaCloudOrg}-hc-webadmin-${hortaCloudConfig.hortaStage}.s3-website-${process.env.AWS_REGION}.amazonaws.com`;
     // user pool for auth
@@ -75,12 +82,6 @@ class HortaCloudCognito extends Construct {
     if (!DO_NOT_CREATE_ADMIN_USER) {
       this.createAdminUser();
     }
-
-    // export user pool
-    new CfnOutput(this, 'UserPoolId', {
-      value: this.userPool.userPoolId,
-      exportName: createResourceId(hortaCloudConfig, 'UserPoolId')
-    });
   }
 
   createAdminUser() {

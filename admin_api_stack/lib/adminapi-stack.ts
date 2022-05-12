@@ -11,6 +11,7 @@ interface AdminAPIStackProps extends StackProps {
 }
 
 export class HortaCloudAdminAPIStack extends Stack {
+
   constructor(scope: Construct, id: string, props: AdminAPIStackProps) {
     super(scope, id, props);
 
@@ -30,6 +31,10 @@ export class HortaCloudAdminAPIStack extends Stack {
       userPool,
       { org: props.org, stage: props.stage }
     );
+
+    new CfnOutput(this, "UserPoolClientId", {
+      value: adminApiCognitoClient.userPoolClient.userPoolClientId
+    });
 
     new CfnOutput(this, "ApiGatewayEndPoint", {
       value: adminLambdaConstruct.api.url
