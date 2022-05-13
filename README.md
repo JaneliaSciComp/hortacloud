@@ -11,3 +11,7 @@ More information is available on the [HortaCloud website](https://hortacloud.jan
 ## Deployment
 
 [See the documentation](https://hortacloud.janelia.org/docs/administration/aws/) to learn how to deploy this system to your AWS account.
+
+## Contributing
+
+Read about [how to contribute](CONTRIBUTING.md) to this project.
