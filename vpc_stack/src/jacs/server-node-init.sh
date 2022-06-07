@@ -12,7 +12,9 @@ dataBucketNames=("$@")
 # Install dependencies
 yum update -y
 amazon-linux-extras install -y epel
-yum install -y docker git fuse-devel s3fs-fuse
+yum install -y docker git fuse-devel s3fs-fuse python3-pip
+
+pip3 install rotate-backups
 
 mkfs -t ext4 /dev/xvdb
 mkdir /data

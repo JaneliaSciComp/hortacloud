@@ -4,12 +4,16 @@ const { PassThrough, Readable } = require('stream');
 const USERS_FILENAME = 'users.json';
 const GROUPS_FILENAME = 'groups.json';
 
+const DEFAULT_POOL_ID = process.env.DEFAULT_USERS_POOL_ID;
+
 async function cognitoExport(event) {
 
-    const { backupBucket, backupPrefix } = event;
+    const { poolId, backupBucket, backupPrefix } = event;
 
-    if (!process.env.COGNITO_POOL_ID) {
-        throw new Error("The environment does not contain a value for Cognito pool ID");
+    const userPoolId = poolId ? poolId : DEFAULT_POOL_ID;
+
+    if (!userPoolId) {
+        throw new Error("No user pool ID has been specified, either as a parameter or in the environment");
     }
 
     const cognito = new CognitoIdentityServiceProvider();
@@ -18,13 +22,13 @@ async function cognitoExport(event) {
     await exportData(s3, {
         backupBucket: backupBucket,
         backupFile: createLocation(backupPrefix, USERS_FILENAME),
-        backupData: fetchAllUsers(cognito, process.env.COGNITO_POOL_ID),
+        backupData: fetchAllUsers(cognito, userPoolId),
     });
 
     await exportData(s3, {
         backupBucket: backupBucket,
         backupFile: createLocation(backupPrefix, GROUPS_FILENAME),
-        backupData: fetchAllGroups(cognito, process.env.COGNITO_POOL_ID),
+        backupData: fetchAllGroups(cognito, userPoolId),
     });
 
     return {
@@ -33,17 +37,19 @@ async function cognitoExport(event) {
 }
 
 async function cognitoImport(event) {
-    const { backupBucket, backupPrefix } = event;
+    const { poolId, backupBucket, backupPrefix } = event;
 
-    if (!process.env.COGNITO_POOL_ID) {
-        throw new Error("The environment does not contain a value for Cognito pool ID");
+    const userPoolId = poolId ? poolId : DEFAULT_POOL_ID;
+
+    if (!userPoolId) {
+        throw new Error("No user pool ID has been specified, either as a parameter or in the environment");
     }
 
     const cognito = new CognitoIdentityServiceProvider();
     const s3 = new S3();
 
-    await importGroups(cognito, await getS3Content(s3, backupBucket, createLocation(backupPrefix, GROUPS_FILENAME)));
-    await importUsers(cognito, await getS3Content(s3, backupBucket, createLocation(backupPrefix, USERS_FILENAME)));
+    await importGroups(cognito, userPoolId, await getS3Content(s3, backupBucket, createLocation(backupPrefix, GROUPS_FILENAME)));
+    await importUsers(cognito, userPoolId, await getS3Content(s3, backupBucket, createLocation(backupPrefix, USERS_FILENAME)));
 
     return {
         statusCode: 200
@@ -166,10 +172,10 @@ function asString(d) {
     return JSON.stringify(d);
 };
 
-async function importGroups(cognito, groups) {
+async function importGroups(cognito, userPoolId, groups) {
     const createGroupPromises = await groups.map(async g => {
         const newGroupParams = {
-            UserPoolId: process.env.COGNITO_POOL_ID,
+            UserPoolId: userPoolId,
             GroupName: g.GroupName,
             Description: g.Description,
             Precedence: g.Precedence,
@@ -182,10 +188,10 @@ async function importGroups(cognito, groups) {
     return newGroups;
 }
 
-async function importUsers(cognito, users) {
+async function importUsers(cognito, userPoolId, users) {
     const createUserPromises = await users.map(async u => {
         const newUserParams = {
-            UserPoolId: process.env.COGNITO_POOL_ID,
+            UserPoolId: userPoolId,
             Username: u.Username,
             UserAttributes: u.Attributes.filter(attr => attr.Name != 'sub'),
         };
@@ -195,7 +201,7 @@ async function importUsers(cognito, users) {
         const userGroupsPromises = await u.UserGroups.map(async ug => {
             console.log(`Add '${u.Username}' to '${ug.GroupName}' group`);
             return await cognito.adminAddUserToGroup({
-                UserPoolId: process.env.COGNITO_POOL_ID,
+                UserPoolId: userPoolId,
                 GroupName: ug.GroupName,
                 Username: u.Username,
             }).promise();

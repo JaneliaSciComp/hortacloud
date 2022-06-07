@@ -24,6 +24,11 @@ JADE_API_KEY=$1
 shift
 SEARCH_MEM_GB=$1
 shift
+JACS_GIT_BRANCH=stable
+if [[ "$1" == "--jacs-git-branch" ]]; then
+    JACS_GIT_BRANCH=$2
+    shift
+fi
 BACKUP_BUCKET=
 BACKUP_FOLDER=
 if [[ "$1" == "--no-backup" ]]; then
@@ -57,7 +62,6 @@ JADE_DATA_BUCKETS_NAMES_WITH_COMMA=${JADE_DATA_BUCKETS_NAMES_WITH_SPACES// /,}  
 # Install jacs-cm
 DEPLOY_DIR=/opt/jacs/deploy
 CONFIG_DIR=/opt/jacs/config
-JACS_STACK_BRANCH=master
 
 mkdir -p $DEPLOY_DIR
 mkdir -p $CONFIG_DIR
@@ -282,10 +286,22 @@ function createBackupJob() {
         # backup current system config
         backupSystemConfig
 
+        mkdir -p ${DEPLOY_DIR}/local
+
+        local backup_rotate_config=(
+            "[${BACKUP_FOLDER}]"
+            "daily = 7"
+            "weekly = 4 * 2"
+            "monthly = 12"
+            "yearly = always"
+            "ionice = idle"
+        )
+        printf '%s\n' "${backup_rotate_config[@]}" > ${DEPLOY_DIR}/local/rotate-backups.ini
+
         # create a cronjob to backup mongo regularly
         echo "Create backup job to /s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}"
 
-        local mongo_backup_script=(
+        local backup_script=(
             "#!/bin/sh"
             "cd ${DEPLOY_DIR}"
             "current_date=\$(date +%Y%m%d%H%M%S)"
@@ -294,7 +310,7 @@ function createBackupJob() {
                 \\\"backupBucket\\\": \\\"${BACKUP_BUCKET}\\\", \
                 \\\"backupPrefix\\\": \\\"\${backup_location}/cognito\\\" \
             }\""
-            "./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}\${backup_location} > ${DEPLOY_DIR}/local/latest-mongo-backup.log 2>&1"
+            "./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}\${backup_location} > ${DEPLOY_DIR}/local/latest-backup.log 2>&1"
             "echo \"\${backup_data}\" > ${DEPLOY_DIR}/local/cognito-backup-input.json"
             "aws lambda invoke \
             --function-name ${COGNITO_BACKUP_FUNCTION} \
@@ -304,20 +320,21 @@ function createBackupJob() {
             "cd /s3data/${BACKUP_BUCKET}/${BACKUP_FOLDER}"
             "rm -f latest"
             "ln -s \${current_date} latest"
+            "echo 'run backup rotation'"
+            "/usr/local/bin/rotate-backups -c ${DEPLOY_DIR}/local/rotate-backups.ini"
         )
         # create the script
-        mkdir -p ${DEPLOY_DIR}/local
-        printf '%s\n' "${mongo_backup_script[@]}" > ${DEPLOY_DIR}/local/mongo-backup.sh
+        printf '%s\n' "${backup_script[@]}" > ${DEPLOY_DIR}/local/run-backup.sh
         # allow exec
-        chmod 755 ${DEPLOY_DIR}/local/mongo-backup.sh
+        chmod 755 ${DEPLOY_DIR}/local/run-backup.sh
         # cron job entry - run this at 3AM
         local cron_job_entry=(
             "SHELL=/bin/bash"
             "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            "0 3 * * * root ${DEPLOY_DIR}/local/mongo-backup.sh"
+            "0 3 * * * root ${DEPLOY_DIR}/local/run-backup.sh"
         )
         # create the cronjob
-        printf '%s\n' "${cron_job_entry[@]}" > /etc/cron.d/mongo-backup
+        printf '%s\n' "${cron_job_entry[@]}" > /etc/cron.d/jacs-backup
     fi
 }
 
@@ -331,7 +348,7 @@ function restoreDatabase() {
 prepareFilesystem
 
 cd $DEPLOY_DIR
-git clone --branch $JACS_STACK_BRANCH https://github.com/JaneliaSciComp/jacs-cm.git .
+git clone --branch $JACS_GIT_BRANCH https://github.com/JaneliaSciComp/jacs-cm.git .
 
 prepareEnvConfig
 

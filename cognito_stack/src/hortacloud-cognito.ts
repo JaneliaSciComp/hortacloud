@@ -5,8 +5,9 @@ import {
   CfnUserPoolUser, CfnUserPoolUserToGroupAttachment,
   UserPool
 } from 'aws-cdk-lib/aws-cognito';
-import { createResourceId, getHortaCloudConfig, HortaCloudConfig } from '../../common/hortacloud-common';
+import { createResourceId, HortaCloudConfig } from '../../common/hortacloud-common';
 import { HortaCloudCognitoBackup } from './cognito-backup-lambda';
+import { getCognitoBackupConfig } from './cognito-backup-config';
 
 export class HortaCloudCognitoStack extends Stack {
 
@@ -18,10 +19,13 @@ export class HortaCloudCognitoStack extends Stack {
     props?: StackProps) {
     super(scope, id, props);
 
-    const hortaCloudConfig = getHortaCloudConfig();
+    const hortaCloudConfig = getCognitoBackupConfig();
 
     this.cognito = new HortaCloudCognito(this, 'Cognito', hortaCloudConfig);
-    this.cognitoBackup = new HortaCloudCognitoBackup(this, 'CognitoBackup', this.cognito.userPool.userPoolId);
+    this.cognitoBackup = new HortaCloudCognitoBackup(this,
+      'CognitoBackup',
+      this.cognito.userPool.userPoolId,
+      hortaCloudConfig.accessibleReadOnlyPoolIds);
 
     // export user pool
     new CfnOutput(this, 'UserPoolId', {

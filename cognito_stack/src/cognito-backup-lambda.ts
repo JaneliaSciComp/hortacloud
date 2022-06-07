@@ -16,7 +16,8 @@ export class HortaCloudCognitoBackup extends Construct {
 
     constructor(scope: Construct,
                 id: string,
-                userPoolId: string) {
+                defaultUserPoolId: string,
+                additionalReadOnlyUserPoolId: string[]) {
         super(scope, id);
 
         const hortaConfig = getHortaCloudConfig();
@@ -29,10 +30,15 @@ export class HortaCloudCognitoBackup extends Construct {
             handler: 'index.cognitoExport',
             functionName: createResourceId(hortaConfig, 'cognito-backup'),
             environment: {
-                COGNITO_POOL_ID: userPoolId
+                DEFAULT_POOL_ID: defaultUserPoolId
             },
             timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
+
+        const readablePoolARNs: string[] = [
+            defaultUserPoolId,
+            ...additionalReadOnlyUserPoolId,
+        ].map(pId => `arn:aws:cognito-idp:${AWS_REGION}:${AWS_ACCOUNT}:userpool/${pId}`);
 
         this.addPolicies(this.backupHandler, [
             new PolicyStatement({
@@ -42,9 +48,7 @@ export class HortaCloudCognitoBackup extends Construct {
                     'cognito-idp:AdminListGroupsForUser'
                 ],
                 effect: Effect.ALLOW,
-                resources: [
-                    `arn:aws:cognito-idp:${AWS_REGION}:${AWS_ACCOUNT}:userpool/${userPoolId}`
-                ]
+                resources: readablePoolARNs,
             }),
             new PolicyStatement({
                 actions: [
@@ -64,7 +68,7 @@ export class HortaCloudCognitoBackup extends Construct {
             handler: 'index.cognitoImport',
             functionName: createResourceId(hortaConfig, 'cognito-restore'),
             environment: {
-                COGNITO_POOL_ID: userPoolId
+                DEFAULT_POOL_ID: defaultUserPoolId
             },
             timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
@@ -78,7 +82,7 @@ export class HortaCloudCognitoBackup extends Construct {
                 ],
                 effect: Effect.ALLOW,
                 resources: [
-                    `arn:aws:cognito-idp:${AWS_REGION}:${AWS_ACCOUNT}:userpool/${userPoolId}`
+                    `arn:aws:cognito-idp:${AWS_REGION}:${AWS_ACCOUNT}:userpool/${defaultUserPoolId}`
                 ]
             }),
             new PolicyStatement({

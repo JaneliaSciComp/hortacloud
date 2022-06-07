@@ -157,6 +157,12 @@ export class HortaCloudJACS extends Construct {
     const dataBucketNames = [...externalDataBuckets, defaultDataBucketName];
 
     const dataBackupFolder = hortaConfig.hortaBackupFolder ? hortaConfig.hortaBackupFolder : '/hortacloud/backups';
+    const jacsGitBranchArgs = hortaConfig.jacssGitBranch 
+      ? [
+          '--jacs-git-branch',
+          hortaConfig.jacssGitBranch,
+        ]
+      : [];
     const backupArgs = backupBucketName
       ? [
          '--backup',
@@ -191,6 +197,7 @@ export class HortaCloudJACS extends Construct {
           hortaConfig.jacsAPIKey,
           hortaConfig.jadeAPIKey,
           hortaConfig.searchMemGB,
+          ...jacsGitBranchArgs,
           ...backupArgs,
           ...restoreArgs,
           ...dataBucketNames

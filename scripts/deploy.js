@@ -198,36 +198,39 @@ async function install(argv) {
     await restore_cognito_users(argv.restoreUsersBucket, argv.restoreUsersFolder);
   }
 
-  if (!argv.adminOnly) {
+  if (!argv.adminOnly && !argv.cognitoOnly) {
     await deploy_vpc_and_workstation();
   }
 
-  await deploy_admin_site();
+  if (!argv.cognitoOnly) {
+    await deploy_admin_site();
 
-  // post install directions
-  const postOutputs = {};
+    // post install directions
+    const postOutputs = {};
 
-  // get stack info
-  const cloudformation = new CloudFormation({ AWS_REGION });
-  const apiStack = await cloudformation
-    .describeStacks({
-      StackName: `${HORTA_ORG}-hc-adminWebApp-${HORTA_STAGE}`,
-    })
-    .promise();
+    // get stack info
+    const cloudformation = new CloudFormation({ AWS_REGION });
+    const apiStack = await cloudformation
+      .describeStacks({
+        StackName: `${HORTA_ORG}-hc-adminWebApp-${HORTA_STAGE}`,
+      })
+      .promise();
 
-  // build the outputs into a simple object
-  apiStack.Stacks[0].Outputs.forEach(({ OutputKey, OutputValue }) => {
-    postOutputs[OutputKey] = OutputValue;
-  });
+    // build the outputs into a simple object
+    apiStack.Stacks[0].Outputs.forEach(({ OutputKey, OutputValue }) => {
+      postOutputs[OutputKey] = OutputValue;
+    });
 
-  console.log(
-    chalk.green(`✅ Go to ${postOutputs.SiteBucketUrl} to login to HortaCloud.`)
-  );
-  console.log(chalk.white(`Username: ${ADMIN_USER_EMAIL}`));
-  console.log(
-    chalk.white("Password: will be emailed to the admin user account.")
-  );
-  open(postOutputs.SiteBucketUrl);
+    console.log(
+      chalk.green(`✅ Go to ${postOutputs.SiteBucketUrl} to login to HortaCloud.`)
+    );
+    console.log(chalk.white(`Username: ${ADMIN_USER_EMAIL}`));
+    console.log(
+      chalk.white("Password: will be emailed to the admin user account.")
+    );
+    open(postOutputs.SiteBucketUrl);
+  }
+
 }
 
 // set env from .env file if present
@@ -281,6 +284,10 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     alias: 'include-cognito',
     type: 'boolean',
     describe: 'Include the cognito stack in the deployment',
+  })
+  .option('cognito-only', {
+    type: 'boolean',
+    describe: 'Only deploy cognito',
   })
   .option('r', {
     alias: 'restore-users',
