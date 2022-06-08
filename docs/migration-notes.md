@@ -6,7 +6,7 @@ git pull
 
 ## Backup mongo to an S3 bucket
 
-./manage.sh mongo-backup /s3data/janelia-mouselight-demo/hortacloud/backups/manual-backup
+./manage.sh mongo-backup /s3data/janelia-mouselight-backups-prod/hortacloud/backups/manual-backup
 
 ## Deploy another cognito stack (e.g. use a different stage) and enable reading from an existing cognito pool that requires backup
 
@@ -20,7 +20,7 @@ READABLE_POOL_IDS=us-east-1_0byNKiLgS
 cat > payload.json <<EOF
 {
   "poolId": "us-east-1_0byNKiLgS",
-  "backupBucket": "janelia-mouselight-demo",
+  "backupBucket": "janelia-mouselight-backups-prod",
   "backupPrefix": "hortacloud/backups/manual-backup/cognito"
 }
 EOF
@@ -36,8 +36,8 @@ aws lambda invoke \
 
 ## Set the restore bucket and restore folder in .env
 
-HORTA_RESTORE_BUCKET="janelia-mouselight-demo"
+HORTA_RESTORE_BUCKET="janelia-mouselight-backups-prod"
 HORTA_RESTORE_FOLDER="/hortacloud/backups/manual-backup"
 
 ## Deploy all stacks - including cognito and set the options to import users
-npm run deploy -- -u -r -b janelia-mouselight-demo -f hortacloud/backups/manual-backup/cognito
+npm run deploy -- -u -r -b janelia-mouselight-backups-prod -f hortacloud/backups/manual-backup/cognito
