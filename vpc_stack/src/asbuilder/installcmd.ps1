@@ -17,8 +17,6 @@ add-type @"
 
 [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
-$Env:SCOOP_GLOBAL = "C:\"
-
 Write-Output "Download scoop"
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://get.scoop.sh")
 # enable powershell
@@ -28,10 +26,11 @@ Write-Output "Set environment"
 
 Write-Output "Begin tool installation"
 scoop install sudo
+# install git
 sudo scoop install git -g
 sudo scoop bucket add java
 sudo scoop install zulu8-jdk -g
-$Env:JAVA_HOME = "C:\apps\zulu8-jdk\current"
+$env:JAVA_HOME = "$env:SystemDrive\ProgramData\scoop\apps\zulu8-jdk\current"
 
 $TmpDir = $env:TEMP
 
@@ -47,10 +46,10 @@ $certRes = Invoke-WebRequest `
 Write-Output "Downloaded cert: $certRes"
 
 Write-Output "Install certificate"
-sudo c:\apps\zulu8-jdk\current\bin\keytool.exe -import `
+sudo $env:JAVA_HOME\bin\keytool.exe -import `
     -noprompt `
     -alias mouse1selfcert -file $TmpDir\cert.crt `
-    -keystore "c:\apps\zulu8-jdk\current\jre\lib\security\cacerts" `
+    -keystore "$env:JAVA_HOME\jre\lib\security\cacerts" `
     -keypass changeit -storepass changeit
 
 Write-Output "Download workstation installer"
@@ -137,7 +136,7 @@ if (!(Get-Item -Path `$UserDir -ErrorAction Ignore)) {
 Start-Process -Wait -FilePath $WSInstallDir\bin\$AppExeName -ArgumentList `$WSArgs
 "@
 
-$RunScriptName = "c:\apps\runJaneliaWorkstation.ps1"
+$RunScriptName = "C:\apps\runJaneliaWorkstation.ps1"
 if(!(Get-Item -Path $RunScriptName -ErrorAction Ignore))
 {
     New-Item $RunScriptName
