@@ -30,7 +30,7 @@ export class HortaCloudCognitoBackup extends Construct {
             handler: 'index.cognitoExport',
             functionName: createResourceId(hortaConfig, 'cognito-backup'),
             environment: {
-                DEFAULT_POOL_ID: defaultUserPoolId
+                DEFAULT_USER_POOL_ID: defaultUserPoolId
             },
             timeout: Duration.minutes(15), // give it the maximum timeout for now
         });
@@ -68,7 +68,7 @@ export class HortaCloudCognitoBackup extends Construct {
             handler: 'index.cognitoImport',
             functionName: createResourceId(hortaConfig, 'cognito-restore'),
             environment: {
-                DEFAULT_POOL_ID: defaultUserPoolId
+                DEFAULT_USER_POOL_ID: defaultUserPoolId
             },
             timeout: Duration.minutes(15), // give it the maximum timeout for now
         });

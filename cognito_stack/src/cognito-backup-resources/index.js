@@ -4,7 +4,7 @@ const { PassThrough, Readable } = require('stream');
 const USERS_FILENAME = 'users.json';
 const GROUPS_FILENAME = 'groups.json';
 
-const DEFAULT_POOL_ID = process.env.DEFAULT_USERS_POOL_ID;
+const DEFAULT_POOL_ID = process.env.DEFAULT_USER_POOL_ID;
 
 async function cognitoExport(event) {
 
