@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/JaneliaSciComp/hortacloud#readme",
   "dependencies": {
-    "aws-sdk": "^2.1123.0",
+    "aws-sdk": "^2.1151.0",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.0",
     "open": "^8.4.0",

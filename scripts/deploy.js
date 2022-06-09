@@ -107,6 +107,7 @@ async function deploy_vpc_and_workstation() {
 
 
   let fleetRunning = false;
+  let fleetStarted = false;
   while (!fleetRunning) {
     try {
       const fleets = await appstream
@@ -119,11 +120,15 @@ async function deploy_vpc_and_workstation() {
         if (fleet.State === "RUNNING") {
           fleetRunning = true;
         } else if (fleet.State === "STOPPED") {
-          // Start the fleet
-          const startFleetReq = appstream.startFleet({
-            Name: fleetName,
-          });
-          startFleetReq.send();
+          if (!fleetStarted) {
+            console.log(chalk.cyan(`🚚 Starting ${fleetName}`));
+            // Start the fleet
+            const startFleetReq = appstream.startFleet({
+              Name: fleetName,
+            });
+            startFleetReq.send();
+            fleetStarted = true;
+          }
         } else {
           process.stdout.write(".");
         }
