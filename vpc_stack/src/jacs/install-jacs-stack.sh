@@ -289,7 +289,7 @@ function createBackupJob() {
         mkdir -p ${DEPLOY_DIR}/local
 
         local backup_rotate_config=(
-            "[${BACKUP_FOLDER}]"
+            "[/s3data/${BACKUP_BUCKET}${BACKUP_FOLDER}]"
             "daily = 7"
             "weekly = 4 * 2"
             "monthly = 12"
