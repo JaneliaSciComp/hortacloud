@@ -321,7 +321,7 @@ function createBackupJob() {
             "rm -f latest"
             "ln -s \${current_date} latest"
             "echo 'run backup rotation'"
-            "/usr/local/bin/rotate-backups -c ${DEPLOY_DIR}/local/rotate-backups.ini"
+            "/usr/local/bin/rotate-backups -c ${DEPLOY_DIR}/local/rotate-backups.ini >> ${DEPLOY_DIR}/local/latest-backup.log 2>&1"
         )
         # create the script
         printf '%s\n' "${backup_script[@]}" > ${DEPLOY_DIR}/local/run-backup.sh
