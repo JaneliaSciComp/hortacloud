@@ -10,7 +10,7 @@ $PSLauncher = " C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 $Params = "--name `"$AppName`" "
 $Params += "--absolute-app-path `"$PSLauncher`" "
 $Params += "--absolute-icon-path `"$AppIcon`" "
-$Params += "--display-name `"Horta Workstation`" "
+$Params += "--display-name `"Horta`" "
 $Params += "--working-directory  $AppWorkingPath "
 $Params += "--launch-parameters $AppPath "
 
