@@ -14,8 +14,12 @@ $Params += "--display-name `"Horta`" "
 $Params += "--working-directory  $AppWorkingPath "
 $Params += "--launch-parameters $AppPath "
 
+$ImageAssistantPath = "C:\Program Files\Amazon\Photon\ConsoleImageBuilder"
+$env:PATH += ";$ImageAssistantPath"
+$ImageAssistant = "image-assistant.exe"
+
 # add application
-$AddAppCMD = "image-assistant.exe add-application $Params"
+$AddAppCMD = "$ImageAssistant add-application $Params"
 $AddApp = Invoke-Expression  $AddAppCMD | ConvertFrom-Json
 if ($AddApp.status -eq 0) {
     Write-Host "Added $AppName"
@@ -32,7 +36,7 @@ $ImageName = $IBName.replace('image-builder','HortaCloudWorkstation')
 Write-Output "Create image $ImageName"
 $CreateParams = "--name $ImageName --display-name `"Horta Workstation`" "
 $CreateParams += "--tags PROJECT $ProjectTagValue STAGE $StageTagValue "
-$CreateCMD = "image-assistant.exe create-image $CreateParams "
+$CreateCMD = "$ImageAssistant create-image $CreateParams "
 
 $Create = Invoke-Expression $CreateCMD | ConvertFrom-Json
 if ($Create.status -eq 0) {
