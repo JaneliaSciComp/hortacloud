@@ -28,6 +28,7 @@ JACS_GIT_BRANCH=stable
 if [[ "$1" == "--jacs-git-branch" ]]; then
     JACS_GIT_BRANCH=$2
     shift
+    shift
 fi
 BACKUP_BUCKET=
 BACKUP_FOLDER=
