@@ -57,10 +57,12 @@ function destroy(argv) {
     cwd: "./workstation_stack/",
   });
 
-  console.log(chalk.yellow("⚠️  Removing VPC stack."));
-  exec(`npm run cdk -- destroy -f --all --require-approval never`, {
-    cwd: "./vpc_stack/",
-  });
+  if (!argv.keepBackend) {
+    console.log(chalk.yellow("⚠️  Removing VPC stack."));
+    exec(`npm run cdk -- destroy -f --all --require-approval never`, {
+      cwd: "./vpc_stack/",
+    });
+  }
 
   if (argv.undeployCognito) {
     console.log(chalk.yellow("⚠️  Removing Cognito stack."));
@@ -100,6 +102,11 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     alias: 'undeploy-cognito',
     type: 'boolean',
     describe: 'Undeploy the cognito stack as well'
+  })
+  .option('b', {
+    alias: 'keep-backend',
+    type: 'boolean',
+    describe: 'If set keep the JACS stack'
   })
   .argv;
 
