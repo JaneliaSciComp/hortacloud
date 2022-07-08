@@ -27,6 +27,7 @@ $env:JAVA_HOME = "$env:SystemDrive\ProgramData\scoop\apps\zulu8-jdk\current"
 $TmpDir = $env:TEMP
 
 $AppFolderName = "Horta"
+$AppIconName = "horta48"
 
 Write-Output "Download certificate"
 $certRes = Invoke-WebRequest `
@@ -58,6 +59,12 @@ $wsInstallerRes = Invoke-WebRequest `
    -OutFile $TmpDir\jws-installer.exe
 Write-Output "Downloaded installer: $wsInstallerRes"
 
+Write-Output "Download application icon"
+$wsIconRes = Invoke-WebRequest `
+   -Uri https://$ServerIP/files/$AppIconName.png `
+   -OutFile $TmpDir\jws-icon.png
+Write-Output "Downloaded application icon: $wsIconRes"
+
 # Generate the installer state for the silent install
 $InstallerStateContent = @"
 <state xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -86,3 +93,6 @@ Set-Content $InstallerStateName "$InstallerStateContent"
 
 # Run the installer
 Start-Process -Wait -FilePath $TmpDir\jws-installer.exe -ArgumentList "--silent --state $InstallerStateName"
+
+# Copy the icon
+Copy-Item $TmpDir\jws-icon.png "C:\apps" -Force
