@@ -18,14 +18,20 @@ $ImageAssistantPath = "C:\Program Files\Amazon\Photon\ConsoleImageBuilder"
 $env:PATH += ";$ImageAssistantPath"
 $ImageAssistant = "image-assistant.exe"
 
-# add application
-$AddAppCMD = "$ImageAssistant add-application $Params"
-$AddApp = Invoke-Expression  $AddAppCMD | ConvertFrom-Json
-if ($AddApp.status -eq 0) {
-    Write-Host "Added $AppName"
+if ($args[0] -eq "--skip-registration") {
+    Write-Output "Skip app registration"
 } else {
-    Write-Host "ERROR adding $AppName" 
-    Write-Host $AddApp.message
+    # add application
+    $AddAppCMD = "$ImageAssistant add-application $Params"
+    Write-Output "Add application command: $AddAppCMD"
+
+    $AddApp = Invoke-Expression  $AddAppCMD | ConvertFrom-Json
+    if ($AddApp.status -eq 0) {
+        Write-Host "Added $AppName"
+    } else {
+        Write-Host "ERROR adding $AppName"
+        Write-Host $AddApp.message
+    }
 }
 
 $IBName = (get-item env:AppStream_Resource_Name).Value
