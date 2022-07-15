@@ -39,127 +39,135 @@ async function restore_cognito_users(backupBucket, backupPrefix) {
   }).promise();
 }
 
-async function deploy_vpc_and_workstation() {
+async function deploy_vpc_and_workstation(withVpc,
+                                          withWorkstation,
+                                          startWorkstation) {
   const appstream = new AppStream({ AWS_REGION });
   const sleep_duration = 2;
 
-  // deploy the VPC stack
-  console.log(chalk.cyan("🚚 Deploying VPC stack"));
-  exec(`npm run cdk -- deploy --all --require-approval never`, {
-    cwd: "./vpc_stack/",
-  });
+  if (withVpc) {
+    // deploy the VPC stack
+    console.log(chalk.cyan("🚚 Deploying VPC stack"));
+    exec(`npm run cdk -- deploy --all --require-approval never`, {
+      cwd: "./vpc_stack/",
+    });
 
-  console.log(chalk.green("✅ Image builder is ready for your input."));
-  console.log(
-    chalk.yellow(
-      "⚠️  Please make a note of the JACS server ip in the output above. It will be required to complete the installation. It will look like ip-10-0-0-90.ec2.internal"
-    )
-  );
-  console.log(
-    chalk.yellow(
-      "⚠️  Please follow the instructions in our README to complete the workstation client configuration. This script will now wait until your configured AppStream image is available."
-    )
-  );
-  console.log(
-    chalk.white(
-      "https://github.com/JaneliaSciComp/hortacloud/blob/main/README.md#client-app-installation"
-    )
-  );
-  console.log(chalk.yellow());
-
-  // check that the appStream image is available
-  const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
-  console.log(chalk.cyan(`🔎 Waiting for AppStream image ${imageName}`));
-  let imageAvailable = false;
-  while (!imageAvailable) {
-    try {
-      const images = await appstream
-        .describeImages({
-          Names: [imageName],
-        })
-        .promise();
-      const [image] = images.Images;
-      if (image) {
-        if (image.State === "AVAILABLE") {
-          imageAvailable = true;
-        }
-      }
-    } catch (error) {
-      process.stdout.write(".");
-    }
-
-    if (imageAvailable === false) {
-      process.stdout.write(".");
-      await sleep(1000 * sleep_duration);
-    }
+    console.log(chalk.green("✅ Image builder is ready for your input."));
+    console.log(
+      chalk.yellow(
+        "⚠️  Please make a note of the JACS server ip in the output above. It will be required to complete the installation. It will look like ip-10-0-0-90.ec2.internal"
+      )
+    );
+    console.log(
+      chalk.yellow(
+        "⚠️  Please follow the instructions in our README to complete the workstation client configuration. This script will now wait until your configured AppStream image is available."
+      )
+    );
+    console.log(
+      chalk.white(
+        "https://github.com/JaneliaSciComp/hortacloud/blob/main/README.md#client-app-installation"
+      )
+    );
+    console.log(chalk.yellow());
   }
-  console.log(chalk.green("\n✅ AppStream image found."));
 
-  console.log(chalk.cyan("🚚 Deploying Workstation stack"));
-  exec(`npm run cdk -- deploy --require-approval never Workstation`, {
-    cwd: "./workstation_stack/",
-  });
-
-  // check that the appStream fleet is up and ready
   const fleetName = `${HORTA_ORG}-hc-workstation-fleet-${HORTA_STAGE}`;
-  console.log(chalk.cyan(`🔎 Looking for AppStream fleet ${fleetName}...`));
-  console.log(chalk.white("This could take 10-20 minutes"));
 
-
-  let fleetRunning = false;
-  let fleetStarted = false;
-  while (!fleetRunning) {
-    try {
-      const fleets = await appstream
-        .describeFleets({
-          Names: [fleetName],
-        })
-        .promise();
-      const [fleet] = fleets.Fleets;
-      if (fleet) {
-        if (fleet.State === "RUNNING") {
-          fleetRunning = true;
-        } else if (fleet.State === "STOPPED") {
-          if (!fleetStarted) {
-            console.log(chalk.cyan(`🚚 Starting ${fleetName}`));
-            // Start the fleet
-            const startFleetReq = appstream.startFleet({
-              Name: fleetName,
-            });
-            startFleetReq.send();
-            fleetStarted = true;
+  if (withWorkstation) {
+    // check that the appStream image is available
+    const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
+    console.log(chalk.cyan(`🔎 Waiting for AppStream image ${imageName}`));
+    let imageAvailable = false;
+    while (!imageAvailable) {
+      try {
+        const images = await appstream
+          .describeImages({
+            Names: [imageName],
+          })
+          .promise();
+        const [image] = images.Images;
+        if (image) {
+          if (image.State === "AVAILABLE") {
+            imageAvailable = true;
           }
+        }
+      } catch (error) {
+        process.stdout.write(".");
+      }
+
+      if (imageAvailable === false) {
+        process.stdout.write(".");
+        await sleep(1000 * sleep_duration);
+      }
+    }
+    console.log(chalk.green("\n✅ AppStream image found."));
+
+    console.log(chalk.cyan("🚚 Deploying Workstation stack"));
+    exec(`npm run cdk -- deploy --require-approval never Workstation`, {
+      cwd: "./workstation_stack/",
+    });
+
+    // check that the appStream fleet is up and ready
+    console.log(chalk.cyan(`🔎 Looking for AppStream fleet ${fleetName}...`));
+    console.log(chalk.white("This could take 10-20 minutes"));
+  }
+
+  if (startWorkstation) {
+    let fleetRunning = false;
+    let fleetStarted = false;
+    while (!fleetRunning) {
+      try {
+        const fleets = await appstream
+          .describeFleets({
+            Names: [fleetName],
+          })
+          .promise();
+        const [fleet] = fleets.Fleets;
+        if (fleet) {
+          if (fleet.State === "RUNNING") {
+            fleetRunning = true;
+          } else if (fleet.State === "STOPPED") {
+            if (!fleetStarted) {
+              console.log(chalk.cyan(`🚚 Starting ${fleetName}`));
+              // Start the fleet
+              const startFleetReq = appstream.startFleet({
+                Name: fleetName,
+              });
+              startFleetReq.send();
+              fleetStarted = true;
+            }
+          } else {
+            process.stdout.write(".");
+          }
+        }
+      } catch (error) {
+        if (error.code !== "ResourceNotFoundException") {
+          console.log(
+            chalk.yellow(
+              `⚠️  Please Activate your fleet ${fleetName} in the AppStream console at: `
+            )
+          );
+          console.log(
+            chalk.white("https://console.aws.amazon.com/appstream2/home")
+          );
+          console.log(
+            chalk.yellow(
+              `Select your fleet ${fleetName} and choose "Start" in the Action menu`
+            )
+          );
+          throw error;
         } else {
           process.stdout.write(".");
         }
       }
-    } catch (error) {
-      if (error.code !== "ResourceNotFoundException") {
-        console.log(
-          chalk.yellow(
-            `⚠️  Please Activate your fleet ${fleetName} in the AppStream console at: `
-          )
-        );
-        console.log(
-          chalk.white("https://console.aws.amazon.com/appstream2/home")
-        );
-        console.log(
-          chalk.yellow(
-            `Select your fleet ${fleetName} and choose "Start" in the Action menu`
-          )
-        );
-        throw error;
-      } else {
-        process.stdout.write(".");
+
+      if (fleetRunning === false) {
+        await sleep(1000 * sleep_duration);
       }
     }
 
-    if (fleetRunning === false) {
-      await sleep(1000 * sleep_duration);
-    }
+    console.log(chalk.green("\n✅ Found a running fleet, proceeding"));
   }
-
-  console.log(chalk.green("\n✅ Found a running fleet, proceeding"));
 }
 
 async function deploy_admin_site() {
@@ -204,7 +212,10 @@ async function install(argv) {
   }
 
   if (!argv.adminOnly && !argv.cognitoOnly) {
-    await deploy_vpc_and_workstation();
+    await deploy_vpc_and_workstation(
+      !argv.skipVpc, 
+      !argv.skipWorkstation,
+      !argv.skipStartWs);
   }
 
   if (!argv.cognitoOnly) {
@@ -293,6 +304,18 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
   .option('cognito-only', {
     type: 'boolean',
     describe: 'Only deploy cognito',
+  })
+  .option('skip-vpc', {
+    type: 'boolean',
+    describe: 'Do not deploy the VPC stack',
+  })
+  .option('skip-workstation', {
+    type: 'boolean',
+    describe: 'Do not deploy the Workstation AppStream stack',
+  })
+  .option('skip-start-ws', {
+    type: 'boolean',
+    describe: 'Do not start workstation fleet',
   })
   .option('r', {
     alias: 'restore-users',
