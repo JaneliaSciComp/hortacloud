@@ -52,10 +52,12 @@ function destroy(argv) {
     cwd: "./admin_api_stack/",
   });
 
-  console.log(chalk.yellow("⚠️  Removing Workstation stack"));
-  exec(`npm run cdk -- destroy -f --require-approval never Workstation`, {
-    cwd: "./workstation_stack/",
-  });
+  if (!argv.keepWorkstation) {
+    console.log(chalk.yellow("⚠️  Removing Workstation stack"));
+    exec(`npm run cdk -- destroy -f --require-approval never Workstation`, {
+      cwd: "./workstation_stack/",
+    });
+  }
 
   if (!argv.keepBackend) {
     console.log(chalk.yellow("⚠️  Removing VPC stack."));
@@ -65,6 +67,8 @@ function destroy(argv) {
   }
 
   if (argv.undeployCognito) {
+    // cognito has to be explicitly removed 
+    // by default we keep it because we don't want to recreate users
     console.log(chalk.yellow("⚠️  Removing Cognito stack."));
     exec(
       `npm run cdk -- destroy -f --all --require-approval never`,
@@ -73,7 +77,12 @@ function destroy(argv) {
   }
 
   console.log(chalk.green("✅ All stacks have been removed."));
-  removeAppStreamImage();
+  if (!argv.keepHortaImage && !argv.keepWorkstation) {
+    // if we keep the workstation fleet
+    // the image cannot be removed anyway
+    // because it is still associated with the fleet
+    removeAppStreamImage();
+  }
 }
 
 let missingVarsCount = 0;
@@ -107,6 +116,14 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     alias: 'keep-backend',
     type: 'boolean',
     describe: 'If set keep the JACS stack'
+  })
+  .option('keep-workstation', {
+    type: 'boolean',
+    describe: 'Do not remove the workstation appstream stack and fleet.',
+  })
+  .option('keep-horta-image', {
+    type: 'boolean',
+    describe: 'Do not remove Horta AppStream image',
   })
   .argv;
 
