@@ -1,5 +1,6 @@
 const execSync = require("child_process").execSync;
 const { AppStream } = require("aws-sdk");
+const fs = require('fs');
 const chalk = require("chalk");
 const dotenv = require("dotenv");
 const prompts = require("prompts");
@@ -42,10 +43,12 @@ function removeAppStreamImage() {
 }
 
 function destroy(argv) {
-  console.log(chalk.yellow("⚠️  Removing web admin frontend stack."));
-  exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_website`, {
-    cwd: "./admin_api_stack/"
-  });
+  if (fs.existsSync('./website/build')) {
+    console.log(chalk.yellow("⚠️  Removing web admin frontend stack."));
+    exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_website`, {
+      cwd: "./admin_api_stack/"
+    });
+  }
 
   console.log(chalk.yellow("⚠️  Removing web admin backend stack."));
   exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_api`, {

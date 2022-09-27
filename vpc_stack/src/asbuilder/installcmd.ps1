@@ -32,7 +32,7 @@ sudo scoop bucket add java
 sudo scoop install zulu8-jdk -g
 $env:JAVA_HOME = "$env:SystemDrive\ProgramData\scoop\apps\zulu8-jdk\current"
 
-$TmpDir = $env:TEMP
+$TmpDir = "$env:HOMEPATH\Downloads"
 
 $ProgressPreference = "SilentlyContinue"
 $AppFolderName = "Horta"
