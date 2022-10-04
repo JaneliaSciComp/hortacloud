@@ -249,7 +249,7 @@ function createScheduledJobs() {
         "}"
         "{"
         "    \"_id\": { \"\$numberLong\": \"2736342547164102667\" }, "
-        "    \"name\" : \"DBMaintanance\", "
+        "    \"name\" : \"DBMaintenance\", "
         "    \"serviceName\" : \"dbMaintenance\", "
         "    \"ownerKey\" : \"user:root\", "
         "    \"serviceArgs\" : [ "
