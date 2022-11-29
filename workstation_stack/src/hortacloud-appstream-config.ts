@@ -11,7 +11,7 @@ export function getHortaAppstreamConfig() : HortaCloudAppstreamConfig {
     return {
         ...getHortaCloudConfig(),
         appstreamComputeCapacity: parseInt(process.env.HORTA_APPSTREAM_FLEET_INSTANCES || '5'),
-        sessionDisconnectInSecs: parseInt(process.env.HORTA_SESSION_DISCONNECT_IN_SECS || '300'),
+        sessionDisconnectInSecs: parseInt(process.env.HORTA_SESSION_DISCONNECT_IN_SECS || '600'),
         sessionDurationInMin: parseInt(process.env.HORTA_SESSION_DURATION_IN_MINS || '960')
     };
 }
