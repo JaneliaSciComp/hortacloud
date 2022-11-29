@@ -28,9 +28,10 @@ export class HortacloudAppstream extends Construct {
       vpcConfig: {
         subnetIds: [
           ...vpcProps.privateSubnetIds,
-          ...vpcProps.publicSubnetIds
-        ]
+          ...vpcProps.publicSubnetIds,
+        ],
       },
+      disconnectTimeoutInSeconds: hortaCloudConfig.sessionDisconnectInSecs,
       maxUserDurationInSeconds: hortaCloudConfig.sessionDurationInMin * 60, // this value is in seconds
     });
 
@@ -38,16 +39,20 @@ export class HortacloudAppstream extends Construct {
     const stackInstanceName = createResourceId(hortaCloudConfig, 'workstation-stack');
     const stackInstance = new CfnStack(this, 'HortaCloudStack', {
       applicationSettings: {
-        enabled: false
+        enabled: true,
+        settingsGroup: stackInstanceName,
       },
       displayName: stackInstanceName,
       name: stackInstanceName,
+      storageConnectors: [{
+        connectorType: 'HOMEFOLDERS',
+      }]
     });
 
     // associate the stack with the fleet
     const stackFleetAssoc = new CfnStackFleetAssociation(this, 'HortaCloudFleetStackAssoc', {
       fleetName: fleetInstance.name,
-      stackName: stackInstanceName
+      stackName: stackInstanceName,
     });
 
     stackFleetAssoc.addDependsOn(fleetInstance);

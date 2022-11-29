@@ -113,8 +113,12 @@ export class HortaCloudJACS extends Construct {
       instanceName: jacsNodeInstanceName,
       blockDevices: [
         {
+          deviceName: '/dev/xvda',
+          volume: ec2.BlockDeviceVolume.ebs(hortaConfig.hortaSystemVolumeSizeGB),
+        },
+        {
           deviceName: '/dev/xvdb',
-          volume: ec2.BlockDeviceVolume.ebs(hortaConfig.hortaDataVolumeSizeGB)
+          volume: ec2.BlockDeviceVolume.ebs(hortaConfig.hortaDataVolumeSizeGB),
         }
       ],
       ...jacsMachineImage

@@ -5,6 +5,7 @@ import { HortaCloudConfig, getHortaCloudConfig,
 export interface HortaCloudServicesConfig extends HortaCloudConfig, HortaBackupConfig {
     hortaServerInstanceType: string;
     hortaServerKeyPairName?: string;
+    hortaSystemVolumeSizeGB: number;
     hortaDataVolumeSizeGB: number;
     jacssGitBranch?: string;
     withPublicAccess?: boolean;
@@ -19,12 +20,19 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig, HortaBackupC
 }
 
 export function getHortaServicesConfig() : HortaCloudServicesConfig {
+    const hortaSystemVolumeSizeGB:number = process.env.HORTA_SERVER_SYSTEM_VOLSIZE_GB
+        ? +process.env.HORTA_SERVER_SYSTEM_VOLSIZE_GB
+        : 8;
+    const hortaDataVolumeSizeGB:number = process.env.HORTA_SERVER_DATA_VOLSIZE_GB
+        ? +process.env.HORTA_SERVER_DATA_VOLSIZE_GB
+        : 30;
     return {
         ...getHortaCloudConfig(),
         ...getHortaBackupConfig(),
         hortaServerInstanceType: process.env.HORTA_SERVER_INSTANCE_TYPE || 't2.xlarge',
         hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || '',
-        hortaDataVolumeSizeGB: 30,
+        hortaSystemVolumeSizeGB: hortaSystemVolumeSizeGB,
+        hortaDataVolumeSizeGB: hortaDataVolumeSizeGB,
         jacssGitBranch: process.env.JACS_GIT_BRANCH,
         withPublicAccess: false,
         jwtKey: process.env.JACS_JWT_KEY || 'GFNaVyaC6boqf0VKtBEjLLu5VY8Ks0PQ23kpSs8lgWg',
