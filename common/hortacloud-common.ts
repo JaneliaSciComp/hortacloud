@@ -14,6 +14,7 @@ export interface HortaBackupConfig {
     hortaBackupFolder?: string;
     hortaRestoreBucket?: string;
     hortaRestoreFolder?: string;
+    hortaSystemLogsBackupFolder?: string;
 }
 
 export interface VpcInstanceProps {
@@ -40,6 +41,7 @@ export function getHortaBackupConfig() : HortaBackupConfig {
         hortaBackupFolder: process.env.HORTA_BACKUP_FOLDER,
         hortaRestoreBucket: process.env.HORTA_RESTORE_BUCKET,
         hortaRestoreFolder: process.env.HORTA_RESTORE_FOLDER,
+        hortaSystemLogsBackupFolder: process.env.HORTA_SYSTEMLOGS_FOLDER,
     };
 }
 

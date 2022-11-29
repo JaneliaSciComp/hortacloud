@@ -183,11 +183,23 @@ export class HortaCloudJACS extends Construct {
     const restoreArgs = dataRestoreFolder
       ? ['--restore', restoreBucketName, dataRestoreFolder]
       : ['--no-restore']
+    const systemLogsBackupFolder = hortaConfig.hortaSystemLogsBackupFolder ? hortaConfig.hortaSystemLogsBackupFolder : 'hortacloud/systemlogs';
+    const systemLogsBackupArgs = backupBucketName
+        ? [
+          backupBucketName,
+          systemLogsBackupFolder,
+          ]
+        : []
     createAssets(this, this.server, [
       {
         name: 'InitInstanceAsset',
         path: 'jacs/server-node-init.sh',
         arguments: dataBucketNames
+      },
+      {
+        name: 'CreateLogRotateConfigAsset',
+        path: 'jacs/create-logrotate-conf.sh',
+        arguments: systemLogsBackupArgs,
       },
       {
         name: 'InitJacsStackAsset',
