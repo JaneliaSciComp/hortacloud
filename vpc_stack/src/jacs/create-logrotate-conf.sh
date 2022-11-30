@@ -3,6 +3,10 @@
 backupBucket="$1"
 systemsBackupFolder=${2:-"hortacloud/systemlogs"}
 
+echo "remove mlocate job and data"
+mv /etc/cron.daily/mlocate /tmp || true
+rm -f /var/lib/mlocate/mlocate.db || true
+
 if [[ -z ${backupBucket} ]]; then
     echo "Skip setting up system log rotation"
     exit 0
