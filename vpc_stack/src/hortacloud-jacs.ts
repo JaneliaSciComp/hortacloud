@@ -167,6 +167,10 @@ export class HortaCloudJACS extends Construct {
           hortaConfig.jacssGitBranch,
         ]
       : [];
+    const workstationMemArgs = [
+      '--workstation-memory',
+      hortaConfig.hortaWorkstationMemory
+    ];
     const backupArgs = backupBucketName
       ? [
          '--backup',
@@ -214,6 +218,7 @@ export class HortaCloudJACS extends Construct {
           hortaConfig.jadeAPIKey,
           hortaConfig.searchMemGB,
           ...jacsGitBranchArgs,
+          ...workstationMemArgs,
           ...backupArgs,
           ...restoreArgs,
           ...dataBucketNames

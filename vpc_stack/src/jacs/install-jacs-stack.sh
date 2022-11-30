@@ -24,12 +24,21 @@ JADE_API_KEY=$1
 shift
 SEARCH_MEM_GB=$1
 shift
+# set JACS branch
 JACS_GIT_BRANCH=stable
 if [[ "$1" == "--jacs-git-branch" ]]; then
     JACS_GIT_BRANCH=$2
     shift
     shift
 fi
+# set workstation memory
+WORKSTATION_MEM=15g
+if [[ "$1" == "--workstation-memory" ]]; then
+    WORKSTATION_MEM=$2
+    shift
+    shift
+fi
+# backup bucket
 BACKUP_BUCKET=
 BACKUP_FOLDER=
 if [[ "$1" == "--no-backup" ]]; then
@@ -45,6 +54,7 @@ elif [[ "$1" == "--backup" ]]; then
     shift
     shift
 fi
+# backup restore bucket
 RESTORE_BUCKET=
 RESTORE_FOLDER=
 if [[ "$1" == "--no-restore" ]]; then
@@ -109,6 +119,7 @@ function prepareEnvConfig() {
         "s/JADE_API_KEY=.*$/JADE_API_KEY=${JADE_API_KEY}/"
         "s/SEARCH_INIT_MEM_SIZE=.*$/SEARCH_INIT_MEM_SIZE=${SEARCH_MEM_GB}/"
         "s/SEARCH_MAX_MEM_SIZE=.*$/SEARCH_MAX_MEM_SIZE=${SEARCH_MEM_GB}/"
+        "s/WORKSTATION_CLIENT_MEM=.*$/WORKSTATION_CLIENT_MEM=${WORKSTATION_MEM}/"
     )
     printf '%s\n' "${sedcmds[@]}" > /tmp/scmd
 
