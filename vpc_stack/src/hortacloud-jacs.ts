@@ -106,7 +106,7 @@ export class HortaCloudJACS extends Construct {
       vpcSubnets: {
         subnetType: hortaConfig.withPublicAccess
           ? ec2.SubnetType.PUBLIC
-          : ec2.SubnetType.PRIVATE_WITH_NAT
+          : ec2.SubnetType.PRIVATE_WITH_EGRESS
       },
       role: serverRole,
       securityGroup: serverSG,

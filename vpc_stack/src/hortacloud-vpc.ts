@@ -31,7 +31,7 @@ export class HortaCloudVPC extends Stack {
       service: InterfaceVpcEndpointAwsService.SSM,
       privateDnsEnabled: true,
       subnets: {
-        subnetType: SubnetType.PRIVATE_WITH_NAT,
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         onePerAz: true
       },
     });
@@ -41,7 +41,7 @@ export class HortaCloudVPC extends Stack {
       service: InterfaceVpcEndpointAwsService.SSM_MESSAGES,
       privateDnsEnabled: true,
       subnets: {
-        subnetType: SubnetType.PRIVATE_WITH_NAT,
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         onePerAz: true
       },
     });
@@ -51,7 +51,7 @@ export class HortaCloudVPC extends Stack {
       service: InterfaceVpcEndpointAwsService.EC2,
       privateDnsEnabled: true,
       subnets: {
-        subnetType: SubnetType.PRIVATE_WITH_NAT,
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         onePerAz: true
       },
     });
@@ -61,7 +61,7 @@ export class HortaCloudVPC extends Stack {
       service: InterfaceVpcEndpointAwsService.EC2_MESSAGES,
       privateDnsEnabled: true,
       subnets: {
-        subnetType: SubnetType.PRIVATE_WITH_NAT,
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         onePerAz: true
       },
     });
@@ -70,7 +70,7 @@ export class HortaCloudVPC extends Stack {
     this.vpc.addGatewayEndpoint('S3-SSM', {
       service: GatewayVpcEndpointAwsService.S3,
       subnets: [{
-        subnetType: SubnetType.PRIVATE_WITH_NAT,
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         onePerAz: true
       }],
     });
@@ -101,7 +101,7 @@ function createVPC(scope: Construct, config: HortaCloudServicesConfig) : IVpc {
     subnetConfiguration: [
       {
         cidrMask: 24,
-        subnetType: SubnetType.PRIVATE_WITH_NAT,
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
         name: 'Private'
       },
       { 

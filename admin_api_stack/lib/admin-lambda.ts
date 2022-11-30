@@ -118,7 +118,7 @@ export class LambdaService extends Construct {
         role: userListRole,
         vpc: workstationVpc,
         vpcSubnets: {
-          subnetType: ec2.SubnetType.PRIVATE_WITH_NAT
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
         },
         code: lambda.Code.fromAsset(
           path.join(__dirname, '..', 'user-list-resources')
