@@ -7,7 +7,6 @@ export interface HortaCloudConfig {
     developerName: string;
     hortaWorkstationInstanceType: string;
     hortaWorkstationImageName: string; // the workstation image name and instance type are correlated
-    hortaWorkstationMemory: string; // the max available memory for the workstation also depends on instance type (see https://aws.amazon.com/appstream2/pricing)
 }
 
 export interface HortaBackupConfig {
@@ -33,7 +32,6 @@ export function getHortaCloudConfig() : HortaCloudConfig {
         developerName: process.env.USER || "unknown",
         hortaWorkstationInstanceType: process.env.HORTA_WS_INSTANCE_TYPE || 'stream.graphics.g4dn.xlarge',
         hortaWorkstationImageName: process.env.HORTA_WS_IMAGE_NAME || 'AppStream-Graphics-G4dn-WinServer2019-09-01-2022',
-        hortaWorkstationMemory: process.env.HORTA_WS_MEM || '15G',
     };
 }
 

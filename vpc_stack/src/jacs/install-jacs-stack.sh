@@ -31,13 +31,6 @@ if [[ "$1" == "--jacs-git-branch" ]]; then
     shift
     shift
 fi
-# set workstation memory
-WORKSTATION_MEM=15g
-if [[ "$1" == "--workstation-memory" ]]; then
-    WORKSTATION_MEM=$2
-    shift
-    shift
-fi
 # backup bucket
 BACKUP_BUCKET=
 BACKUP_FOLDER=
@@ -119,7 +112,6 @@ function prepareEnvConfig() {
         "s/JADE_API_KEY=.*$/JADE_API_KEY=${JADE_API_KEY}/"
         "s/SEARCH_INIT_MEM_SIZE=.*$/SEARCH_INIT_MEM_SIZE=${SEARCH_MEM_GB}/"
         "s/SEARCH_MAX_MEM_SIZE=.*$/SEARCH_MAX_MEM_SIZE=${SEARCH_MEM_GB}/"
-        "s/WORKSTATION_CLIENT_MEM=.*$/WORKSTATION_CLIENT_MEM=${WORKSTATION_MEM}/"
     )
     printf '%s\n' "${sedcmds[@]}" > /tmp/scmd
 
