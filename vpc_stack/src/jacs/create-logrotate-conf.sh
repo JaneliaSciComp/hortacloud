@@ -32,10 +32,10 @@ var/log/cron
     postrotate
         /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
         # move logs
-        mv var/log/cron-???????? /s3data/${backupBucket}/${systemsBackupFolder}
-        mv var/log/maillog-???????? /s3data/${backupBucket}/${systemsBackupFolder}
-        mv var/log/messages-???????? /s3data/${backupBucket}/${systemsBackupFolder}
-        mv var/log/spooler-???????? /s3data/${backupBucket}/${systemsBackupFolder}
+        mv /var/log/cron-???????? /s3data/${backupBucket}/${systemsBackupFolder}
+        mv /var/log/maillog-???????? /s3data/${backupBucket}/${systemsBackupFolder}
+        mv /var/log/messages-???????? /s3data/${backupBucket}/${systemsBackupFolder}
+        mv /var/log/spooler-???????? /s3data/${backupBucket}/${systemsBackupFolder}
     endscript
 }
 EOF
