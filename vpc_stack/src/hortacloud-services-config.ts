@@ -1,6 +1,8 @@
 import { HortaCloudConfig, getHortaCloudConfig,
          HortaBackupConfig, getHortaBackupConfig } from '../../common/hortacloud-common';
 
+const defaultJacsStackVersion = '9.10.2';
+
 // Horta Services Config
 export interface HortaCloudServicesConfig extends HortaCloudConfig, HortaBackupConfig {
     hortaServerInstanceType: string;
@@ -33,7 +35,7 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || '',
         hortaSystemVolumeSizeGB: hortaSystemVolumeSizeGB,
         hortaDataVolumeSizeGB: hortaDataVolumeSizeGB,
-        jacssGitBranch: process.env.JACS_GIT_BRANCH,
+        jacssGitBranch: process.env.JACS_GIT_BRANCH || defaultJacsStackVersion,
         withPublicAccess: false,
         jwtKey: process.env.JACS_JWT_KEY || 'GFNaVyaC6boqf0VKtBEjLLu5VY8Ks0PQ23kpSs8lgWg',
         mongoKey: process.env.JACS_MONGO_KEY || 'C9w7ZIVbtvN4LqDgOUrZuLEOqGSkgjWvRDg4mpgDw',
