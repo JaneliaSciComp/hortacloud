@@ -23,18 +23,18 @@ async function getSessionToken(region, mfaDevice, code) {
 }
 
 async function getSessionnCredentials(region, mfaEnabled) {
-  if (mfaEnabled) {
     const mfaDevice = await getMFADevice(region);
-    var mfaDeviceName = mfaDevice.split(/\//).pop();
-    const tokenResponse = await prompts({
-      type: 'text',
-      name: 'token',
-      message: `Enter code from ${mfaDeviceName}`,
-    });
-    return await getSessionToken(region, mfaDevice, tokenResponse.token);
-  } else {
-    return {};
-  }
+    if (mfaDevice && mfaEnabled) {
+        var mfaDeviceName = mfaDevice.split(/\//).pop();
+        const tokenResponse = await prompts({
+            type: 'text',
+            name: 'token',
+            message: `Enter code from ${mfaDeviceName}`,
+        });
+        return await getSessionToken(region, mfaDevice, tokenResponse.token);
+    } else {
+        return {};
+    }
 }
 
 function getEnvWithSessionCredentials(credentials) {
