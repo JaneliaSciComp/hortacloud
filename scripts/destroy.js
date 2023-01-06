@@ -1,9 +1,10 @@
-const execSync = require("child_process").execSync;
-const { AppStream } = require("aws-sdk");
+const execSync = require('child_process').execSync;
+const { AppStream } = require('aws-sdk');
 const fs = require('fs');
-const chalk = require("chalk");
-const dotenv = require("dotenv");
-const prompts = require("prompts");
+const chalk = require('chalk');
+const dotenv = require('dotenv');
+const prompts = require('prompts');
+const { getSessionnCredentials, getEnvWithSessionCredentials } = require('./credentials');
 
 // set env from .env file if present
 dotenv.config();
@@ -13,7 +14,7 @@ const exec = (command, options = {}) => {
   execSync(command, combinedOptions);
 };
 
-const { HORTA_ORG, HORTA_STAGE, AWS_REGION } = process.env;
+const { HORTA_ORG, HORTA_STAGE, AWS_REGION, AWS_PROFILE } = process.env;
 console.log(chalk.cyan("🔎 Checking environment."));
 
 const expectedEnvVars = [
@@ -21,13 +22,19 @@ const expectedEnvVars = [
   "HORTA_STAGE",
   "AWS_REGION",
   "AWS_ACCOUNT",
+  "AWS_PROFILE",
 ];
 
-function removeAppStreamImage() {
+function removeAppStreamImage(credentials) {
   const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
 
   try {
-    const appstream = new AppStream({ AWS_REGION });
+    const appstream = new AppStream({ 
+      region: AWS_REGION,
+      accessKeyId: credentials.AccessKeyId,
+      secretAccessKey: credentials.SecretAccessKey,
+      sessionToken: credentials.SessionToken,  
+    });
     console.log(chalk.yellow(`⚠️  Removing appstream image ${imageName}`));
     const deleteImageReq = appstream.deleteImage({
       Name: imageName,
@@ -42,23 +49,26 @@ function removeAppStreamImage() {
   }
 }
 
-function destroy(argv) {
+function destroy(argv, credentials) {
   if (fs.existsSync('./website/build')) {
     console.log(chalk.yellow("⚠️  Removing web admin frontend stack."));
     exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_website`, {
-      cwd: "./admin_api_stack/"
+      cwd: "./admin_api_stack/",
+      env: getEnvWithSessionCredentials(credentials),
     });
   }
 
   console.log(chalk.yellow("⚠️  Removing web admin backend stack."));
   exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_api`, {
     cwd: "./admin_api_stack/",
+    env: getEnvWithSessionCredentials(credentials),
   });
 
   if (!argv.keepWorkstation) {
     console.log(chalk.yellow("⚠️  Removing Workstation stack"));
     exec(`npm run cdk -- destroy -f --require-approval never Workstation`, {
       cwd: "./workstation_stack/",
+      env: getEnvWithSessionCredentials(credentials),
     });
   }
 
@@ -66,6 +76,7 @@ function destroy(argv) {
     console.log(chalk.yellow("⚠️  Removing VPC stack."));
     exec(`npm run cdk -- destroy -f --all --require-approval never`, {
       cwd: "./vpc_stack/",
+      env: getEnvWithSessionCredentials(credentials),
     });
   }
 
@@ -75,7 +86,10 @@ function destroy(argv) {
     console.log(chalk.yellow("⚠️  Removing Cognito stack."));
     exec(
       `npm run cdk -- destroy -f --all --require-approval never`,
-      { cwd: "./cognito_stack/" }
+      { 
+        cwd: "./cognito_stack/",
+        env: getEnvWithSessionCredentials(credentials),
+      }
     );
   }
 
@@ -84,7 +98,7 @@ function destroy(argv) {
     // if we keep the workstation fleet
     // the image cannot be removed anyway
     // because it is still associated with the fleet
-    removeAppStreamImage();
+    removeAppStreamImage(credentials);
   }
 }
 
@@ -110,6 +124,11 @@ console.log(
 
 const argv = require("yargs/yargs")(process.argv.slice(2))
   .usage("$0 [options]")
+  .option('mfa-not-enabled', {
+    type: 'boolean',
+    default: false,
+    describe: 'MFA is not enabled so do not use it',
+  })
   .option('u', {
     alias: 'undeploy-cognito',
     type: 'boolean',
@@ -131,6 +150,8 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
   .argv;
 
 (async () => {
+  const credentials = await getSessionnCredentials(AWS_REGION, !argv.mfaNotEnabled);
+
   const response = await prompts({
     type: 'confirm',
     name: 'confirm',
@@ -139,7 +160,7 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
   });
 
   if (response.confirm) {
-    destroy(argv);
+    destroy(argv, credentials);
   } else {
     console.log(chalk.red("🚨 stack removal aborted"));
     process.exit(0);

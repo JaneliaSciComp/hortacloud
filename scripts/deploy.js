@@ -1,9 +1,10 @@
-const execSync = require("child_process").execSync;
-const chalk = require("chalk");
-const open = require("open");
-const prompts = require("prompts");
-const { CloudFormation, AppStream, Lambda } = require("aws-sdk");
-const dotenv = require("dotenv");
+const execSync = require('child_process').execSync;
+const chalk = require('chalk');
+const open = require('open');
+const prompts = require('prompts');
+const { CloudFormation, AppStream, Lambda } = require('aws-sdk');
+const dotenv = require('dotenv');
+const { getSessionnCredentials, getEnvWithSessionCredentials } = require('./credentials');
 
 const exec = (command, options = {}) => {
   const combinedOptions = { stdio: [0, 1, 2], ...options };
@@ -16,19 +17,25 @@ function sleep(ms) {
   });
 }
 
-async function deploy_cognito() {
+async function deploy_cognito(credentials) {
   // deploy the Cognito stack
   console.log(chalk.cyan("🚚 Deploying Cognito"));
+
   exec(`npm run cdk -- deploy --all --require-approval never`, {
     cwd: "./cognito_stack/",
+    env: getEnvWithSessionCredentials(credentials),
   });
 }
 
-async function restore_cognito_users(backupBucket, backupPrefix) {
+async function restore_cognito_users(backupBucket, backupPrefix, credentials) {
   const cognitoRestoreLambda = `${HORTA_ORG}-hc-cognito-restore-${HORTA_STAGE}`;
   console.log(chalk.cyan(`🚚 Restore cognito users from s3://${backupBucket}/${backupPrefix} using ${cognitoRestoreLambda}`));
 
-  const lambda = new Lambda({});
+  const lambda = new Lambda({
+    accessKeyId: credentials.AccessKeyId,
+    secretAccessKey: credentials.SecretAccessKey,
+    sessionToken: credentials.SessionToken,
+  });
   await lambda.invoke({
     FunctionName: cognitoRestoreLambda,
     Payload: JSON.stringify({
@@ -41,15 +48,24 @@ async function restore_cognito_users(backupBucket, backupPrefix) {
 
 async function deploy_vpc_and_workstation(withVpc,
                                           withWorkstation,
-                                          startWorkstation) {
-  const appstream = new AppStream({ AWS_REGION });
+                                          startWorkstation,
+                                          credentials) {
+  const appstream = new AppStream({ 
+    region: AWS_REGION,
+    accessKeyId: credentials.AccessKeyId,
+    secretAccessKey: credentials.SecretAccessKey,
+    sessionToken: credentials.SessionToken,
+  });
   const sleep_duration = 2;
 
   if (withVpc) {
     // deploy the VPC stack
     console.log(chalk.cyan("🚚 Deploying VPC stack"));
+    const vpcEnv = getEnvWithSessionCredentials(credentials);
+    console.log('!!!! VPC DEPLOY ENV', vpcEnv);
     exec(`npm run cdk -- deploy --all --require-approval never`, {
       cwd: "./vpc_stack/",
+      env: vpcEnv,
     });
 
     console.log(chalk.green("✅ Image builder is ready for your input."));
@@ -105,6 +121,7 @@ async function deploy_vpc_and_workstation(withVpc,
     console.log(chalk.cyan("🚚 Deploying Workstation stack"));
     exec(`npm run cdk -- deploy --require-approval never Workstation`, {
       cwd: "./workstation_stack/",
+      env: getEnvWithSessionCredentials(credentials),
     });
 
     // check that the appStream fleet is up and ready
@@ -170,7 +187,7 @@ async function deploy_vpc_and_workstation(withVpc,
   }
 }
 
-async function deploy_admin_site() {
+async function deploy_admin_site(credentials) {
   // deploy all frontend stacks
   console.log(chalk.cyan("\n🚚 Deploying web admin backend stack."));
   // the Vpc.fromLookup function was looking in the cdk.context.json file
@@ -179,53 +196,69 @@ async function deploy_admin_site() {
   // command clears out that context on each deployment.
   exec(`npm run cdk -- context --clear`, {
     cwd: "./admin_api_stack/",
+    env: getEnvWithSessionCredentials(credentials),
   });
   exec(
     `npm run cdk -- deploy --all --require-approval never -c deploy=admin_api`,
     {
       cwd: "./admin_api_stack/",
+      env: getEnvWithSessionCredentials(credentials),
     }
   );
 
   console.log(chalk.cyan("🛠  Generating web admin frontend config."));
-  exec(`node scripts/buildConfig.js`, { cwd: "./website" });
+  exec(`node scripts/buildConfig.js`, { 
+    cwd: "./website",
+    env: getEnvWithSessionCredentials(credentials),
+  });
 
   console.log(chalk.cyan("🛠  Building web admin frontend."));
-  exec(`npm run build`, { cwd: "./website" });
+  exec(`npm run build`, { 
+    cwd: "./website", // building the website does not require aws credentials
+  });
 
   console.log(chalk.cyan("🚚 Deploying web admin frontend stack."));
   exec(
     `npm run cdk -- deploy --all --require-approval never -c deploy=admin_website`,
     {
       cwd: "./admin_api_stack/",
+      env: getEnvWithSessionCredentials(credentials),
     }
   );
 }
 
-async function install(argv) {
+async function install(argv, credentials) {
   if (argv.includeCognito) {
-    await deploy_cognito();
+    await deploy_cognito(credentials);
   }
 
   if (argv.restoreUsers) {
-    await restore_cognito_users(argv.restoreUsersBucket, argv.restoreUsersFolder);
+    await restore_cognito_users(argv.restoreUsersBucket,
+                                argv.restoreUsersFolder,
+                                credentials);
   }
 
   if (!argv.adminOnly && !argv.cognitoOnly) {
     await deploy_vpc_and_workstation(
       !argv.skipVpc, 
       !argv.skipWorkstation,
-      !argv.skipStartWs);
+      !argv.skipStartWs,
+      credentials);
   }
 
   if (!argv.cognitoOnly) {
-    await deploy_admin_site();
+    await deploy_admin_site(credentials);
 
     // post install directions
     const postOutputs = {};
 
     // get stack info
-    const cloudformation = new CloudFormation({ AWS_REGION });
+    const cloudformation = new CloudFormation({ 
+      AWS_REGION,
+      accessKeyId: credentials.AccessKeyId,
+      secretAccessKey: credentials.SecretAccessKey,
+      sessionToken: credentials.SessionToken,
+    });
     const apiStack = await cloudformation
       .describeStacks({
         StackName: `${HORTA_ORG}-hc-adminWebApp-${HORTA_STAGE}`,
@@ -286,6 +319,11 @@ console.log(
 
 const argv = require("yargs/yargs")(process.argv.slice(2))
   .usage("$0 [options]")
+  .option('mfa-not-enabled', {
+    type: 'boolean',
+    default: false,
+    describe: 'MFA is not enabled so do not use it',
+  })
   .option('a', {
     alias: 'admin-only',
     type: 'boolean',
@@ -352,6 +390,8 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
 prompts.override(argv);
 
 (async () => {
+  const credentials = await getSessionnCredentials(AWS_REGION, !argv.mfaNotEnabled);
+
   const response = await prompts({
     type: 'confirm',
     name: 'confirm',
@@ -360,7 +400,7 @@ prompts.override(argv);
   });
 
   if (response.confirm) {
-    install(argv);
+    install(argv, credentials);
   } else {
     console.log(chalk.red("🚨 installation aborted"));
     process.exit(0);
