@@ -319,10 +319,10 @@ console.log(
 
 const argv = require("yargs/yargs")(process.argv.slice(2))
   .usage("$0 [options]")
-  .option('mfa-not-enabled', {
+  .option('use-mfa', {
     type: 'boolean',
     default: false,
-    describe: 'MFA is not enabled so do not use it',
+    describe: 'use MFA is an MFA device is available',
   })
   .option('a', {
     alias: 'admin-only',
@@ -390,8 +390,6 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
 prompts.override(argv);
 
 (async () => {
-  const credentials = await getSessionnCredentials(AWS_REGION, !argv.mfaNotEnabled);
-
   const response = await prompts({
     type: 'confirm',
     name: 'confirm',
@@ -400,10 +398,10 @@ prompts.override(argv);
   });
 
   if (response.confirm) {
+    const credentials = await getSessionnCredentials(AWS_REGION, argv.useMfa);
     install(argv, credentials);
   } else {
     console.log(chalk.red("🚨 installation aborted"));
     process.exit(0);
   }
-
 })();

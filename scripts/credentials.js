@@ -38,7 +38,7 @@ async function getSessionnCredentials(region, mfaEnabled) {
 }
 
 function getEnvWithSessionCredentials(credentials) {
-    if (credentials.SessionToken) {
+    if (credentials && credentials.SessionToken) {
         return {
             AWS_ACCESS_KEY_ID: credentials.AccessKeyId,
             AWS_SECRET_ACCESS_KEY: credentials.SecretAccessKey,

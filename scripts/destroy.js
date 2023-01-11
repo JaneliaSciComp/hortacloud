@@ -14,7 +14,7 @@ const exec = (command, options = {}) => {
   execSync(command, combinedOptions);
 };
 
-const { HORTA_ORG, HORTA_STAGE, AWS_REGION, AWS_PROFILE } = process.env;
+const { HORTA_ORG, HORTA_STAGE, AWS_REGION } = process.env;
 console.log(chalk.cyan("🔎 Checking environment."));
 
 const expectedEnvVars = [
@@ -22,7 +22,6 @@ const expectedEnvVars = [
   "HORTA_STAGE",
   "AWS_REGION",
   "AWS_ACCOUNT",
-  "AWS_PROFILE",
 ];
 
 function removeAppStreamImage(credentials) {
@@ -124,10 +123,10 @@ console.log(
 
 const argv = require("yargs/yargs")(process.argv.slice(2))
   .usage("$0 [options]")
-  .option('mfa-not-enabled', {
+  .option('use-mfa', {
     type: 'boolean',
     default: false,
-    describe: 'MFA is not enabled so do not use it',
+    describe: 'use MFA is an MFA device is available',
   })
   .option('u', {
     alias: 'undeploy-cognito',
@@ -150,8 +149,6 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
   .argv;
 
 (async () => {
-  const credentials = await getSessionnCredentials(AWS_REGION, !argv.mfaNotEnabled);
-
   const response = await prompts({
     type: 'confirm',
     name: 'confirm',
@@ -160,6 +157,7 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
   });
 
   if (response.confirm) {
+    const credentials = await getSessionnCredentials(AWS_REGION, argv.useMfa);
     destroy(argv, credentials);
   } else {
     console.log(chalk.red("🚨 stack removal aborted"));
