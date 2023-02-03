@@ -10,33 +10,39 @@ export class HortacloudAppstream extends Construct {
               id: string,
               vpcProps: VpcInstanceProps) {
     super(scope, id);
-    const hortaCloudConfig = getHortaAppstreamConfig();
+    const hortaAppstreamConfig = getHortaAppstreamConfig();
 
     // create the fleet
-    const fleetInstanceName = createResourceId(hortaCloudConfig, 'workstation-fleet');
-    const imageName = createResourceId(hortaCloudConfig, 'HortaCloudWorkstation');
+    const fleetInstanceName = createResourceId(hortaAppstreamConfig, 'workstation-fleet');
+    const imageName = createResourceId(hortaAppstreamConfig, 'HortaCloudWorkstation');
+    const subnetIds = hortaAppstreamConfig.appStreamWithInternetAccess
+                ? vpcProps.publicSubnetIds
+                : vpcProps.privateSubnetIds;
     const fleetInstance = new CfnFleet(this, 'HortaCloudFleet', {
-      instanceType: hortaCloudConfig.hortaWorkstationInstanceType,
+      instanceType: hortaAppstreamConfig.hortaWorkstationInstanceType,
       name: fleetInstanceName,
       imageName: imageName,
       computeCapacity: {
-        desiredInstances: hortaCloudConfig.appstreamComputeCapacity,
+        desiredInstances: hortaAppstreamConfig.appstreamComputeCapacity,
       },
       displayName: fleetInstanceName,
-      enableDefaultInternetAccess: true,
+      enableDefaultInternetAccess: hortaAppstreamConfig.appStreamWithInternetAccess,
       fleetType: 'ON_DEMAND',
       vpcConfig: {
-        subnetIds: [
-          ...vpcProps.publicSubnetIds,
-          ...vpcProps.privateSubnetIds,
-        ],
+        subnetIds: subnetIds,
       },
-      disconnectTimeoutInSeconds: hortaCloudConfig.sessionDisconnectInSecs,
-      maxUserDurationInSeconds: hortaCloudConfig.sessionDurationInMin * 60, // this value is in seconds
+      disconnectTimeoutInSeconds: hortaAppstreamConfig.sessionDisconnectInSecs,
+      maxUserDurationInSeconds: hortaAppstreamConfig.sessionDurationInMin * 60, // this value is in seconds
     });
 
+    const storageConnectors = [
+      getStorageConnector('HOMEFOLDERS', true),
+      getStorageConnector('GOOGLE_DRIVE', false, hortaAppstreamConfig.googleDomains),
+      getStorageConnector('ONE_DRIVE', false, hortaAppstreamConfig.oneDriveDomains),
+    ].filter(s => s.connectorType); // filter out the storage connectors without a valid connectorType
+
     // create the stack
-    const stackInstanceName = createResourceId(hortaCloudConfig, 'workstation-stack');
+    const stackInstanceName = createResourceId(hortaAppstreamConfig, 'workstation-stack');
     const stackInstance = new CfnStack(this, 'HortaCloudStack', {
       applicationSettings: {
         enabled: true,
@@ -44,9 +50,7 @@ export class HortacloudAppstream extends Construct {
       },
       displayName: stackInstanceName,
       name: stackInstanceName,
-      storageConnectors: [{
-        connectorType: 'HOMEFOLDERS',
-      }]
+      storageConnectors: storageConnectors,
     });
 
     // associate the stack with the fleet
@@ -55,18 +59,31 @@ export class HortacloudAppstream extends Construct {
       stackName: stackInstanceName,
     });
 
-    stackFleetAssoc.addDependsOn(fleetInstance);
-    stackFleetAssoc.addDependsOn(stackInstance);
+    stackFleetAssoc.addDependency(fleetInstance);
+    stackFleetAssoc.addDependency(stackInstance);
 
     // export the fleet and the stack
     new CfnOutput(this, "FleetID", {
       value: fleetInstance.name,
-      exportName: createResourceId(hortaCloudConfig, 'FleetID')
+      exportName: createResourceId(hortaAppstreamConfig, 'FleetID')
     });
 
     new CfnOutput(this, "StackID", {
       value: stackInstanceName,
-      exportName: createResourceId(hortaCloudConfig, 'StackID')
+      exportName: createResourceId(hortaAppstreamConfig, 'StackID')
     });
+  }
+}
+
+function getStorageConnector(connectorType: string, allowEmptyDomains: boolean, domains?: string[]) : CfnStack.StorageConnectorProperty {
+  if ((domains && domains.length > 0) || allowEmptyDomains) {
+    return {
+      connectorType: connectorType,
+      domains: domains
+    };
+  } else {
+    return {
+      connectorType: '', // invalid connector type
+    };
   }
 }

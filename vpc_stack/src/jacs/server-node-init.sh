@@ -29,14 +29,15 @@ else
     for dataBucketName in ${dataBucketNames[@]}; do
         mkdir -p "/s3data/${dataBucketName}"
         chmod 777 "/s3data/${dataBucketName}"
-        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,umask=0000\t0\t0" | tee -a /etc/fstab
+        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,multireq_max=5,umask=0000\t0\t0" | tee -a /etc/fstab
     done
 fi
 
 mount -a
 
 usermod -aG docker ec2-user
-useradd -d /home/ssm-user -s /bin/bash ssm-user
+# do not fail if ssm-user already exists
+useradd -d /home/ssm-user -s /bin/bash ssm-user || true
 usermod -aG docker ssm-user
 
 # give ssm-user sudo
