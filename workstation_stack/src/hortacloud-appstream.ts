@@ -23,12 +23,12 @@ export class HortacloudAppstream extends Construct {
         desiredInstances: hortaCloudConfig.appstreamComputeCapacity,
       },
       displayName: fleetInstanceName,
-      enableDefaultInternetAccess: false,
+      enableDefaultInternetAccess: true,
       fleetType: 'ON_DEMAND',
       vpcConfig: {
         subnetIds: [
-          ...vpcProps.privateSubnetIds,
           ...vpcProps.publicSubnetIds,
+          ...vpcProps.privateSubnetIds,
         ],
       },
       disconnectTimeoutInSeconds: hortaCloudConfig.sessionDisconnectInSecs,
