@@ -1,0 +1,7 @@
+- Added support for Google Drive and OneDrive
+- Support deployment when MFA is enabled
+1.0.0 - 2022-12-13
+- Remove mlocate job on install to save space on the System Volume
+- Horta Cloud Workstation can support User Preference using Persisten Application Settings
+- Settings for the default size of the System and Data volumes
+0.4.0 - 2022-08-16
