@@ -1,7 +1,7 @@
 import { HortaCloudConfig, getHortaCloudConfig,
          HortaBackupConfig, getHortaBackupConfig } from '../../common/hortacloud-common';
 
-const defaultJacsStackVersion = '9.10.2';
+const defaultJacsStackVersion = '9.11.rc3';
 
 // Horta Services Config
 export interface HortaCloudServicesConfig extends HortaCloudConfig, HortaBackupConfig {
