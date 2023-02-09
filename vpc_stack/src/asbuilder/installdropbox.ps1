@@ -24,4 +24,4 @@ Write-Output "Download result: $downloadRes"
 
 # Start the installation
 Write-Output "Install DropBox"
-Start-Process -Wait -FilePath "$TmpDir\DropBox-full-installer.exe" -ArgumentList "/S"
+Start-Process -Wait -FilePath "$TmpDir\DropBox-full-installer.exe" -ArgumentList "/NOLAUNCH"
