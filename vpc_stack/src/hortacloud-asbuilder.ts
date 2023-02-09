@@ -19,10 +19,10 @@ export class HortaCloudAppstreamBuilder extends Construct {
             name: imageBuilderInstanceName,
             displayName: "HortaCloud App ImageBuilder",
             instanceType: hortaConfig.hortaWorkstationInstanceType,
-            enableDefaultInternetAccess: true,
+            enableDefaultInternetAccess: false,
             imageName: hortaConfig.hortaWorkstationImageName,
             vpcConfig: {
-                subnetIds: vpcProps.publicSubnetIds
+                subnetIds: vpcProps.privateSubnetIds,
             }
         });
 

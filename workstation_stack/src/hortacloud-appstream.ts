@@ -15,9 +15,6 @@ export class HortacloudAppstream extends Construct {
     // create the fleet
     const fleetInstanceName = createResourceId(hortaAppstreamConfig, 'workstation-fleet');
     const imageName = createResourceId(hortaAppstreamConfig, 'HortaCloudWorkstation');
-    const subnetIds = hortaAppstreamConfig.appStreamWithInternetAccess
-                ? vpcProps.publicSubnetIds
-                : vpcProps.privateSubnetIds;
     const fleetInstance = new CfnFleet(this, 'HortaCloudFleet', {
       instanceType: hortaAppstreamConfig.hortaWorkstationInstanceType,
       name: fleetInstanceName,
@@ -26,10 +23,10 @@ export class HortacloudAppstream extends Construct {
         desiredInstances: hortaAppstreamConfig.appstreamComputeCapacity,
       },
       displayName: fleetInstanceName,
-      enableDefaultInternetAccess: hortaAppstreamConfig.appStreamWithInternetAccess,
+      enableDefaultInternetAccess: false,
       fleetType: 'ON_DEMAND',
       vpcConfig: {
-        subnetIds: subnetIds,
+        subnetIds: vpcProps.privateSubnetIds,
       },
       disconnectTimeoutInSeconds: hortaAppstreamConfig.sessionDisconnectInSecs,
       maxUserDurationInSeconds: hortaAppstreamConfig.sessionDurationInMin * 60, // this value is in seconds
