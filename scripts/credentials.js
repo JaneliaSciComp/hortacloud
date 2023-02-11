@@ -1,4 +1,4 @@
-const { IAM, STS, CloudFormation } = require('aws-sdk');
+const { IAM, STS } = require('aws-sdk');
 const prompts = require('prompts');
 
 async function getMFADevice(region)  {
@@ -6,7 +6,11 @@ async function getMFADevice(region)  {
         region
     });
     const mfaDeviceResponse = await iam.listMFADevices().promise();
-    return mfaDeviceResponse.MFADevices[0].SerialNumber;
+    if (mfaDeviceResponse.MFADevices && mfaDeviceResponse.MFADevices.length > 0) {
+        return mfaDeviceResponse.MFADevices[0].SerialNumber;
+    } else {
+        return null;
+    }
 }
 
 async function getSessionToken(region, mfaDevice, code) {
