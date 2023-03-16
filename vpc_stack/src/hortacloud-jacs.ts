@@ -161,13 +161,13 @@ export class HortaCloudJACS extends Construct {
     const dataBucketNames = [...externalDataBuckets, defaultDataBucketName];
 
     const dataBackupFolder = hortaConfig.hortaBackupFolder ? hortaConfig.hortaBackupFolder : '/hortacloud/backups';
-    const jacsGitBranchArgs = hortaConfig.jacssGitBranch 
+    const jacsGitBranchArgs:string[] = hortaConfig.jacssGitBranch
       ? [
           '--jacs-git-branch',
           hortaConfig.jacssGitBranch,
         ]
       : [];
-    const backupArgs = backupBucketName
+    const backupArgs:string[] = backupBucketName
       ? [
          '--backup',
          backupBucketName,
@@ -176,20 +176,55 @@ export class HortaCloudJACS extends Construct {
          createResourceId(hortaConfig, 'cognito-backup')
         ]
       : ['--no-backup'];
-
     const dataRestoreFolder = hortaConfig.hortaRestoreBucket && hortaConfig.hortaRestoreFolder
       ? hortaConfig.hortaRestoreFolder
       : '';
-    const restoreArgs = dataRestoreFolder
+    const restoreArgs:string[] = dataRestoreFolder
       ? ['--restore', restoreBucketName, dataRestoreFolder]
-      : ['--no-restore']
+      : ['--no-restore'];
     const systemLogsBackupFolder = hortaConfig.hortaSystemLogsBackupFolder ? hortaConfig.hortaSystemLogsBackupFolder : 'hortacloud/systemlogs';
-    const systemLogsBackupArgs = backupBucketName
+    const systemLogsBackupArgs:string[] = backupBucketName
         ? [
           backupBucketName,
           systemLogsBackupFolder,
           ]
-        : []
+        : [];
+    const mailServerArgs:string[] = hortaConfig.mailServer
+      ? [
+          '--mail-server',
+          hortaConfig.mailServer,
+        ]
+      : [];
+    const mailUserArgs:string[] = hortaConfig.mailUser
+      ? [
+          '--mail-user',
+          hortaConfig.mailUser,
+        ]
+      : [];
+    const mailPasswordArgs:string[] = hortaConfig.mailPassword
+      ? [
+          '--mail-password',
+          hortaConfig.mailPassword,
+        ]
+      : [];
+    const mailSenderArgs:string[] = hortaConfig.mailSender
+      ? [
+          '--mail-sender',
+          hortaConfig.mailSender,
+        ]
+      : [];
+    const mailReceiverArgs:string[] = hortaConfig.mailReceiver
+      ? [
+          '--mail-receiver',
+          hortaConfig.mailReceiver,
+        ]
+      : [];
+    const workstationCacheDirArgs:string[] = hortaConfig.workstationCacheDir
+      ? [
+          '--workstation_cache_dir',
+          hortaConfig.workstationCacheDir,
+        ]
+      : [];
     createAssets(this, this.server, [
       {
         name: 'InitInstanceAsset',
@@ -216,7 +251,13 @@ export class HortaCloudJACS extends Construct {
           ...jacsGitBranchArgs,
           ...backupArgs,
           ...restoreArgs,
-          ...dataBucketNames
+          ...mailServerArgs,
+          ...mailUserArgs,
+          ...mailPasswordArgs,
+          ...mailSenderArgs,
+          ...mailReceiverArgs,
+          ...workstationCacheDirArgs,
+          ...dataBucketNames,
         ]
       },
       {

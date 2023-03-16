@@ -19,6 +19,12 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig, HortaBackupC
     jadeAPIKey: string;
     searchMemGB: string;
     hortaDataBuckets?: string;
+    mailServer?: string;
+    mailUser?: string;
+    mailPassword?: string;
+    mailSender?: string;
+    mailReceiver?: string;
+    workstationCacheDir?: string;
 }
 
 export function getHortaServicesConfig() : HortaCloudServicesConfig {
@@ -45,5 +51,11 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         jadeAPIKey: process.env.JADE_API_KEY || 'changeJadeAPIKeyInenv',
         searchMemGB: process.env.SEARCH_MEM_SIZE || '1',
         hortaDataBuckets: process.env.HORTA_DATA_BUCKETS,
+        mailServer: process.env.MAIL_SERVER,
+        mailUser: process.env.MAIL_USER,
+        mailPassword: process.env.MAIL_PASSWORD,
+        mailSender: process.env.MAIL_SENDER,
+        mailReceiver: process.env.MAIL_RECEIVER,
+        workstationCacheDir: process.env.WORKSTATION_CACHE_DIR,
     };
 }

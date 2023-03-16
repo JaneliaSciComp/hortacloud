@@ -24,41 +24,94 @@ JADE_API_KEY=$1
 shift
 SEARCH_MEM_GB=$1
 shift
+
 # set JACS branch
 JACS_GIT_BRANCH=stable
-if [[ "$1" == "--jacs-git-branch" ]]; then
-    JACS_GIT_BRANCH=$2
-    shift
-    shift
-fi
 # backup bucket
 BACKUP_BUCKET=
 BACKUP_FOLDER=
-if [[ "$1" == "--no-backup" ]]; then
-    shift
-elif [[ "$1" == "--backup" ]]; then
-    BACKUP_BUCKET=$2
-    BACKUP_FOLDER=$3
-    AWS_REGION=$4
-    COGNITO_BACKUP_FUNCTION=$5
-    shift
-    shift
-    shift
-    shift
-    shift
-fi
 # backup restore bucket
 RESTORE_BUCKET=
 RESTORE_FOLDER=
-if [[ "$1" == "--no-restore" ]]; then
-    shift
-elif [[ "$1" == "--restore" ]]; then
-    RESTORE_BUCKET=$2
-    RESTORE_FOLDER=$3
-    shift
-    shift
-    shift
-fi
+# mail server
+MAIL_SERVER=
+# mail user
+MAIL_USER=
+# mail password
+MAIL_PASSWORD=
+# mail sender address
+MAIL_SENDER=
+# mail receiver address
+MAIL_RECEIVER=
+# workstation cache dir
+WORKSTATION_CACHE_DIR=c:/Users/PhotonUser/Downloads/Horta_filecache
+
+while [[ $# > 0 ]]; do
+    key="$1"
+    case $key in
+        --jacs-git-branch)
+            JACS_GIT_BRANCH=$2
+            shift
+            shift
+            ;;
+        --no-backup|--no-restore)
+            shift
+            ;;
+        --backup)
+            BACKUP_BUCKET=$2
+            BACKUP_FOLDER=$3
+            AWS_REGION=$4
+            COGNITO_BACKUP_FUNCTION=$5
+            shift
+            shift
+            shift
+            shift
+            shift
+            ;;
+        --restore)
+            RESTORE_BUCKET=$2
+            RESTORE_FOLDER=$3
+            shift
+            shift
+            shift
+            ;;
+        --mail-server)
+            MAIL_SERVER=$2
+            shift
+            shift
+            ;;
+        --mail-user)
+            MAIL_USER=$2
+            shift
+            shift
+            ;;
+        --mail-password)
+            MAIL_PASSWORD=$2
+            shift
+            shift
+            ;;
+        --mail-sender)
+            MAIL_SENDER=$2
+            shift
+            shift
+            ;;
+        --mail-receiver)
+            MAIL_RECEIVER=$2
+            shift
+            shift
+            ;;
+        --workstation_cache_dir)
+            WORKSTATION_CACHE_DIR=$2
+            shift
+            shift
+            ;;
+        *)
+            # unrecognized flag
+            break
+            ;;
+    esac
+done
+
 JADE_DATA_BUCKETS=("$@")
 JADE_DATA_BUCKETS_NAMES_WITH_SPACES=${JADE_DATA_BUCKETS[@]}     # space delimited string from array
 JADE_DATA_BUCKETS_NAMES_WITH_COMMA=${JADE_DATA_BUCKETS_NAMES_WITH_SPACES// /,}   # comma delimited string
@@ -103,15 +156,21 @@ function prepareEnvConfig() {
         "s/DB_DIR=\$REDUNDANT_STORAGE/DB_DIR=\$NON_REDUNDANT_STORAGE/"
         "s/HOST1=/HOST1=${CURRENT_HOST}/"
         "s/JWT_SECRET_KEY=/JWT_SECRET_KEY=${JWT_KEY}/"
-        "s/MONGODB_SECRET_KEY=/MONGODB_SECRET_KEY=${MONGO_KEY}/"
-        "s/MONGODB_INIT_ROOT_PASSWORD=/MONGODB_INIT_ROOT_PASSWORD=${MONGO_ROOT_PASS}/"
-        "s/MONGODB_APP_PASSWORD=/MONGODB_APP_PASSWORD=${MONGO_APP_PASS}/"
-        "s/RABBITMQ_PASSWORD=/RABBITMQ_PASSWORD=${RABBITMQ_PASS}/"
+        "s/MONGODB_SECRET_KEY=.*$/MONGODB_SECRET_KEY=${MONGO_KEY}/"
+        "s/MONGODB_INIT_ROOT_PASSWORD=.*$/MONGODB_INIT_ROOT_PASSWORD=${MONGO_ROOT_PASS}/"
+        "s/MONGODB_APP_PASSWORD=.*$/MONGODB_APP_PASSWORD=${MONGO_APP_PASS}/"
+        "s/RABBITMQ_PASSWORD=.*$/RABBITMQ_PASSWORD=${RABBITMQ_PASS}/"
         "s/JADE_AGENT_VOLUMES=.*$/JADE_AGENT_VOLUMES=${JADE_BOOTSTRAPPED_VOLUMES}/"
         "s/JACS_API_KEY=.*$/JACS_API_KEY=${JACS_API_KEY}/"
         "s/JADE_API_KEY=.*$/JADE_API_KEY=${JADE_API_KEY}/"
         "s/SEARCH_INIT_MEM_SIZE=.*$/SEARCH_INIT_MEM_SIZE=${SEARCH_MEM_GB}/"
         "s/SEARCH_MAX_MEM_SIZE=.*$/SEARCH_MAX_MEM_SIZE=${SEARCH_MEM_GB}/"
+        "s/MAIL_SERVER=.*$/MAIL_SERVER=${MAIL_SERVER}/"
+        "s/MAIL_USER=.*$/MAIL_USER=${MAIL_USER}/"
+        "s/MAIL_PASSWORD=.*$/MAIL_PASSWORD=${MAIL_PASSWORD}/"
+        "s/MAIL_SENDER=.*$/MAIL_SENDER=${MAIL_SENDER}/"
+        "s/MAIL_RECEIVER=.*$/MAIL_RECEIVER=${MAIL_RECEIVER}/"
+        "s/WORKSTATION_CACHE_DIR=.*$/WORKSTATION_CACHE_DIR=${WORKSTATION_CACHE_DIR}/"
     )
     printf '%s\n' "${sedcmds[@]}" > /tmp/scmd
 
