@@ -62,7 +62,6 @@ async function deploy_vpc_and_workstation(withVpc,
     // deploy the VPC stack
     console.log(chalk.cyan("🚚 Deploying VPC stack"));
     const vpcEnv = getEnvWithSessionCredentials(credentials);
-    console.log('!!!! VPC DEPLOY ENV', vpcEnv);
     exec(`npm run cdk -- deploy --all --require-approval never`, {
       cwd: "./vpc_stack/",
       env: vpcEnv,
