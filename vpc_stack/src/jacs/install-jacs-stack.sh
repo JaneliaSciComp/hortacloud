@@ -170,7 +170,7 @@ function prepareEnvConfig() {
         "s/MAIL_PASSWORD=.*$/MAIL_PASSWORD=${MAIL_PASSWORD}/"
         "s/MAIL_SENDER=.*$/MAIL_SENDER=${MAIL_SENDER}/"
         "s/MAIL_RECEIVER=.*$/MAIL_RECEIVER=${MAIL_RECEIVER}/"
-        "s@WORKSTATION_CACHE_DIR=.*$@WORKSTATION_CACHE_DIR=${WORKSTATION_CACHE_DIR}@"
+        "s@WORKSTATION_CACHE_DIR=.*\$@WORKSTATION_CACHE_DIR=${WORKSTATION_CACHE_DIR}@"
     )
     printf '%s\n' "${sedcmds[@]}" > /tmp/scmd
 
