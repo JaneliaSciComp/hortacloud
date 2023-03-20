@@ -1,3 +1,4 @@
+- Support bug reporting through email notification (hortacloud#8)
 - Added support for Google Drive and OneDrive
 - Support deployment when MFA is enabled
 1.0.0 - 2022-12-13
