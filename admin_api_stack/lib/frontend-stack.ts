@@ -1,5 +1,5 @@
 import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
-import { Bucket } from "aws-cdk-lib/aws-s3";
+import { Bucket, BucketAccessControl, BlockPublicAccess } from "aws-cdk-lib/aws-s3";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
 
@@ -18,6 +18,8 @@ export class HortaCloudWebAppStack extends Stack {
       publicReadAccess: true,
       bucketName: `${props.org}-hc-webadmin-${props.stage}`,
       removalPolicy: RemovalPolicy.DESTROY,
+      accessControl: BucketAccessControl.BUCKET_OWNER_FULL_CONTROL,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ACLS,
       autoDeleteObjects: true
     });
 
