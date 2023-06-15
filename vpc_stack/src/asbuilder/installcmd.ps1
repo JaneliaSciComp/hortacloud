@@ -124,6 +124,7 @@ if (!`$UserName) {
     `$WSArgs += "-J``"-Dconsole.serverLogin=`$UserName``" "
     `$WSArgs += "-J``"-Dconsole.rememberPassword=true``" "
     `$WSArgs += "-J``"-DSessionMgr.ShowReleaseNotes=false``" "
+    `$WSArgs += "-J``"-DLogin.Disabled=true``" "
 }
 
 Write-Output "UserDir: `$UserDir"
