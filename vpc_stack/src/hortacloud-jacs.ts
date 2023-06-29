@@ -294,8 +294,7 @@ function createSecurityGroup(scope: Construct, vpc: ec2.IVpc, sgRules: SecurityR
 }
 
 function createJacsMachineImage(cfg: HortaCloudServicesConfig): HortaCloudMachine {
-  const jacsMachineImage = ec2.MachineImage.latestAmazonLinux({
-    generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+  const jacsMachineImage = ec2.MachineImage.latestAmazonLinux2({
     edition: ec2.AmazonLinuxEdition.STANDARD,
     virtualization: ec2.AmazonLinuxVirt.HVM,
     storage: ec2.AmazonLinuxStorage.GENERAL_PURPOSE,
