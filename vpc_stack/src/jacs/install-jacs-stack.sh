@@ -45,6 +45,7 @@ MAIL_SENDER=
 MAIL_RECEIVER=
 # workstation cache dir
 WORKSTATION_CACHE_DIR=c:/Users/PhotonUser/Downloads/Horta_filecache
+BLOSC_LIBS=
 
 while [[ $# > 0 ]]; do
     key="$1"
@@ -102,6 +103,11 @@ while [[ $# > 0 ]]; do
             ;;
         --workstation_cache_dir)
             WORKSTATION_CACHE_DIR=$2
+            shift
+            shift
+            ;;
+        --blosc-libs)
+            BLOSC_LIBS=$2
             shift
             shift
             ;;
@@ -425,6 +431,10 @@ chown -R docker-nobody:docker-nobody /opt/jacs
 ./manage.sh init-local-filesystem
 # copy the cert to the external location
 cp /opt/jacs/config/certs/cert.crt /opt/jacs/config/api-gateway/content
+# copy blosc libs
+if [[ -n $BLOSC_LIBS ]]; then
+    cp $BLOSC_LIBS /opt/jacs/config/api-gateway/content/blosc.zip
+fi
 
 chown -R docker-nobody:docker-nobody /opt/jacs/config
 

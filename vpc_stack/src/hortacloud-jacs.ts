@@ -161,10 +161,10 @@ export class HortaCloudJACS extends Construct {
     const dataBucketNames = [...externalDataBuckets, defaultDataBucketName];
 
     const dataBackupFolder = hortaConfig.hortaBackupFolder ? hortaConfig.hortaBackupFolder : '/hortacloud/backups';
-    const jacsGitBranchArgs:string[] = hortaConfig.jacssGitBranch
+    const jacsGitBranchArgs:string[] = hortaConfig.jacsGitBranch
       ? [
           '--jacs-git-branch',
-          hortaConfig.jacssGitBranch,
+          hortaConfig.jacsGitBranch,
         ]
       : [];
     const backupArgs:string[] = backupBucketName
@@ -225,6 +225,13 @@ export class HortaCloudJACS extends Construct {
           hortaConfig.workstationCacheDir,
         ]
       : [];
+    const dataAssets = createDataAssets(this, this.server, [
+      {
+        name: 'BloscLibraries',
+        path: '../data/blosc.zip',
+      },
+    ]);
+    const bloscLibArgs = ['--blosc-libs', dataAssets['BloscLibraries'] ];
     createAssets(this, this.server, [
       {
         name: 'InitInstanceAsset',
@@ -257,6 +264,7 @@ export class HortaCloudJACS extends Construct {
           ...mailSenderArgs,
           ...mailReceiverArgs,
           ...workstationCacheDirArgs,
+          ...bloscLibArgs,
           ...dataBucketNames,
         ]
       },
@@ -306,6 +314,31 @@ function createJacsMachineImage(cfg: HortaCloudServicesConfig): HortaCloudMachin
     machineImage: jacsMachineImage,
     keyName: cfg.hortaServerKeyPairName ? cfg.hortaServerKeyPairName : undefined
   };
+}
+
+type DataAssets = {[key: string] : string};
+
+function createDataAssets(scope: Construct, instance: ec2.Instance, assetsOpts: AssetOpts[]) : DataAssets {
+  const res : DataAssets = {};
+
+  return assetsOpts.map(opts => {
+    const asset = new Asset(scope, opts.name, {
+      path: path.join(__dirname, opts.path)
+    });
+    const localPath = instance.userData.addS3DownloadCommand({
+      bucket: asset.bucket,
+      bucketKey: asset.s3ObjectKey,
+    });
+    return {
+      name: opts.name,
+      path: localPath,
+    };
+  })
+  .reduce((prev, curr) => {
+            prev[curr.name] = curr.path;
+            return prev;
+          }, 
+          res);
 }
 
 function createAssets(scope: Construct, instance: ec2.Instance, assetsOpts: AssetOpts[]) {

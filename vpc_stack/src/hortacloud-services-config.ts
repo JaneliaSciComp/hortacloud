@@ -9,7 +9,7 @@ export interface HortaCloudServicesConfig extends HortaCloudConfig, HortaBackupC
     hortaServerKeyPairName?: string;
     hortaSystemVolumeSizeGB: number;
     hortaDataVolumeSizeGB: number;
-    jacssGitBranch?: string;
+    jacsGitBranch?: string;
     withPublicAccess?: boolean;
     jwtKey: string;
     mongoKey: string;
@@ -41,7 +41,7 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
         hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || '',
         hortaSystemVolumeSizeGB: hortaSystemVolumeSizeGB,
         hortaDataVolumeSizeGB: hortaDataVolumeSizeGB,
-        jacssGitBranch: process.env.JACS_GIT_BRANCH || defaultJacsStackVersion,
+        jacsGitBranch: process.env.JACS_GIT_BRANCH || defaultJacsStackVersion,
         withPublicAccess: false,
         jwtKey: process.env.JACS_JWT_KEY || 'GFNaVyaC6boqf0VKtBEjLLu5VY8Ks0PQ23kpSs8lgWg',
         mongoKey: process.env.JACS_MONGO_KEY || 'C9w7ZIVbtvN4LqDgOUrZuLEOqGSkgjWvRDg4mpgDw',
