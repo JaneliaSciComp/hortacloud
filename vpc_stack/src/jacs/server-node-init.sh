@@ -27,9 +27,10 @@ if [ ${#dataBucketNames[@]} -eq 0 ] ; then
 else
     # if the data bucket names are set mount them using s3fs
     for dataBucketName in ${dataBucketNames[@]}; do
+        echo "Mount ${dataBucketName}"
         mkdir -p "/s3data/${dataBucketName}"
         chmod 777 "/s3data/${dataBucketName}"
-        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,multireq_max=5,umask=0000\t0\t0" | tee -a /etc/fstab
+        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,multireq_max=5,compat_dir,umask=0000\t0\t0" | tee -a /etc/fstab
     done
 fi
 
