@@ -65,6 +65,12 @@ $wsIconRes = Invoke-WebRequest `
    -OutFile $TmpDir\jws-icon.png
 Write-Output "Downloaded application icon: $wsIconRes"
 
+Write-Output "Download BLOSC Libraries"
+$bloscRes = Invoke-WebRequest `
+   -Uri "https://$ServerIP/SCSW/downloads/blosc.zip" `
+   -OutFile $TmpDir\blosc.zip
+Write-Output "Downloaded blosc libs result: $bloscRes"
+
 # Generate the installer state for the silent install
 $InstallerStateContent = @"
 <state xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -96,3 +102,6 @@ Start-Process -Wait -FilePath $TmpDir\jws-installer.exe -ArgumentList "--silent 
 
 # Copy the icon
 Copy-Item $TmpDir\jws-icon.png "C:\apps" -Force
+
+# Unzip blosc
+Expand-Archive -LiteralPath "$TmpDir\blosc.zip" -DestinationPath "C:\apps\$AppFolderName\bin"
