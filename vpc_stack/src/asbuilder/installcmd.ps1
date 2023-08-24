@@ -144,7 +144,7 @@ if (!(Get-Item -Path `$UserDir -ErrorAction Ignore)) {
 }
 
 # Add app binary dir to the path
-`$Env:Path += [IO.Path]::PathSeparator + $WSInstallDir\bin
+`$Env:Path += [IO.Path]::PathSeparator + `"$WSInstallDir\bin`"
 
 Start-Process -Wait -FilePath $WSInstallDir\bin\$AppExeName -ArgumentList `$WSArgs
 "@
