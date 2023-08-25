@@ -19,6 +19,14 @@ pip3 install rotate-backups
 mkfs -t ext4 /dev/xvdb
 mkdir /data
 echo -e '/dev/xvdb\t/data\text4\tdefaults\t0\t0' | tee -a /etc/fstab
+
+# mount only the data volume
+mount /data
+# create a tmp dir on the data volume
+mkdir /data/tmp
+chmod 777 /data/tmp
+
+# prepare the s3fs volumes
 mkdir "/s3data"
 chmod 777 "/s3data"
 
@@ -35,10 +43,6 @@ else
 fi
 
 mount -a
-
-# create a tmp dir on the data volume
-mkdir /data/tmp
-chmod 777 /data/tmp
 
 usermod -aG docker ec2-user
 # do not fail if ssm-user already exists
