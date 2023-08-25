@@ -30,11 +30,15 @@ else
         echo "Mount ${dataBucketName}"
         mkdir -p "/s3data/${dataBucketName}"
         chmod 777 "/s3data/${dataBucketName}"
-        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,multireq_max=5,compat_dir,umask=0000\t0\t0" | tee -a /etc/fstab
+        echo -e "${dataBucketName}\t/s3data/${dataBucketName}\tfuse.s3fs\t_netdev,iam_role=auto,allow_other,multireq_max=5,compat_dir,tmpdir=/data/tmp,umask=0000\t0\t0" | tee -a /etc/fstab
     done
 fi
 
 mount -a
+
+# create a tmp dir on the data volume
+mkdir /data/tmp
+chmod 777 /data/tmp
 
 usermod -aG docker ec2-user
 # do not fail if ssm-user already exists

@@ -379,7 +379,7 @@ function createBackupJob() {
                 \\\"backupBucket\\\": \\\"${BACKUP_BUCKET}\\\", \
                 \\\"backupPrefix\\\": \\\"\${backup_location}/cognito\\\" \
             }\""
-            "./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}\${backup_location} > ${DEPLOY_DIR}/local/latest-backup.log 2>&1"
+            "TMPDIR=/data/tmp ./manage.sh mongo-backup /s3data/${BACKUP_BUCKET}\${backup_location} > ${DEPLOY_DIR}/local/latest-backup.log 2>&1"
             "echo \"\${backup_data}\" > ${DEPLOY_DIR}/local/cognito-backup-input.json"
             "aws lambda invoke \
             --function-name ${COGNITO_BACKUP_FUNCTION} \
