@@ -52,19 +52,6 @@ sudo $env:JAVA_HOME\bin\keytool.exe -import `
     -keystore "$env:JAVA_HOME\jre\lib\security\cacerts" `
     -keypass changeit -storepass changeit
 
-$vc2010RedistDownloadLink = "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
-$vc2010RedistPackage = "vc2010_redist.x64.exe"
-$vc2010RedistInstallFlags = "/passive /norestart"
-
-Write-Output "VS redist installer"
-$vsRedistInstallerRes = Invoke-WebRequest `
-   -Uri $vc2010RedistDownloadLink `
-   -OutFile "$TmpDir\$vc2010RedistPackage"
-
-# Run the VS redist installer
-Write-Output "Install VS redist package"
-Start-Process -Wait -FilePath "$TmpDir\$vc2010RedistPackage" -ArgumentList $vc2010RedistInstallFlags
-
 Write-Output "Download workstation installer"
 $wsInstallerRes = Invoke-WebRequest `
    -Uri https://$ServerIP/files/$AppFolderName-windows.exe `
@@ -82,6 +69,19 @@ $bloscRes = Invoke-WebRequest `
    -Uri "https://$ServerIP/SCSW/downloads/blosc.zip" `
    -OutFile $TmpDir\blosc.zip
 Write-Output "Downloaded blosc libs result: $bloscRes"
+
+$vc2010RedistDownloadLink = "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
+$vc2010RedistPackage = "vc2010_redist.x64.exe"
+$vc2010RedistInstallFlags = "/passive /norestart"
+
+Write-Output "VS redist installer"
+$vsRedistInstallerRes = Invoke-WebRequest `
+   -Uri $vc2010RedistDownloadLink `
+   -OutFile "$TmpDir\$vc2010RedistPackage"
+
+# Run the VS redist installer
+Write-Output "Install VS redist package"
+Start-Process -Wait -FilePath "$TmpDir\$vc2010RedistPackage" -ArgumentList $vc2010RedistInstallFlags
 
 # Generate the installer state for the silent install
 $InstallerStateContent = @"

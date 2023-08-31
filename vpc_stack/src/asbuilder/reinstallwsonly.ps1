@@ -71,6 +71,19 @@ $bloscRes = Invoke-WebRequest `
    -OutFile $TmpDir\blosc.zip
 Write-Output "Downloaded blosc libs result: $bloscRes"
 
+$vc2010RedistDownloadLink = "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
+$vc2010RedistPackage = "vc2010_redist.x64.exe"
+$vc2010RedistInstallFlags = "/passive /norestart"
+
+Write-Output "VS redist installer"
+$vsRedistInstallerRes = Invoke-WebRequest `
+   -Uri $vc2010RedistDownloadLink `
+   -OutFile "$TmpDir\$vc2010RedistPackage"
+
+# Run the VS redist installer
+Write-Output "Install VS redist package"
+Start-Process -Wait -FilePath "$TmpDir\$vc2010RedistPackage" -ArgumentList $vc2010RedistInstallFlags
+
 # Generate the installer state for the silent install
 $InstallerStateContent = @"
 <state xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -104,4 +117,7 @@ Start-Process -Wait -FilePath $TmpDir\jws-installer.exe -ArgumentList "--silent 
 Copy-Item $TmpDir\jws-icon.png "C:\apps" -Force
 
 # Unzip blosc
-Expand-Archive -LiteralPath "$TmpDir\blosc.zip" -DestinationPath "C:\apps\$AppFolderName\bin"
+New-Item -Path "C:\apps" -Name "blosc" -ItemType "directory" -Force
+Expand-Archive -LiteralPath "$TmpDir\blosc.zip" -DestinationPath "C:\apps\blosc" -Force
+# Add blosc dlls location to the path
+$env:Path += [IO.Path]::PathSeparator + "C:\apps\blosc"
