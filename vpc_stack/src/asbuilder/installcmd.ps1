@@ -52,6 +52,19 @@ sudo $env:JAVA_HOME\bin\keytool.exe -import `
     -keystore "$env:JAVA_HOME\jre\lib\security\cacerts" `
     -keypass changeit -storepass changeit
 
+$vc2010RedistDownloadLink = "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
+$vc2010RedistPackage = "vc2010_redist.x64.exe"
+$vc2010RedistInstallFlags = "/passive /norestart"
+
+Write-Output "VS redist installer"
+$vsRedistInstallerRes = Invoke-WebRequest `
+   -Uri $vc2010RedistDownloadLink `
+   -OutFile "$TmpDir\$vc2010RedistPackage"
+
+# Run the VS redist installer
+Write-Output "Install VS redist package"
+Start-Process -Wait -FilePath "$TmpDir\$vc2010RedistPackage" -ArgumentList $vc2010RedistInstallFlags
+
 Write-Output "Download workstation installer"
 $wsInstallerRes = Invoke-WebRequest `
    -Uri https://$ServerIP/files/$AppFolderName-windows.exe `
@@ -106,7 +119,10 @@ $WSInstallDir = "C:\apps\$AppFolderName"
 Copy-Item $TmpDir\jws-icon.png "C:\apps" -Force
 
 # Unzip blosc
-Expand-Archive -LiteralPath "$TmpDir\blosc.zip" -DestinationPath "C:\apps\$AppFolderName\bin"
+New-Item -Path "C:\apps" -Name "blosc" -ItemType "directory"
+Expand-Archive -LiteralPath "$TmpDir\blosc.zip" -DestinationPath "C:\apps\blosc"
+# Add blosc dlls location to the path
+$env:Path += [IO.Path]::PathSeparator + "C:\apps\blosc"
 
 $RunScriptContent = @"
 # Set API Gateway
@@ -142,9 +158,8 @@ Write-Output "UserDir: `$UserDir"
 if (!(Get-Item -Path `$UserDir -ErrorAction Ignore)) {
     New-Item `$UserDir -ItemType Directory
 }
-
-# Add app binary dir to the path
-`$Env:Path += [IO.Path]::PathSeparator + `"$WSInstallDir\bin`"
+# Add blosc dlls location to the path
+`$env:Path += [IO.Path]::PathSeparator + `"C:\apps\blosc`"
 
 Start-Process -Wait -FilePath $WSInstallDir\bin\$AppExeName -ArgumentList `$WSArgs
 "@
