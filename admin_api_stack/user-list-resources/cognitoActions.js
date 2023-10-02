@@ -382,25 +382,29 @@ async function getUser(username) {
   }
 }
 
-async function listUsers(Limit, PaginationToken) {
-  const params = {
-    UserPoolId: userPoolId,
-    ...(Limit && { Limit }),
-    ...(PaginationToken && { PaginationToken })
-  };
-
-  console.log("Attempting to list users");
+async function listUsers(Limit) {
+  let PaginationToken = null;
+  let allUsers = [];
 
   try {
-    const result = await cognitoIdentityServiceProvider
-      .listUsers(params)
-      .promise();
+    do {
+      const params = {
+        UserPoolId: userPoolId,
+        ...(Limit && { Limit }),
+        ...(PaginationToken && { PaginationToken })
+      };
 
-    // Rename to NextToken for consistency with other Cognito APIs
-    result.NextToken = result.PaginationToken;
-    delete result.PaginationToken;
+      const response = await cognitoIdentityServiceProvider
+        .listUsers(params)
+        .promise();
 
-    return result;
+      allUsers = [...allUsers, ...response.Users];
+      PaginationToken = response.PaginationToken;
+    } while (PaginationToken);
+
+    return {
+      Users: allUsers
+    };
   } catch (err) {
     console.log(err);
     throw err;
