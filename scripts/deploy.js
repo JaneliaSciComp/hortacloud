@@ -80,7 +80,7 @@ async function deploy_vpc_and_workstation(withVpc,
     );
     console.log(
       chalk.white(
-        "https://github.com/JaneliaSciComp/hortacloud/blob/main/README.md#client-app-installation"
+        "https://hortacloud.janelia.org/docs/administration/aws/deployment/#install-the-horta-desktop-application"
       )
     );
     console.log(chalk.yellow());
