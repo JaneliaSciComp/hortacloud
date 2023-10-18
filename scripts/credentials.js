@@ -1,11 +1,14 @@
-const { IAM, STS } = require('aws-sdk');
+const { IAM } = require("@aws-sdk/client-iam");
+const { STS } = require("@aws-sdk/client-sts");
 const prompts = require('prompts');
 
-async function getMFADevice(region)  {
+async function getMFADevice(region, userName)  {
     const iam = new IAM({
         region
     });
-    const mfaDeviceResponse = await iam.listMFADevices().promise();
+    const mfaDeviceResponse = await iam.listMFADevices({
+        UserName:  userName
+    });
     if (mfaDeviceResponse.MFADevices && mfaDeviceResponse.MFADevices.length > 0) {
         return mfaDeviceResponse.MFADevices[0].SerialNumber;
     } else {
@@ -22,20 +25,24 @@ async function getSessionToken(region, mfaDevice, code) {
     const sts = new STS({
         region
     })
-    const sessionTokenResponse = await sts.getSessionToken(sessionTokenParams).promise();
+    const sessionTokenResponse = await sts.getSessionToken(sessionTokenParams);
     return sessionTokenResponse.Credentials;
 }
 
-async function getSessionnCredentials(region, mfaEnabled) {
-    const mfaDevice = await getMFADevice(region);
-    if (mfaDevice && mfaEnabled) {
-        var mfaDeviceName = mfaDevice.split(/\//).pop();
-        const tokenResponse = await prompts({
-            type: 'text',
-            name: 'token',
-            message: `Enter code from ${mfaDeviceName}`,
-        });
-        return await getSessionToken(region, mfaDevice, tokenResponse.token);
+async function getSessionnCredentials(region, userName, mfaEnabled) {
+    if (mfaEnabled) {
+        const mfaDevice = await getMFADevice(region, userName);
+        if (mfaDevice) {
+            var mfaDeviceName = mfaDevice.split(/\//).pop();
+            const tokenResponse = await prompts({
+                type: 'text',
+                name: 'token',
+                message: `Enter code from ${mfaDeviceName}`,
+            });
+            return await getSessionToken(region, mfaDevice, tokenResponse.token);
+        } else {
+            return {};
+        }
     } else {
         return {};
     }

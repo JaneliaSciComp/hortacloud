@@ -11,10 +11,11 @@
  * and limitations under the License.
  */
 
-const { CognitoIdentityServiceProvider, SecretsManager } = require("aws-sdk");
+const { CognitoIdentityProvider } = require("@aws-sdk/client-cognito-identity-provider");
+const { SecretsManager } = require("@aws-sdk/client-secrets-manager");
 const https = require("https");
 
-const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider();
+const cognitoIdentityServiceProvider = new CognitoIdentityProvider();
 const secretsmanager = new SecretsManager();
 
 const userPoolId = process.env.USERPOOL;
@@ -97,8 +98,7 @@ async function addUser(username, authUser, resend) {
 
   try {
     const password = await secretsmanager
-      .getRandomPassword(passwordParams)
-      .promise();
+      .getRandomPassword(passwordParams);
 
     const params = {
       UserPoolId: userPoolId,
@@ -123,8 +123,7 @@ async function addUser(username, authUser, resend) {
     }
 
     await cognitoIdentityServiceProvider
-      .adminCreateUser(params)
-      .promise();
+      .adminCreateUser(params);
     console.log(`Success adding ${username} to userpool ${userPoolId}`);
 
     // code to connect to Workstation API and add the user.
@@ -166,8 +165,7 @@ async function addUserToGroup(username, groupname, authUser) {
 
   try {
     await cognitoIdentityServiceProvider
-      .adminAddUserToGroup(params)
-      .promise();
+      .adminAddUserToGroup(params);
     console.log(`Success adding ${username} to ${groupname}`);
 
     if (groupname === "admins") {
@@ -218,8 +216,7 @@ async function resetUserPassword(username) {
   console.log(`Attempting to reset password for ${username}`);
   try {
     await cognitoIdentityServiceProvider
-      .adminResetUserPassword(params)
-      .promise();
+      .adminResetUserPassword(params);
     console.log(`Reset password for ${username} in userpool ${userPoolId}`);
     return {
       message: `Reset password for ${username}`
@@ -240,8 +237,7 @@ async function removeUser(username) {
 
   try {
     await cognitoIdentityServiceProvider
-      .adminDeleteUser(params)
-      .promise();
+      .adminDeleteUser(params);
     console.log(`Removed ${username} from userpool ${userPoolId}`);
     return {
       message: `Removed ${username} from userpool`
@@ -263,8 +259,7 @@ async function removeUserFromGroup(username, groupname, authUser) {
 
   try {
     await cognitoIdentityServiceProvider
-      .adminRemoveUserFromGroup(params)
-      .promise();
+      .adminRemoveUserFromGroup(params);
     console.log(`Removed ${username} from ${groupname}`);
 
     if (groupname === "admins") {
@@ -311,8 +306,7 @@ async function confirmUserSignUp(username) {
 
   try {
     await cognitoIdentityServiceProvider
-      .adminConfirmSignUp(params)
-      .promise();
+      .adminConfirmSignUp(params);
     console.log(`Confirmed ${username} registration`);
     return {
       message: `Confirmed ${username} registration`
@@ -331,8 +325,7 @@ async function disableUser(username) {
 
   try {
     await cognitoIdentityServiceProvider
-      .adminDisableUser(params)
-      .promise();
+      .adminDisableUser(params);
     console.log(`Disabled ${username}`);
     return {
       message: `Disabled ${username}`
@@ -351,8 +344,7 @@ async function enableUser(username) {
 
   try {
     await cognitoIdentityServiceProvider
-      .adminEnableUser(params)
-      .promise();
+      .adminEnableUser(params);
     console.log(`Enabled ${username}`);
     return {
       message: `Enabled ${username}`
@@ -373,8 +365,7 @@ async function getUser(username) {
 
   try {
     const result = await cognitoIdentityServiceProvider
-      .adminGetUser(params)
-      .promise();
+      .adminGetUser(params);
     return result;
   } catch (err) {
     console.log(err);
@@ -395,8 +386,7 @@ async function listUsers(Limit) {
       };
 
       const response = await cognitoIdentityServiceProvider
-        .listUsers(params)
-        .promise();
+        .listUsers(params);
 
       allUsers = [...allUsers, ...response.Users];
       PaginationToken = response.PaginationToken;
@@ -422,8 +412,7 @@ async function listGroups(Limit, PaginationToken) {
 
   try {
     const result = await cognitoIdentityServiceProvider
-      .listGroups(params)
-      .promise();
+      .listGroups(params);
 
     // Rename to NextToken for consistency with other Cognito APIs
     result.NextToken = result.PaginationToken;
@@ -448,8 +437,7 @@ async function listGroupsForUser(username, Limit, NextToken) {
 
   try {
     const result = await cognitoIdentityServiceProvider
-      .adminListGroupsForUser(params)
-      .promise();
+      .adminListGroupsForUser(params);
     /**
      * We are filtering out the results that seem to be innapropriate for client applications
      * to prevent any informaiton disclosure. Customers can modify if they have the need.
@@ -481,8 +469,7 @@ async function listUsersInGroup(groupname, Limit, NextToken) {
 
   try {
     const result = await cognitoIdentityServiceProvider
-      .listUsersInGroup(params)
-      .promise();
+      .listUsersInGroup(params);
     return result;
   } catch (err) {
     console.log(err);
@@ -501,8 +488,7 @@ async function signUserOut(username) {
 
   try {
     await cognitoIdentityServiceProvider
-      .adminUserGlobalSignOut(params)
-      .promise();
+      .adminUserGlobalSignOut(params);
     console.log(`Signed out ${username} from all devices`);
     return {
       message: `Signed out ${username} from all devices`

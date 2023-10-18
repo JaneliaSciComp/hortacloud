@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
-import Amplify, { Auth } from "aws-amplify";
+import { Amplify, Auth } from "aws-amplify";
 import App from "./App";
 import config from "./config.json";
 import { AuthProvider } from "./contexts/AuthContext";

@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { CloudFormation } = require("aws-sdk");
+const { CloudFormation } = require("@aws-sdk/client-cloudformation");
 
 // set defaults for the org and stage.
 const { HORTA_ORG = "janelia", HORTA_STAGE = "dev" } = process.env;
@@ -50,8 +50,7 @@ async function dumpCFStacksOutputs(stackNames) {
     return await cloudformation
       .describeStacks({
         StackName: `${HORTA_ORG}-hc-${stackName}-${HORTA_STAGE}`,
-      })
-      .promise();
+      });
   });
 
   const stacks = await Promise.all(stackPromises);

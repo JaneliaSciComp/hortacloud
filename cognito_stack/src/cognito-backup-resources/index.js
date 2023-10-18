@@ -1,4 +1,6 @@
-const { CognitoIdentityServiceProvider, S3 } = require('aws-sdk');
+const { CognitoIdentityProvider } = require("@aws-sdk/client-cognito-identity-provider");
+const { Upload } = require("@aws-sdk/lib-storage");
+const { S3 } = require("@aws-sdk/client-s3");
 const { PassThrough, Readable } = require('stream');
 
 const USERS_FILENAME = 'users.json';
@@ -16,7 +18,7 @@ async function cognitoExport(event) {
         throw new Error("No user pool ID has been specified, either as a parameter or in the environment");
     }
 
-    const cognito = new CognitoIdentityServiceProvider();
+    const cognito = new CognitoIdentityProvider();
     const s3 = new S3();
 
     await exportData(s3, {
@@ -45,7 +47,7 @@ async function cognitoImport(event) {
         throw new Error("No user pool ID has been specified, either as a parameter or in the environment");
     }
 
-    const cognito = new CognitoIdentityServiceProvider();
+    const cognito = new CognitoIdentityProvider();
     const s3 = new S3();
 
     await importGroups(cognito, userPoolId, await getS3Content(s3, backupBucket, createLocation(backupPrefix, GROUPS_FILENAME)));
@@ -64,11 +66,15 @@ function createLocation(prefix, name) {
 async function exportData(s3, backupParams) {
     const uploadStream = new PassThrough();
 
-    const upload = s3.upload({
-        Bucket: backupParams.backupBucket,
-        Key: backupParams.backupFile,
-        Body: uploadStream,
-        ContentType: 'application/json'
+    const upload = new Upload({
+        client: s3,
+
+        params: {
+            Bucket: backupParams.backupBucket,
+            Key: backupParams.backupFile,
+            Body: uploadStream,
+            ContentType: 'application/json'
+        }
     });
     const dataStream = Readable.from(jsonArrayStream(backupParams.backupData));
 
@@ -108,7 +114,7 @@ async function* fetchAllUsers(cognito, userPoolId) {
     let count = 0;
     while (true) {
         if (cachedUsers === undefined || (userIndex >= cachedUsers.length && listUserParams.PaginationToken)) {
-            const { Users = [], PaginationToken } = await cognito.listUsers(listUserParams).promise();
+            const { Users = [], PaginationToken } = await cognito.listUsers(listUserParams);
             listUserParams.PaginationToken = PaginationToken;
             cachedUsers = Users;
             userIndex = 0;
@@ -139,7 +145,7 @@ async function* fetchAllGroups(cognito, userPoolId) {
     let count = 0;
     while (true) {
         if (cachedGroups === undefined || (groupIndex >= cachedGroups.length && listGroupsParams.NextToken)) {
-            const { Groups = [], NextToken } = await cognito.listGroups(listGroupsParams).promise();
+            const { Groups = [], NextToken } = await cognito.listGroups(listGroupsParams);
             listGroupsParams.NextToken = NextToken;
             cachedGroups = Groups;
             groupIndex = 0;
@@ -164,7 +170,7 @@ async function fetchUserGroups(cognito, userPoolId, username) {
         Username: username
     }
     // This is typically small so I am not using any pagination here
-    const { Groups = [] } = await cognito.adminListGroupsForUser(listUserGroupsParams).promise();
+    const { Groups = [] } = await cognito.adminListGroupsForUser(listUserGroupsParams);
     return Groups;
 }
 
@@ -181,7 +187,7 @@ async function importGroups(cognito, userPoolId, groups) {
             Precedence: g.Precedence,
         };
         console.log('Create group:', newGroupParams);
-        return await cognito.createGroup(newGroupParams).promise();
+        return await cognito.createGroup(newGroupParams);
     });
     const newGroups = await Promise.all(createGroupPromises);
     console.log('Created new groups', newGroups);
@@ -196,7 +202,7 @@ async function importUsers(cognito, userPoolId, users) {
             UserAttributes: u.Attributes.filter(attr => attr.Name != 'sub'),
         };
         console.log('Create user', newUserParams);
-        const newUserData = await cognito.adminCreateUser(newUserParams).promise();
+        const newUserData = await cognito.adminCreateUser(newUserParams);
         console.log(`Add user ${u.Username} to groups:`, u.UserGroups);
         const userGroupsPromises = await u.UserGroups.map(async ug => {
             console.log(`Add '${u.Username}' to '${ug.GroupName}' group`);
@@ -204,7 +210,7 @@ async function importUsers(cognito, userPoolId, users) {
                 UserPoolId: userPoolId,
                 GroupName: ug.GroupName,
                 Username: u.Username,
-            }).promise();
+            });
         });
         await Promise.all(userGroupsPromises);
         return {
@@ -223,7 +229,7 @@ async function getS3Content(s3, Bucket, Key) {
         const response = await s3.getObject({
             Bucket,
             Key
-        }).promise();
+        });
         return response.Body
             ? JSON.parse(response.Body?.toString())
             : null;

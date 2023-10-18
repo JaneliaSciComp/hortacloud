@@ -1,5 +1,7 @@
 const execSync = require('child_process').execSync;
-const { AppStream } = require('aws-sdk');
+const {
+  AppStream
+} = require("@aws-sdk/client-appstream");
 const fs = require('fs');
 const chalk = require('chalk');
 const dotenv = require('dotenv');
