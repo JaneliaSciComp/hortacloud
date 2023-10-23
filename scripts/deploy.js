@@ -227,7 +227,7 @@ async function deploy_admin_site(credentials) {
 }
 
 async function install(argv, credentials) {
-  if (argv.includeCognito) {
+  if (argv.includeCognito || argv.cognitoOnly) {
     await deploy_cognito(credentials);
   }
 
