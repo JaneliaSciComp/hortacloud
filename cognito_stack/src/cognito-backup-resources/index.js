@@ -1,6 +1,6 @@
 const { CognitoIdentityProvider } = require("@aws-sdk/client-cognito-identity-provider");
 const { Upload } = require("@aws-sdk/lib-storage");
-const { S3 } = require("@aws-sdk/client-s3");
+const { S3Client } = require("@aws-sdk/client-s3");
 const { PassThrough, Readable } = require('stream');
 
 const USERS_FILENAME = 'users.json';
@@ -19,15 +19,15 @@ async function cognitoExport(event) {
     }
 
     const cognito = new CognitoIdentityProvider();
-    const s3 = new S3();
+    const s3Client = new S3Client();
 
-    await exportData(s3, {
+    await exportData(s3Client, {
         backupBucket: backupBucket,
         backupFile: createLocation(backupPrefix, USERS_FILENAME),
         backupData: fetchAllUsers(cognito, userPoolId),
     });
 
-    await exportData(s3, {
+    await exportData(s3Client, {
         backupBucket: backupBucket,
         backupFile: createLocation(backupPrefix, GROUPS_FILENAME),
         backupData: fetchAllGroups(cognito, userPoolId),
@@ -63,11 +63,11 @@ function createLocation(prefix, name) {
     return location.startsWith('/') ? location.substring(1) : location;
 }
 
-async function exportData(s3, backupParams) {
+async function exportData(s3Client, backupParams) {
     const uploadStream = new PassThrough();
 
     const upload = new Upload({
-        client: s3,
+        client: s3Client,
 
         params: {
             Bucket: backupParams.backupBucket,
@@ -84,7 +84,7 @@ async function exportData(s3, backupParams) {
     });
 
     try {
-        await upload.promise();
+        await upload.done();
     } catch (error) {
         throw error;
     }
