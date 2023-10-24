@@ -25,7 +25,7 @@ export class HortaCloudCognitoBackup extends Construct {
         const cognitoBackupResourcesDir = path.join(__dirname, 'cognito-backup-resources');
 
         this.backupHandler = new Function(this, 'BackupHandler', {
-            runtime: Runtime.NODEJS_18_X,
+            runtime: Runtime.NODEJS_16_X,
             code: Code.fromAsset(cognitoBackupResourcesDir),
             handler: 'index.cognitoExport',
             functionName: createResourceId(hortaConfig, 'cognito-backup'),
@@ -63,7 +63,7 @@ export class HortaCloudCognitoBackup extends Construct {
         ]);
 
         this.restoreHandler = new Function(this, 'RestoreHandler', {
-            runtime: Runtime.NODEJS_18_X,
+            runtime: Runtime.NODEJS_16_X,
             code: Code.fromAsset(cognitoBackupResourcesDir),
             handler: 'index.cognitoImport',
             functionName: createResourceId(hortaConfig, 'cognito-restore'),

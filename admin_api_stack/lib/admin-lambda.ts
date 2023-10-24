@@ -53,7 +53,7 @@ export class LambdaService extends Construct {
     );
 
     const authHandler = new lambda.Function(this, 'HortaCloudAuthHandler', {
-      runtime: lambda.Runtime.NODEJS_18_X, // So we can use async in widget.js
+      runtime: lambda.Runtime.NODEJS_16_X, // So we can use async in widget.js
       code: lambda.Code.fromAsset('appstream-lambda-resources'),
       handler: 'index.handler',
       environment: {
@@ -114,7 +114,7 @@ export class LambdaService extends Construct {
       this,
       'HortaCloudUserListHandler',
       {
-        runtime: lambda.Runtime.NODEJS_18_X, // So we can use async in widget.js
+        runtime: lambda.Runtime.NODEJS_16_X, // So we can use async in widget.js
         role: userListRole,
         vpc: workstationVpc,
         vpcSubnets: {
