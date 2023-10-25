@@ -1,3 +1,5 @@
+- Support nodejs18 runtime for the lambdas. NodeJs 18 require aws sdk v3 so a one time 'npm run setup -- -i' is needed;
+also if typically cognito stack is not deployed that stack needs to be updated as well using 'npm run deploy -- --cognito-only'
 - Support bug reporting through email notification (hortacloud#8)
 - Added support for Google Drive and OneDrive
 - Support deployment when MFA is enabled
