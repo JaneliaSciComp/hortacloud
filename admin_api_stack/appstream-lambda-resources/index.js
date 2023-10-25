@@ -1,10 +1,10 @@
 // Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-const AWS = require('aws-sdk');
-const appstream = new AWS.AppStream;
+const { AppStreamClient, CreateStreamingURLCommand } = require("@aws-sdk/client-appstream");
+const appstream = new AppStreamClient();
 
-exports.handler = (event, context, callback) => {
+exports.handler = async (event, context, callback) => {
     if (!event.requestContext.authorizer) { //checks to see if Cognito Authorization has been configured
         errorResponse('Authorization has not been configured, please configure an authorizer in API Gateway', context.awsRequestId, callback);
         return;
@@ -18,7 +18,7 @@ exports.handler = (event, context, callback) => {
       Validity: 5
     };
 
-    createas2streamingurl(params, context.awsRequestId, callback);
+    await createas2streamingurl(params, context.awsRequestId, callback);
 };
 
 function errorResponse(errorMessage, awsRequestId, callback) { //Function for handling error messaging back to client
@@ -29,34 +29,31 @@ function errorResponse(errorMessage, awsRequestId, callback) { //Function for ha
             Reference: awsRequestId,
         }),
         headers: {
-            //This should be the domain of the website that originated the request, example: amazonaws.com
+            // This should be the domain of the website that originated the request, example: amazonaws.com
             'Access-Control-Allow-Origin': '*',
         },
     });
 }
 
-function createas2streamingurl(params, awsRequestId, callback) {
-    var request = appstream.createStreamingURL(params);
-    request.
-        on('success', function (response) {
-            console.log("Success. AS2 Streaming URL created.");
-            var url = response.data.StreamingURL;
-            callback(null, {
-                statusCode: 201,
-                body: JSON.stringify({
-                    Message: url,
-                    Reference: awsRequestId,
-                }),
-                headers: {
-                    //This should be the domain of the website that originated the request, example: amazonaws.com
-                    'Access-Control-Allow-Origin': '*',
-                },
-            });
-        }).
-        on('error', function (response) {
-            console.log("Error: " + JSON.stringify(response.message));
-            errorResponse('Error creating AS2 streaming URL: ' + JSON.stringify(response.message), awsRequestId, callback);
-
-        }).
-        send();
+async function createas2streamingurl(params, awsRequestId, callback) {
+    const createStreamingURL = new CreateStreamingURLCommand(params);
+    try {
+        const response = await appstream.send(createStreamingURL);
+        console.log("Success. AS2 Streaming URL created.", response);
+        var url = response.StreamingURL;
+        callback(null, {
+            statusCode: 201,
+            body: JSON.stringify({
+                Message: url,
+                Reference: awsRequestId,
+            }),
+            headers: {
+                // This should be the domain of the website that originated the request, example: amazonaws.com
+                'Access-Control-Allow-Origin': '*',
+            },
+        });
+    } catch(err) {
+        console.log("Error: " + JSON.stringify(err), err);
+        errorResponse('Error creating AS2 streaming URL: ' + JSON.stringify(err), awsRequestId, callback);
+    }   
 }

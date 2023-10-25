@@ -2,7 +2,9 @@ const execSync = require('child_process').execSync;
 const chalk = require('chalk');
 const open = require('open');
 const prompts = require('prompts');
-const { CloudFormation, AppStream, Lambda } = require('aws-sdk');
+const { AppStreamClient, StartFleetCommand, DescribeImagesCommand, DescribeFleetsCommand } = require("@aws-sdk/client-appstream");
+const { CloudFormation } = require("@aws-sdk/client-cloudformation");
+const { Lambda } = require("@aws-sdk/client-lambda");
 const dotenv = require('dotenv');
 const { getSessionnCredentials, getEnvWithSessionCredentials } = require('./credentials');
 
@@ -43,14 +45,14 @@ async function restore_cognito_users(backupBucket, backupPrefix, credentials) {
       backupPrefix
     }),
     LogType: 'Tail',
-  }).promise();
+  });
 }
 
 async function deploy_vpc_and_workstation(withVpc,
                                           withWorkstation,
                                           startWorkstation,
                                           credentials) {
-  const appstream = new AppStream({ 
+  const appstream = new AppStreamClient({ 
     region: AWS_REGION,
     accessKeyId: credentials.AccessKeyId,
     secretAccessKey: credentials.SecretAccessKey,
@@ -95,12 +97,11 @@ async function deploy_vpc_and_workstation(withVpc,
     let imageAvailable = false;
     while (!imageAvailable) {
       try {
-        const images = await appstream
-          .describeImages({
-            Names: [imageName],
-          })
-          .promise();
-        const [image] = images.Images;
+        const describeImages = new DescribeImagesCommand({
+          Names: [imageName],
+        })
+        const imagesResponse = await appstream.send(describeImages);
+        const [image] = imagesResponse.Images;
         if (image) {
           if (image.State === "AVAILABLE") {
             imageAvailable = true;
@@ -133,12 +134,11 @@ async function deploy_vpc_and_workstation(withVpc,
     let fleetStarted = false;
     while (!fleetRunning) {
       try {
-        const fleets = await appstream
-          .describeFleets({
-            Names: [fleetName],
-          })
-          .promise();
-        const [fleet] = fleets.Fleets;
+        const describeFleets = new DescribeFleetsCommand({
+          Names: [fleetName],
+        })
+        const fleetsResponse = await appstream.send(describeFleets);
+        const [fleet] = fleetsResponse.Fleets;
         if (fleet) {
           if (fleet.State === "RUNNING") {
             fleetRunning = true;
@@ -146,10 +146,10 @@ async function deploy_vpc_and_workstation(withVpc,
             if (!fleetStarted) {
               console.log(chalk.cyan(`🚚 Starting ${fleetName}`));
               // Start the fleet
-              const startFleetReq = appstream.startFleet({
+              const startFleetReq = new StartFleetCommand({
                 Name: fleetName,
               });
-              startFleetReq.send();
+              await appstream.send(startFleetReq);
               fleetStarted = true;
             }
           } else {
@@ -261,8 +261,7 @@ async function install(argv, credentials) {
     const apiStack = await cloudformation
       .describeStacks({
         StackName: `${HORTA_ORG}-hc-adminWebApp-${HORTA_STAGE}`,
-      })
-      .promise();
+      });
 
     // build the outputs into a simple object
     apiStack.Stacks[0].Outputs.forEach(({ OutputKey, OutputValue }) => {
@@ -322,6 +321,10 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
     type: 'boolean',
     default: false,
     describe: 'use MFA is an MFA device is available',
+  })
+  .option('username', {
+    type: 'string',
+    describe: 'User login name for which to retrieve the MFA device',
   })
   .option('a', {
     alias: 'admin-only',
@@ -397,7 +400,7 @@ prompts.override(argv);
   });
 
   if (response.confirm) {
-    const credentials = await getSessionnCredentials(AWS_REGION, argv.useMfa);
+    const credentials = await getSessionnCredentials(AWS_REGION, argv.useMfa, argv.userName);
     install(argv, credentials);
   } else {
     console.log(chalk.red("🚨 installation aborted"));

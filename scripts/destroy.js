@@ -1,5 +1,5 @@
 const execSync = require('child_process').execSync;
-const { AppStream } = require('aws-sdk');
+const { AppStreamClient, DeleteImageCommand } = require("@aws-sdk/client-appstream");
 const fs = require('fs');
 const chalk = require('chalk');
 const dotenv = require('dotenv');
@@ -24,21 +24,21 @@ const expectedEnvVars = [
   "AWS_ACCOUNT",
 ];
 
-function removeAppStreamImage(credentials) {
+async function removeAppStreamImage(credentials) {
   const imageName = `${HORTA_ORG}-hc-HortaCloudWorkstation-${HORTA_STAGE}`;
 
   try {
-    const appstream = new AppStream({ 
+    const appstream = new AppStreamClient({ 
       region: AWS_REGION,
       accessKeyId: credentials.AccessKeyId,
       secretAccessKey: credentials.SecretAccessKey,
       sessionToken: credentials.SessionToken,  
     });
     console.log(chalk.yellow(`⚠️  Removing appstream image ${imageName}`));
-    const deleteImageReq = appstream.deleteImage({
+    const deleteImageReq = new DeleteImageCommand({
       Name: imageName,
     });
-    deleteImageReq.send();
+    await appstream.send(deleteImageReq);
     console.log(chalk.green(`✅ Removed appstream image ${imageName}`));
   } catch (error) {
     console.log(chalk.red(`🚨 Error while trying to remove ${imageName}`));
@@ -48,7 +48,7 @@ function removeAppStreamImage(credentials) {
   }
 }
 
-function destroy(argv, credentials) {
+async function destroy(argv, credentials) {
   if (fs.existsSync('./website/build')) {
     console.log(chalk.yellow("⚠️  Removing web admin frontend stack."));
     exec(`npm run cdk -- destroy -f --require-approval never -c deploy=admin_website`, {
@@ -97,7 +97,7 @@ function destroy(argv, credentials) {
     // if we keep the workstation fleet
     // the image cannot be removed anyway
     // because it is still associated with the fleet
-    removeAppStreamImage(credentials);
+    await removeAppStreamImage(credentials);
   }
 }
 

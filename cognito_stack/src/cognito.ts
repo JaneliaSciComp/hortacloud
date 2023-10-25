@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
-import { App, Fn, Stack, Tags } from "aws-cdk-lib";
+import { App, Stack, Tags } from "aws-cdk-lib";
 import {
   getHortaCloudConfig,
   createResourceId,
-  HortaCloudConfig
 } from "../../common/hortacloud-common";
 import { HortaCloudCognitoStack } from "./hortacloud-cognito";
 

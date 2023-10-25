@@ -20,7 +20,6 @@
   },
   "homepage": "https://github.com/JaneliaSciComp/hortacloud#readme",
   "dependencies": {
-    "aws-sdk": "^2.1151.0",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.0",
     "open": "^8.4.0",
@@ -28,6 +27,11 @@
     "yargs": "^17.4.1"
   },
   "devDependencies": {
+    "@aws-sdk/client-appstream": "^3.430.0",
+    "@aws-sdk/client-cloudformation": "^3.430.0",
+    "@aws-sdk/client-iam": "^3.430.0",
+    "@aws-sdk/client-lambda": "^3.430.0",
+    "@aws-sdk/client-sts": "^3.430.0",
     "@typescript-eslint/eslint-plugin": "^5.12.1",
     "@typescript-eslint/parser": "^5.12.1",
     "eslint": "^8.9.0",
