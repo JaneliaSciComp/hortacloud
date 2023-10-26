@@ -19,6 +19,7 @@ const argv = require("yargs/yargs")(process.argv.slice(2))
 
 if (argv.withInstall) {
   console.log(chalk.cyan("🛠  Installing dependencies"));
+  exec("npm install --prefix ./"); // update the top level packages too
   exec("npm install --prefix ./cognito_stack");
   exec("npm install --prefix ./vpc_stack");
   exec("npm install --prefix ./workstation_stack");
