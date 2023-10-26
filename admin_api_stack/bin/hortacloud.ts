@@ -3,7 +3,6 @@
 import 'source-map-support/register';
 
 import { App, Fn, Tags } from 'aws-cdk-lib';
-import { UserPool } from 'aws-cdk-lib/aws-cognito'
 import { HortaCloudAdminAPIStack } from '../lib/adminapi-stack';
 import { HortaCloudWebAppStack } from '../lib/frontend-stack';
 import { getHortaCloudConfig, createResourceId, HortaCloudConfig } from '../../common/hortacloud-common';

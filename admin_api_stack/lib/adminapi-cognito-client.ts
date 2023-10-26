@@ -1,7 +1,5 @@
-import * as cdk from 'aws-cdk-lib';
 import { IUserPool, UserPoolClient } from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
-import { getHortaCloudConfig } from '../../common/hortacloud-common';
 
 
 export class AdminApiCognitoClient extends Construct {
