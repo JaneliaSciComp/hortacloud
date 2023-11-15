@@ -11,8 +11,8 @@
     "cleancdk": "npm run clean && npm run cdk"
   },
   "devDependencies": {
-    "aws-cdk": "^2.101.1",
-    "aws-cdk-lib": "^2.101.1",
+    "aws-cdk": "^2.108.1",
+    "aws-cdk-lib": "^2.108.1",
     "constructs": "^10.3.0",
     "crypto": "^1.0.1",
     "cpy-cli": "^3.1.1",

@@ -27,11 +27,11 @@
     "yargs": "^17.4.1"
   },
   "devDependencies": {
-    "@aws-sdk/client-appstream": "^3.430.0",
-    "@aws-sdk/client-cloudformation": "^3.430.0",
-    "@aws-sdk/client-iam": "^3.430.0",
-    "@aws-sdk/client-lambda": "^3.430.0",
-    "@aws-sdk/client-sts": "^3.430.0",
+    "@aws-sdk/client-appstream": "^3.451.0",
+    "@aws-sdk/client-cloudformation": "^3.451.0",
+    "@aws-sdk/client-iam": "^3.451.0",
+    "@aws-sdk/client-lambda": "^3.452.0",
+    "@aws-sdk/client-sts": "^3.451.0",
     "@typescript-eslint/eslint-plugin": "^5.12.1",
     "@typescript-eslint/parser": "^5.12.1",
     "eslint": "^8.9.0",
