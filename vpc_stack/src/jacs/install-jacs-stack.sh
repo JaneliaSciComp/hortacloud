@@ -26,7 +26,7 @@ SEARCH_MEM_GB=$1
 shift
 
 # set JACS branch
-JACS_GIT_BRANCH=stable
+JACS_GIT_BRANCH=master
 # backup bucket
 BACKUP_BUCKET=
 BACKUP_FOLDER=
