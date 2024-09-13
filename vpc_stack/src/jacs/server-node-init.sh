@@ -60,7 +60,7 @@ useradd --uid 4444 --gid 4444 --shell /sbin/nologin docker-nobody
 curl -L "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose ; chmod +x /usr/local/bin/docker-compose
 
 cp /etc/sysconfig/docker-storage /etc/sysconfig/docker-storage.bak
-sed s/^DOCKER_STORAGE_OPTIONS=.*/DOCKER_STORAGE_OPTIONS="\"-g \\/data\\/docker\""/ \
+sed s/^DOCKER_STORAGE_OPTIONS=.*/DOCKER_STORAGE_OPTIONS="\"--data-root \\/data\\/docker\""/ \
     /etc/sysconfig/docker-storage.bak > /etc/sysconfig/docker-storage
 
 # Enable Docker at Boot, and allow user to run Docker without sudo

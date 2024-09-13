@@ -31,7 +31,7 @@ export function getHortaCloudConfig() : HortaCloudConfig {
         hortaCloudVersion: '1.0.0',
         developerName: process.env.USER || "unknown",
         hortaWorkstationInstanceType: process.env.HORTA_WS_INSTANCE_TYPE || 'stream.graphics.g4dn.xlarge',
-        hortaWorkstationImageName: process.env.HORTA_WS_IMAGE_NAME || 'AppStream-Graphics-G4dn-WinServer2019-03-29-2023',
+        hortaWorkstationImageName: process.env.HORTA_WS_IMAGE_NAME || 'AppStream-Graphics-G4dn-WinServer2022-06-17-2024',
     };
 }
 
