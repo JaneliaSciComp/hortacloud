@@ -465,9 +465,6 @@ sleep 30
 ./manage.sh compose ps
 ./manage.sh compose logs
 
-# create scheduled jobs
-createScheduledJobs
-
 restore_data_folder="/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
 echo "Check restore bucket -> ${RESTORE_BUCKET} and restore folder -> ${restore_data_folder}"
 if [[ -n "${RESTORE_BUCKET}" && -e "${restore_data_folder}" ]]; then
@@ -481,5 +478,8 @@ fi
 
 # create the backup job
 createBackupJob
+
+# create scheduled jobs
+createScheduledJobs
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"
