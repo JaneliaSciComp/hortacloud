@@ -1,4 +1,4 @@
-# HortaCloud
+![HortaCloud](https://github.com/user-attachments/assets/aff478aa-94c6-477e-a726-7e764888a467)
 
 [![DOI](https://zenodo.org/badge/428847631.svg)](https://zenodo.org/badge/latestdoi/428847631)
 
