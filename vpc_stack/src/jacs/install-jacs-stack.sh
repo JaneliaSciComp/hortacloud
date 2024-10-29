@@ -46,6 +46,8 @@ MAIL_RECEIVER=
 # workstation cache dir
 WORKSTATION_CACHE_DIR=c:/Users/PhotonUser/Downloads/Horta_filecache
 BLOSC_LIBS=
+DB_RESTORE_WORKERS=1
+DB_PARALLEL_RESTORED_COLLECTIONS=4
 
 while [[ $# > 0 ]]; do
     key="$1"
@@ -108,6 +110,16 @@ while [[ $# > 0 ]]; do
             ;;
         --blosc-libs)
             BLOSC_LIBS=$2
+            shift
+            shift
+            ;;
+        --restore-workers)
+            DB_RESTORE_WORKERS=$2
+            shift
+            shift
+            ;;
+        --restore-parallel-collections)
+            DB_PARALLEL_RESTORED_COLLECTIONS=$2
             shift
             shift
             ;;
@@ -411,7 +423,10 @@ function restoreDatabase() {
     echo "Restore database from /s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
     # drop the treeNode so that the workspace and treeNode entries get restored with the previous IDs
     ./manage.sh mongo -notty --eval "db.treeNode.drop()"
-    ./manage.sh mongo-restore "/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
+    ./manage.sh mongo-restore \
+        "/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs" \
+        ${DB_RESTORE_WORKERS} \
+        ${DB_PARALLEL_RESTORED_COLLECTIONS}
 }
 
 prepareFilesystem
@@ -457,9 +472,9 @@ sleep 90
 echo "Bounce services"
 ./manage.sh compose down || true
 sleep 10
-# bring up all services
-echo "Start up all services"
-./manage.sh compose up -d
+# bring up database services
+echo "Start up database services"
+./manage.sh compose --dbonly up -d
 # sleep for 30s to give time to the service to start
 sleep 30
 ./manage.sh compose ps
@@ -481,5 +496,12 @@ createBackupJob
 
 # create scheduled jobs
 createScheduledJobs
+
+# stop db servervices
+./manage.sh compose down
+sleep 10
+
+echo "Start up all services"
+./manage.sh compose up -d
 
 echo "Completed JACS stack installation (install-jacs-stack.sh)"

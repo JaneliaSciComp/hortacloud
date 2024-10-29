@@ -182,6 +182,12 @@ export class HortaCloudJACS extends Construct {
     const restoreArgs:string[] = dataRestoreFolder
       ? ['--restore', restoreBucketName, dataRestoreFolder]
       : ['--no-restore'];
+    const restoreWorkersArgs: string[] = hortaConfig.hortaRestoreWorkers > 0
+      ? ['--restore-workers', hortaConfig.hortaRestoreWorkers as unknown as string ]
+      : []
+    const restoreParallelCollectionArgs: string[] = hortaConfig.hortaRestoreParallelCollections > 0
+      ? ['--restore-workers', hortaConfig.hortaRestoreParallelCollections as unknown as string ]
+      : []
     const systemLogsBackupFolder = hortaConfig.hortaSystemLogsBackupFolder ? hortaConfig.hortaSystemLogsBackupFolder : 'hortacloud/systemlogs';
     const systemLogsBackupArgs:string[] = backupBucketName
         ? [
@@ -258,6 +264,8 @@ export class HortaCloudJACS extends Construct {
           ...jacsGitBranchArgs,
           ...backupArgs,
           ...restoreArgs,
+          ...restoreWorkersArgs,
+          ...restoreParallelCollectionArgs,
           ...mailServerArgs,
           ...mailUserArgs,
           ...mailPasswordArgs,

@@ -14,6 +14,8 @@ export interface HortaBackupConfig {
     hortaBackupFolder?: string;
     hortaRestoreBucket?: string;
     hortaRestoreFolder?: string;
+    hortaRestoreWorkers:  number;
+    hortaRestoreParallelCollections: number;
     hortaSystemLogsBackupFolder?: string;
 }
 
@@ -36,11 +38,19 @@ export function getHortaCloudConfig() : HortaCloudConfig {
 }
 
 export function getHortaBackupConfig() : HortaBackupConfig {
+    const hortaRestoreWorkers:number = process.env.HORTA_RESTORE_WORKERS
+        ? +process.env.HORTA_RESTORE_WORKERS
+        : 0;
+    const hortaRestoreParallelCollections:number = process.env.HORTA_RESTORE_PARALLEL_COLLECTIONS
+        ? +process.env.HORTA_RESTORE_PARALLEL_COLLECTIONS
+        : 0;
     return {
         hortaBackupBucket: process.env.HORTA_BACKUP_BUCKET,
         hortaBackupFolder: process.env.HORTA_BACKUP_FOLDER,
         hortaRestoreBucket: process.env.HORTA_RESTORE_BUCKET,
         hortaRestoreFolder: process.env.HORTA_RESTORE_FOLDER,
+        hortaRestoreWorkers: hortaRestoreWorkers,
+        hortaRestoreParallelCollections: hortaRestoreParallelCollections,
         hortaSystemLogsBackupFolder: process.env.HORTA_SYSTEMLOGS_FOLDER,
     };
 }
