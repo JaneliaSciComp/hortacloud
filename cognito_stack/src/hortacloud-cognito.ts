@@ -36,7 +36,7 @@ export class HortaCloudCognitoStack extends Stack {
 }
 
 const ADMIN_GROUP_NAME = "admins";
-const DO_NOT_CREATE_ADMIN_USER:boolean = process.env.HORTA_NO_ADMIN_USER_FLAG?.toLowerCase() == 'true' ? true : false;
+const NEW_HORTA_ENVIRONMENT:boolean = process.env.NEW_HORTA_ENVIRONMENT?.toLowerCase() == 'true' ? true : false;
 
 class HortaCloudCognito extends Construct {
 
@@ -83,7 +83,7 @@ class HortaCloudCognito extends Construct {
 
     // if no admin user flag is set do not create the admin user
     // that should only be done if cognito users are imported from a backup
-    if (!DO_NOT_CREATE_ADMIN_USER) {
+    if (NEW_HORTA_ENVIRONMENT === true) {
       this.createAdminUser();
     }
   }
