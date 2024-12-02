@@ -13,7 +13,7 @@ import { RequireAuth, RequireAdmin, useAuth } from "./contexts/AuthContext";
 
 import MouseLightLogo from "./logo.svg";
 
-import "./App.css";
+import "./App.less";
 
 const { Header, Content, Footer } = Layout;
 
@@ -39,9 +39,9 @@ function App() {
           <Col span={18}>
             <div className="logo">
               <img
-                src={MouseLightLogo}
-                alt="mouselight logo"
-                style={{ float: "left", height: "60px" }}
+                src="/hortacloud_logo.png"
+                alt="HortaCloud"
+                style={{ float: "left", height: "60px", marginRight: "30px" }}
               />
             </div>
             <Menu theme="dark" mode="horizontal">
