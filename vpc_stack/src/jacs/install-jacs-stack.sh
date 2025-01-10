@@ -48,6 +48,7 @@ WORKSTATION_CACHE_DIR=c:/Users/PhotonUser/Downloads/Horta_filecache
 BLOSC_LIBS=
 DB_RESTORE_WORKERS=1
 DB_PARALLEL_RESTORED_COLLECTIONS=4
+DEFAULT_AWS_REGION=us-east-1
 
 while [[ $# > 0 ]]; do
     key="$1"
@@ -235,6 +236,9 @@ function prepareJadeConfig() {
         "MongoDB.ConnectionWaitQueueSize=5000"
         "MongoDB.ConnectTimeout=120000"
         "${JADE_BOOTSTRAP}"
+
+        "AWS.Region.Default=${DEFAULT_AWS_REGION}"
+        "AWS.AsyncAccess.Default=true"
 
         "Storage.Email.SenderEmail="
         "Storage.Email.SenderPassword="
