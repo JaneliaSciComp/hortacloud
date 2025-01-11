@@ -124,6 +124,11 @@ while [[ $# > 0 ]]; do
             shift
             shift
             ;;
+        --default-aws-region)
+            DEFAULT_AWS_REGION=$2
+            shift
+            shift
+            ;;
         *)
             # unrecognized flag
             break
@@ -478,19 +483,24 @@ echo "Bounce services"
 sleep 10
 # bring up database services
 echo "Start up database services"
-./manage.sh compose --dbonly up -d
-# sleep for 30s to give time to the service to start
-sleep 30
-./manage.sh compose ps
-./manage.sh compose logs
 
 restore_data_folder="/s3data/${RESTORE_BUCKET}${RESTORE_FOLDER}/jacs"
 echo "Check restore bucket -> ${RESTORE_BUCKET} and restore folder -> ${restore_data_folder}"
 if [[ -n "${RESTORE_BUCKET}" && -e "${restore_data_folder}" ]]; then
+    # only start the db services
+    ./manage.sh compose --dbonly up -d
+    # sleep for 30s to give time to the service to start
+    sleep 30
+    ./manage.sh compose ps
     # if the restore folder was specified and if it exists restore database 
     # because some groups have already been created there will some clash but that is acceptable
     restoreDatabase
 else
+    # if admin user needs to be created start the entire stack
+    ./manage.sh compose up -d
+    # sleep for 30s to give time to the service to start
+    sleep 30
+    ./manage.sh compose ps
     # create admin user only if we are not restoring a previous database
     createAdminUser
 fi
