@@ -37,7 +37,7 @@ export function getHortaServicesConfig() : HortaCloudServicesConfig {
     return {
         ...getHortaCloudConfig(),
         ...getHortaBackupConfig(),
-        hortaServerInstanceType: process.env.HORTA_SERVER_INSTANCE_TYPE || 't2.xlarge',
+        hortaServerInstanceType: process.env.HORTA_SERVER_INSTANCE_TYPE || 'r5n.2xlarge',
         hortaServerKeyPairName: process.env.HORTA_KEY_PAIR || '',
         hortaSystemVolumeSizeGB: hortaSystemVolumeSizeGB,
         hortaDataVolumeSizeGB: hortaDataVolumeSizeGB,
