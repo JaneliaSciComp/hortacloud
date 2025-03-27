@@ -30,6 +30,7 @@ export class HortacloudAppstream extends Construct {
       },
       disconnectTimeoutInSeconds: hortaAppstreamConfig.sessionDisconnectInSecs,
       maxUserDurationInSeconds: hortaAppstreamConfig.sessionDurationInMin * 60, // this value is in seconds
+      idleDisconnectTimeoutInSeconds: hortaAppstreamConfig.sessionIdleDisconnectInMin * 60,
     });
 
     const storageConnectors = [

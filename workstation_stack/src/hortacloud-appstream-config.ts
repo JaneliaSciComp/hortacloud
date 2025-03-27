@@ -7,6 +7,7 @@ export interface HortaCloudAppstreamConfig extends HortaCloudConfig {
     appstreamComputeCapacity: number;
     sessionDisconnectInSecs: number;
     sessionDurationInMin: number;
+    sessionIdleDisconnectInMin: number;
 }
 
 export function getHortaAppstreamConfig() : HortaCloudAppstreamConfig {
@@ -22,6 +23,7 @@ export function getHortaAppstreamConfig() : HortaCloudAppstreamConfig {
         oneDriveDomains: oneDriveDomains,
         appstreamComputeCapacity: parseInt(process.env.HORTA_APPSTREAM_FLEET_INSTANCES || '5'),
         sessionDisconnectInSecs: parseInt(process.env.HORTA_SESSION_DISCONNECT_IN_SECS || '600'),
-        sessionDurationInMin: parseInt(process.env.HORTA_SESSION_DURATION_IN_MINS || '960')
+        sessionDurationInMin: parseInt(process.env.HORTA_SESSION_DURATION_IN_MINS || '960'),
+        sessionIdleDisconnectInMin: parseInt(process.env.HORTA_SESSION_IDLE_DISCONNECT_IN_MINS || '5')
     };
 }
