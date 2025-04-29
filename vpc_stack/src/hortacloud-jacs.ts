@@ -315,6 +315,7 @@ function createJacsMachineImage(cfg: HortaCloudServicesConfig): HortaCloudMachin
     virtualization: ec2.AmazonLinuxVirt.HVM,
     storage: ec2.AmazonLinuxStorage.GENERAL_PURPOSE,
     cpuType: ec2.AmazonLinuxCpuType.X86_64,
+    kernel: ec2.AmazonLinux2Kernel.CDK_LATEST,
   });
 
   return {

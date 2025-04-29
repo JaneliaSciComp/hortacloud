@@ -10,7 +10,7 @@ echo "Initializing server (server-init.sh)... $@"
 dataBucketNames=("$@")
 
 # Install dependencies
-yum update -y
+yum update -y --security
 amazon-linux-extras install -y epel
 yum install -y docker git fuse-devel s3fs-fuse python3-pip
 
