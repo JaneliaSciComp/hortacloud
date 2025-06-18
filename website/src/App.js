@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import Debug from "./pages/Debug";
+import Signup from "./pages/Signup";
 import PasswordReset from "./pages/PasswordReset";
 import PasswordChange from "./pages/PasswordChange";
 import { RequireAuth, RequireAdmin, useAuth } from "./contexts/AuthContext";
@@ -88,6 +89,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/password-reset" element={<PasswordReset />} />
+                <Route path="/signup" element={<Signup />} />
                 <Route
                   path="/password-change"
                   element={
