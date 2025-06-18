@@ -48,7 +48,7 @@ class HortaCloudCognito extends Construct {
     const adminBucketUrl = `${hortaCloudConfig.hortaCloudOrg}-hc-webadmin-${hortaCloudConfig.hortaStage}.s3-website-${process.env.AWS_REGION}.amazonaws.com`;
     // user pool for auth
     this.userPool = new UserPool(this, "HortaCloudUsers", {
-      selfSignUpEnabled: false,
+      selfSignUpEnabled: true,
       signInCaseSensitive: false,
       signInAliases: {
         username: true,
