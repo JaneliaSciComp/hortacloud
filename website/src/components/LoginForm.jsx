@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Form, Button, Input, message } from "antd";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import config from "../config.json";
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,8 +10,9 @@ export default function LoginForm() {
   const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
 
+  const from = location.state?.from?.pathname || "/";
+  const enableSignup = config.enableSelfRegistration === "true";
   const onFinish = async (values: any) => {
     setIsLoading(true);
     // Use Auth to login.
@@ -79,9 +81,11 @@ export default function LoginForm() {
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
         <Link to="/password-reset">Forgot Password?</Link>
       </Form.Item>
-      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        <span>Don’t have an account? <Link to="/signup">Sign up here</Link></span>
-      </Form.Item>
+      {enableSignup && (
+          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+            Don’t have an account? <Link to="/signup">Sign up</Link>
+          </Form.Item>
+      )}
     </Form>
   );
 }

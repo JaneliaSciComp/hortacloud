@@ -38,6 +38,8 @@ async function main() {
     endpoint: outputs.ApiGatewayEndPoint,
   };
 
+  config.enableSelfRegistration = process.env.ENABLE_SELF_REGISTRATION === "true";
+
   // update the file
   fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2));
 }
