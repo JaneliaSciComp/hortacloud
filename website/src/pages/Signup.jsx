@@ -16,8 +16,6 @@ import { Auth } from "aws-amplify";
 import LoaderButton from "../components/LoaderButton";
 import UsageTerms from "../components/UsageTerms";
 
-import "./Signup.css";
-
 const { Title } = Typography;
 
 export default function Signup() {
