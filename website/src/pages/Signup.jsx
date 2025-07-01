@@ -10,8 +10,6 @@ import {
     Space,
     message
 } from "antd";
-import { faUser, faLockAlt } from "@fortawesome/pro-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Auth } from "aws-amplify";
 import LoaderButton from "../components/LoaderButton";
 import UsageTerms from "../components/UsageTerms";
@@ -108,7 +106,6 @@ export default function Signup() {
                             ]}
                         >
                             <Input
-                                prefix={<FontAwesomeIcon icon={faUser} style={{ color: "rgba(0,0,0,.25)" }} />}
                                 autoFocus
                                 type="email"
                                 placeholder="Email address"
@@ -122,7 +119,6 @@ export default function Signup() {
                             ]}
                         >
                             <Input.Password
-                                prefix={<FontAwesomeIcon icon={faLockAlt} style={{ color: "rgba(0,0,0,.25)" }} />}
                                 placeholder="Password"
                             />
                         </Form.Item>
