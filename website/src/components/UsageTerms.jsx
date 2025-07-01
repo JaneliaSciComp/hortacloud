@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Typography } from "antd";
 
-import References from "./References";
 
 const { Title } = Typography;
 
