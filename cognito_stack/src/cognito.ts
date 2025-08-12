@@ -16,7 +16,7 @@ const { AWS_REGION, AWS_ACCOUNT } = process.env;
 const cognitoStack = new HortaCloudCognitoStack(app, "Workstation", {
   env: {
     account: AWS_ACCOUNT,
-    region: AWS_REGION
+    region: AWS_REGION,
   },
   stackName: createResourceId(hortaConfig, "cognito"),
 });
@@ -24,7 +24,7 @@ const cognitoStack = new HortaCloudCognitoStack(app, "Workstation", {
 applyTags([cognitoStack]);
 
 function applyTags(stacks: Stack[]) {
-  stacks.forEach(s => {
+  stacks.forEach((s) => {
     Tags.of(s).add("PROJECT", "MouseLight");
     Tags.of(s).add("DEVELOPER", hortaConfig.developerName);
     Tags.of(s).add("STAGE", hortaConfig.hortaStage);

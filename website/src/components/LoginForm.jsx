@@ -3,6 +3,7 @@ import { Form, Button, Input, message } from "antd";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import config from "../config.json";
+import { syncUserToBackend } from "../utils/SyncUserToBackend";
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +31,14 @@ export default function LoginForm() {
         ) {
           setPasswordUpdate(true);
         } else {
-          navigate(from, { replace: true });
+          syncUserToBackend()
+            .then(() => {
+              navigate(from, { replace: true });
+            })
+            .catch((err) => {
+              console.error("Failed to sync user:", err);
+              navigate(from, { replace: true }); // still navigate
+            });
         }
       }
     );
@@ -81,11 +89,9 @@ export default function LoginForm() {
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
         <Link to="/password-reset">Forgot Password?</Link>
       </Form.Item>
-      {enableSignup && (
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            Don’t have an account? <Link to="/signup">Sign up</Link>
-          </Form.Item>
-      )}
+      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+        Don’t have an account? <Link to="/signup">Sign up</Link>
+      </Form.Item>
     </Form>
   );
 }

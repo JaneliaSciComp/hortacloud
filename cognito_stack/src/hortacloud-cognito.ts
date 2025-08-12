@@ -1,64 +1,76 @@
-import { Construct } from 'constructs';
-import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { Construct } from "constructs";
+import { CfnOutput, Duration, Stack, StackProps } from "aws-cdk-lib";
 import {
-  AccountRecovery, CfnUserPoolGroup,
-  CfnUserPoolUser, CfnUserPoolUserToGroupAttachment,
-  UserPool
-} from 'aws-cdk-lib/aws-cognito';
-import { createResourceId, HortaCloudConfig } from '../../common/hortacloud-common';
-import { HortaCloudCognitoBackup } from './cognito-backup-lambda';
-import { getCognitoBackupConfig } from './cognito-backup-config';
+  AccountRecovery,
+  CfnUserPoolGroup,
+  CfnUserPoolUser,
+  CfnUserPoolUserToGroupAttachment,
+  UserPool,
+} from "aws-cdk-lib/aws-cognito";
+import {
+  createResourceId,
+  HortaCloudConfig,
+} from "../../common/hortacloud-common";
+import { HortaCloudCognitoBackup } from "./cognito-backup-lambda";
+import { getCognitoBackupConfig } from "./cognito-backup-config";
 
 export class HortaCloudCognitoStack extends Stack {
-
   public readonly cognito: HortaCloudCognito;
   public readonly cognitoBackup: HortaCloudCognitoBackup;
 
-  constructor(scope: Construct,
-    id: string,
-    props?: StackProps) {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const hortaCloudConfig = getCognitoBackupConfig();
-
-    this.cognito = new HortaCloudCognito(this, 'Cognito', hortaCloudConfig);
-    this.cognitoBackup = new HortaCloudCognitoBackup(this,
-      'CognitoBackup',
+ 
+    this.cognito = new HortaCloudCognito(this, "Cognito", hortaCloudConfig, props.apiGatewayURL!);
+ 
+    this.cognitoBackup = new HortaCloudCognitoBackup(
+      this,
+      "CognitoBackup",
       this.cognito.userPool.userPoolId,
-      hortaCloudConfig.accessibleReadOnlyPoolIds);
+      hortaCloudConfig.accessibleReadOnlyPoolIds
+    );
 
     // export user pool
-    new CfnOutput(this, 'UserPoolId', {
+    new CfnOutput(this, "UserPoolId", {
       value: this.cognito.userPool.userPoolId,
-      exportName: createResourceId(hortaCloudConfig, 'UserPoolId')
+      exportName: createResourceId(hortaCloudConfig, "UserPoolId"),
     });
   }
 }
 
 const ADMIN_GROUP_NAME = "admins";
-const NEW_HORTA_ENVIRONMENT:boolean = process.env.NEW_HORTA_ENVIRONMENT?.toLowerCase() == 'true' ? true : false;
+const NEW_HORTA_ENVIRONMENT: boolean =
+  process.env.NEW_HORTA_ENVIRONMENT?.toLowerCase() == "true" ? true : false;
 
 class HortaCloudCognito extends Construct {
-
   public readonly userPool: UserPool;
 
-  constructor(scope: Construct, id: string, hortaCloudConfig: HortaCloudConfig) {
+  constructor(
+    scope: Construct,
+    id: string,
+    hortaCloudConfig: HortaCloudConfig,
+    apiGatewayURL: string
+  ) {
     super(scope, id);
 
     const adminBucketUrl = `${hortaCloudConfig.hortaCloudOrg}-hc-webadmin-${hortaCloudConfig.hortaStage}.s3-website-${process.env.AWS_REGION}.amazonaws.com`;
     // user pool for auth
+
     this.userPool = new UserPool(this, "HortaCloudUsers", {
+      lambdaTriggers: {
       selfSignUpEnabled: true,
       signInCaseSensitive: false,
       signInAliases: {
         username: true,
-        email: false
+        email: false,
       },
       standardAttributes: {
         email: {
           required: true,
-          mutable: false
-        }
+          mutable: false,
+        },
       },
       // TODO: change the fromEmail address to a less opaque domain name.
       // The no-reply@verificationemail.com domain does not inspire confidence.
@@ -66,7 +78,7 @@ class HortaCloudCognito extends Construct {
         emailSubject: "Your temporary janeliaHortaCloud password",
         emailBody: `Dear {username}, you have been invited to join Janelia's HortaCloud service. <br/>
         Your temporary password is {####}<br/>
-        Please login at ${adminBucketUrl} to change your password and access the service.`
+        Please login at ${adminBucketUrl} to change your password and access the service.`,
       },
       autoVerify: { email: true },
       accountRecovery: AccountRecovery.EMAIL_ONLY,
@@ -78,7 +90,7 @@ class HortaCloudCognito extends Construct {
         requireSymbols: false,
         tempPasswordValidity: Duration.days(7),
       },
-      userPoolName: createResourceId(hortaCloudConfig, 'UserPool'),
+      userPoolName: createResourceId(hortaCloudConfig, "UserPool"),
     });
 
     // if no admin user flag is set do not create the admin user
@@ -93,7 +105,7 @@ class HortaCloudCognito extends Construct {
       throw new Error("Admin user must be set");
     }
     // create the admins group
-    const adminGroup = new CfnUserPoolGroup(this, 'AdminsUserPoolGroup', {
+    const adminGroup = new CfnUserPoolGroup(this, "AdminsUserPoolGroup", {
       userPoolId: this.userPool.userPoolId,
       // the properties below are optional
       description: "Adminsitrative users",
@@ -101,31 +113,34 @@ class HortaCloudCognito extends Construct {
       precedence: 0,
     });
     // add the default admin user for first access.
-    const adminUser = new CfnUserPoolUser(this, 'DefaultAdminUserPoolUser', {
+    const adminUser = new CfnUserPoolUser(this, "DefaultAdminUserPoolUser", {
       userPoolId: this.userPool.userPoolId,
       // the properties below are optional
       username: process.env.ADMIN_USER_EMAIL,
       userAttributes: [
         {
           name: "email",
-          value: process.env.ADMIN_USER_EMAIL
+          value: process.env.ADMIN_USER_EMAIL,
         },
         {
           name: "email_verified",
-          value: "True"
-        }
-      ]
+          value: "True",
+        },
+      ],
     });
     // add admin user to the admins group
-    const addAdminUserToAdminsGroup = new CfnUserPoolUserToGroupAttachment(this, "AdminUsertoAdminGroupAttachment", {
-      groupName: ADMIN_GROUP_NAME,
-      username: process.env.ADMIN_USER_EMAIL,
-      userPoolId: this.userPool.userPoolId,
-    });
+    const addAdminUserToAdminsGroup = new CfnUserPoolUserToGroupAttachment(
+      this,
+      "AdminUsertoAdminGroupAttachment",
+      {
+        groupName: ADMIN_GROUP_NAME,
+        username: process.env.ADMIN_USER_EMAIL,
+        userPoolId: this.userPool.userPoolId,
+      }
+    );
 
     // need to make sure the admin user has been created,
     // before adding it to the admin group.
     addAdminUserToAdminsGroup.node.addDependency(adminUser, adminGroup);
   }
-
 }
