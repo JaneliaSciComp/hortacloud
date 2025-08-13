@@ -6,6 +6,7 @@
   "scripts": {
     "setup": "node scripts/setup",
     "deploy": "node scripts/deploy",
+    "post-deploy": "node scripts/post-deploy",
     "destroy": "node scripts/destroy",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,11 +21,15 @@
   },
   "homepage": "https://github.com/JaneliaSciComp/hortacloud#readme",
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.865.0",
+    "archiver": "^7.0.1",
+    "aws-sdk": "^2.1692.0",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.0",
     "open": "^8.4.0",
     "prompts": "^2.4.2",
-    "yargs": "^17.4.1"
+    "yargs": "^17.4.1",
+    "yazl": "^3.3.1"
   },
   "devDependencies": {
     "@aws-sdk/client-appstream": "^3.451.0",
