@@ -68,6 +68,11 @@ class HortaCloudCognito extends Construct {
         Your temporary password is {####}<br/>
         Please login at ${adminBucketUrl} to change your password and access the service.`
       },
+      userVerification: {
+         emailSubject: "Verify your email for Janelia HortaCloud",
+         emailBody: "Thanks for signing up! Your verification code is {####}",
+         emailStyle: VerificationEmailStyle.CODE // or LINK
+      },
       autoVerify: { email: true },
       accountRecovery: AccountRecovery.EMAIL_ONLY,
       passwordPolicy: {
