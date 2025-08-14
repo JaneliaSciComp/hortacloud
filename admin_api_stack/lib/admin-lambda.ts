@@ -213,24 +213,7 @@ export class LambdaService extends Construct {
     proxy.addCorsPreflight({
       allowOrigins: apigateway.Cors.ALL_ORIGINS,
       allowMethods: apigateway.Cors.ALL_METHODS,
-    });
+      });
+  }
 
-    // --- NEW parallel IAM endpoint ---
-    const internal = this.api.root.addResource("internal");
-    const addUserResource = internal.addResource("addUser");
-
-    addUserResource.addMethod(
-       "POST",
-       new apigateway.LambdaIntegration(userListHandler),
-       {
-           authorizationType: apigateway.AuthorizationType.IAM
-       }
-    );
-
-    addUserResource.addCorsPreflight({
-       allowOrigins: apigateway.Cors.ALL_ORIGINS,
-       allowMethods: ["POST", "OPTIONS"],
-       });
-
-    }
 }

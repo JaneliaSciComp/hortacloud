@@ -13,9 +13,16 @@
  */
 const awsServerlessExpress = require('aws-serverless-express');
 const app = require('./app');
+const handlePostConfirmation = require('./postConfirmationHandler');
 
 const server = awsServerlessExpress.createServer(app);
 
 exports.handler = (event, context) => {
-  awsServerlessExpress.proxy(server, event, context);
+  // Check if it's a Cognito PostConfirmation event
+  if (event.triggerSource === "PostConfirmation_ConfirmSignUp") {
+    return handlePostConfirmation(event);
+  }
+
+  // Otherwise, pass to Express app
+  return awsServerlessExpress.proxy(server, event, context);
 };

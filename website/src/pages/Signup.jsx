@@ -15,7 +15,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import LoaderButton from "../components/LoaderButton";
 import UsageTerms from "../components/UsageTerms";
-import { syncUserToBackend } from "../utils/SyncUserToBackend"; // or wherever you save the helper
 
 const { Title } = Typography;
 
@@ -58,20 +57,15 @@ export default function Signup() {
   };
 
   const handleConfirmationSubmit = async (values) => {
-    setIsLoading(true);
+    // 1️⃣ Confirm signup
+    await Auth.confirmSignUp(savedUser.email, values.confirmationCode);
 
-    try {
-      await Auth.confirmSignUp(savedUser.email, values.confirmationCode);
+    // 2️⃣ Sign in immediately
+    await Auth.signIn(savedUser.email, savedUser.password);
 
-      // ✅ Sync the confirmed user to your backend
-      await syncUserToBackend();
-
-      message.success("Signup successful. Please log in.");
-      navigate("/login");
-    } catch (e) {
-      message.error(e.message);
-      setIsLoading(false);
-    }
+    message.success("Account confirmed and logged in.");
+    // 3️⃣ Redirect to main app/home
+    navigate("/");
   };
 
   function renderConfirmationForm() {
