@@ -8,6 +8,7 @@ import {
 import { createResourceId, HortaCloudConfig } from '../../common/hortacloud-common';
 import { HortaCloudCognitoBackup } from './cognito-backup-lambda';
 import { getCognitoBackupConfig } from './cognito-backup-config';
+import { VerificationEmailStyle } from 'aws-cdk-lib/aws-cognito';
 
 export class HortaCloudCognitoStack extends Stack {
 
