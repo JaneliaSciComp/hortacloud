@@ -12,7 +12,7 @@ import { Fn } from "aws-cdk-lib";
 import { join } from "path";
 
 
-const { AWS_ACCOUNT, AWS_REGION } = process.env;
+const { AWS_ACCOUNT, AWS_REGION,ADMIN_USER_EMAIL } = process.env;
 
 interface LambaServiceProps {
   org: string;
@@ -136,8 +136,9 @@ export class LambdaService extends Construct {
         handler: "index.handler",
         environment: {
           GROUP: "admins",
-          USERPOOL: userPool.userPoolId,
-          JACS_HOSTNAME: cdk.Fn.importValue(
+	  USERPOOL: userPool.userPoolId,
+	  AUTH_USER: process.env.ADMIN_USER_EMAIL ?? "",
+	  JACS_HOSTNAME: cdk.Fn.importValue(
             `${props.org}-hc-ServerIP-${props.stage}`
           ),
         },
