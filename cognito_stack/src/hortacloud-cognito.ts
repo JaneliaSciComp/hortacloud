@@ -61,14 +61,15 @@ class HortaCloudCognito extends Construct {
           mutable: false
         }
       },
-      // TODO: change the fromEmail address to a less opaque domain name.
-      // The no-reply@verificationemail.com domain does not inspire confidence.
       userInvitation: {
-        emailSubject: "Your temporary janeliaHortaCloud password",
-        emailBody: `Dear {username}, you have been invited to join Janelia's HortaCloud service. <br/>
-        Your temporary password is {####}<br/>
-        Please login at ${adminBucketUrl} to change your password and access the service.`
-      },
+          emailSubject: "Your HortaCloud Demo Account",
+          emailBody: `Hello {username},<br/><br/>
+          Your HortaCloud demo account has been created.<br/><br/>
+               Temporary password: {####}<br/>
+               Login here: <a href="${adminBucketUrl}">${adminBucketUrl}</a><br/><br/>
+               Note: This demo account will expire in 7 days and any work will not be saved permanently.<br/><br/>
+               – The HortaCloud Team`
+      },     
       userVerification: {
          emailSubject: "Verify your email for Janelia HortaCloud",
          emailBody: "Thanks for signing up! Your verification code is {####}",
