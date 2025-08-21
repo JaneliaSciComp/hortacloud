@@ -74,7 +74,16 @@ class HortaCloudCognito extends Construct {
          emailSubject: "Verify your email for Janelia HortaCloud",
          emailBody: "Thanks for signing up! Your verification code is {####}",
          emailStyle: VerificationEmailStyle.CODE // or LINK
-      },
+	 },
+      userVerification: {
+         emailSubject: "Confirm your HortaCloud demo account",
+         emailBody: `Hello {username},<br/><br/>
+              Thank you for signing up for a HortaCloud demo account.<br/>
+              Your confirmation code is: <b>{####}</b><br/><br/>
+              Please enter this code in the sign-up page to complete your registration.<br/><br/>
+              – The HortaCloud Team`,
+	 emailStyle: cognito.VerificationEmailStyle.CODE
+      }, 
       autoVerify: { email: true },
       accountRecovery: AccountRecovery.EMAIL_ONLY,
       passwordPolicy: {
