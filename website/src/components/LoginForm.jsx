@@ -89,9 +89,13 @@ export default function LoginForm() {
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
         <Link to="/password-reset">Forgot Password?</Link>
       </Form.Item>
-      <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        Don’t have an account? <Link to="/signup">Sign up</Link>
-      </Form.Item>
+      {enableSignup ? (
+        <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+          Don’t have an account? <Link to="/signup">Sign up</Link>
+        </Form.Item>
+      ) : (
+        ""
+      )}
     </Form>
   );
 }

@@ -20,7 +20,7 @@ export default function UseageTerms() {
       <p>
         If you would like to spend a longer period of time experimenting with
         HortaCloud or would like to interact and annotate Mouselight data,
-        please email us at{" "}
+        please{" "}
         <Button type="primary" href="mailto:hortacloud@janelia.hhmi.org">
           Email Us
         </Button>

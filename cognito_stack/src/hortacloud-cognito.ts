@@ -1,5 +1,6 @@
 import { Construct } from 'constructs';
 import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import * as cognito from "aws-cdk-lib/aws-cognito";
 import {
   AccountRecovery, CfnUserPoolGroup,
   CfnUserPoolUser, CfnUserPoolUserToGroupAttachment,
@@ -70,11 +71,6 @@ class HortaCloudCognito extends Construct {
                Note: This demo account will expire in 7 days and any work will not be saved permanently.<br/><br/>
                – The HortaCloud Team`
       },     
-      userVerification: {
-         emailSubject: "Verify your email for Janelia HortaCloud",
-         emailBody: "Thanks for signing up! Your verification code is {####}",
-         emailStyle: VerificationEmailStyle.CODE // or LINK
-	 },
       userVerification: {
          emailSubject: "Confirm your HortaCloud demo account",
          emailBody: `Hello {username},<br/><br/>

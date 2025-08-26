@@ -55,13 +55,26 @@ const lambdaPrefix = `${HORTA_ORG}-hc-adminAPI-${HORTA_STAGE}-LambdasHortaCloudU
         { Name: "verified_email", Priority: 1 }
       ]
     },
+    PasswordPolicy: {
+      MinLength: 8,                 // set your minimum
+      TempPasswordValidity: Duration.days(7) // expiry time for temp pw
+    },
     AdminCreateUserConfig: {
       AllowAdminCreateUserOnly: false, // self-service signup allowed
       InviteMessageTemplate: {
         EmailSubject: "Welcome to the HortaCloud Demo",
         EmailMessage: "Hello {username}, your temporary password is {####}"
      }
-    }
+    },
+  VerificationMessageTemplate: {
+    EmailSubject: "Confirm your HortaCloud demo account",
+    EmailMessage: `Hello {username},<br/><br/>
+      Thank you for signing up for a HortaCloud demo account.<br/>
+      Your confirmation code is: <b>{####}</b><br/><br/>
+      Please enter this code in the sign-up page to complete your registration.<br/><br/>
+      – The HortaCloud Team`,
+    DefaultEmailOption: "CONFIRM_WITH_CODE"
+  }
   }).promise();
 
   console.log(`✅ Attached PostConfirmation Lambda (${targetLambda.FunctionName}) to User Pool: ${userPoolId}`);
