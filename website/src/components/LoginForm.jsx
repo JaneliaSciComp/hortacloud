@@ -13,7 +13,7 @@ export default function LoginForm() {
   const location = useLocation();
 
   const from = location.state?.from?.pathname || "/";
-  const enableSignup = config.enableSelfRegistration === "true";
+  const enableSignup = config.enableSelfRegistration;
   const onFinish = async (values: any) => {
     setIsLoading(true);
     // Use Auth to login.

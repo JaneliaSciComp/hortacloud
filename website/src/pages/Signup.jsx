@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import LoaderButton from "../components/LoaderButton";
 import UsageTerms from "../components/UsageTerms";
+import { useAuth } from "../contexts/AuthContext";
 
 const { Title } = Typography;
 
@@ -24,6 +25,7 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const handleSubmit = async (values) => {
     setIsLoading(true);
@@ -62,6 +64,8 @@ export default function Signup() {
 
     // 2️⃣ Sign in immediately
     await Auth.signIn(savedUser.email, savedUser.password);
+
+    await auth.checkForSignedInUser();
 
     message.success("Account confirmed and logged in.");
     // 3️⃣ Redirect to main app/home

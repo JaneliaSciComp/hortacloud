@@ -48,16 +48,15 @@ const lambdaPrefix = `${HORTA_ORG}-hc-adminAPI-${HORTA_STAGE}-LambdasHortaCloudU
   // 🔹 Add/replace just the PostConfirmation hook
   await cognito.updateUserPool({
     UserPoolId: userPoolId,
-    LambdaConfig: { PostConfirmation: targetLambda.FunctionArn },
+    LambdaConfig: {
+            PostConfirmation: targetLambda.FunctionArn,
+            CustomMessage: targetLambda.FunctionArn // 👈 same Lambda handles both
+    },
     AutoVerifiedAttributes: ["email"], // enable email auto-verification
     AccountRecoverySetting: {
       RecoveryMechanisms: [
         { Name: "verified_email", Priority: 1 }
       ]
-    },
-    PasswordPolicy: {
-      MinLength: 8,                 // set your minimum
-      TempPasswordValidity: Duration.days(7) // expiry time for temp pw
     },
     AdminCreateUserConfig: {
       AllowAdminCreateUserOnly: false, // self-service signup allowed

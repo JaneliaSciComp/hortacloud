@@ -14,15 +14,23 @@
 const awsServerlessExpress = require('aws-serverless-express');
 const app = require('./app');
 const handlePostConfirmation = require('./postConfirmationHandler');
+const handleCustomMessage = require('./customMessageHandler'); // 👈 new handler
 
 const server = awsServerlessExpress.createServer(app);
 
 exports.handler = (event, context) => {
-  // Check if it's a Cognito PostConfirmation event
-  if (event.triggerSource === "PostConfirmation_ConfirmSignUp") {
-    return handlePostConfirmation(event);
-  }
+  switch (event.triggerSource) {
+    case "PostConfirmation_ConfirmSignUp":
+      return handlePostConfirmation(event);
 
-  // Otherwise, pass to Express app
-  return awsServerlessExpress.proxy(server, event, context);
+    case "CustomMessage_SignUp": // 👈 signup confirmation emails
+    case "CustomMessage_ForgotPassword": // 👈 forgot password emails
+    case "CustomMessage_ResendCode": // 👈 resend signup code
+      return handleCustomMessage(event);
+
+    default:
+      // Fall back to Express app
+      return awsServerlessExpress.proxy(server, event, context);
+  }
 };
+

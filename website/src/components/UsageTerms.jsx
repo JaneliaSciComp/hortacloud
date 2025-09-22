@@ -17,15 +17,6 @@ export default function UseageTerms() {
         they expire. Also any annotations or work done in the demo are not
         intended to be saved and will be periodically removed.
       </p>
-      <p>
-        If you would like to spend a longer period of time experimenting with
-        HortaCloud or would like to interact and annotate Mouselight data,
-        please{" "}
-        <Button type="primary" href="mailto:hortacloud@janelia.hhmi.org">
-          Email Us
-        </Button>
-        and we can create a user account in our Janelia HortaCloud instance.
-      </p>
     </div>
   );
 }
