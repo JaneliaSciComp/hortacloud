@@ -31,16 +31,6 @@ export class HortacloudAppstream extends Construct {
       disconnectTimeoutInSeconds: hortaAppstreamConfig.sessionDisconnectInSecs,
       maxUserDurationInSeconds: hortaAppstreamConfig.sessionDurationInMin * 60, // this value is in seconds
       idleDisconnectTimeoutInSeconds: hortaAppstreamConfig.sessionIdleDisconnectInMin * 60,
-      environmentVariables: [
-        {
-          name: 'AWS_REGION',
-          value: hortaAppstreamConfig.awsRegion,
-        },
-        {
-          name: 'HORTA_ENABLE_DCV_LATENCY',
-          value: hortaAppstreamConfig.enableDcvLatency ? 'true' : 'false',
-        },
-      ],
     });
 
     const storageConnectors = [

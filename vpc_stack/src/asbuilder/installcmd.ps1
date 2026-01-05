@@ -172,19 +172,14 @@ if(!(Get-Item -Path $RunScriptName -ErrorAction Ignore))
 
 Set-Content $RunScriptName "$RunScriptContent"
 # -------------------------------
-# Create DCV Client Round Trip Latency Monitor
+# Install DCV Client Round Trip Latency Monitor
 # -------------------------------
 
-$enable = $env:HORTA_ENABLE_DCV_LATENCY
-if ($enable -ne "true") {
-    Write-Output "DCV latency monitoring disabled"
-    exit 0
-}
-
 $DcvLatencyScript = @"
-`$Region = `$env:AWS_REGION
-if (-not `$Region) { `$Region = "us-east-1" }
+# DCV Client Round Trip Latency Monitor
+# Always-on (image-controlled)
 
+`$Region = "us-east-1"
 `$Namespace = "HortaCloud/AppStream"
 `$MetricName = "ClientRoundTripLatency"
 
@@ -208,7 +203,7 @@ while (`$true) {
         }
     }
     catch {
-        # DCV counter not ready yet
+        # DCV counter not ready
     }
 
     Start-Sleep -Seconds 10
@@ -218,10 +213,9 @@ while (`$true) {
 $DcvLatencyScriptPath = "C:\apps\monitorDcvLatency.ps1"
 Set-Content -Path $DcvLatencyScriptPath -Value $DcvLatencyScript -Encoding UTF8
 
-# Run DCV latency monitor at session logon
-schtasks /create /f `
-    /sc ONLOGON `
-    /tn "HortaDcvLatencyMonitor" `
-    /rl HIGHEST `
-    /ru "$env:USERNAME" `
-    /tr "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\apps\monitorDcvLatency.ps1"
+# Run at user logon
+sudo schtasks /create /f `
+  /sc ONLOGON `
+  /tn "HortaDcvLatencyMonitor" `
+  /rl HIGHEST `
+  /tr "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\apps\monitorDcvLatency.ps1"

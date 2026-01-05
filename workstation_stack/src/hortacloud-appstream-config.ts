@@ -8,8 +8,6 @@ export interface HortaCloudAppstreamConfig extends HortaCloudConfig {
     sessionDisconnectInSecs: number;
     sessionDurationInMin: number;
     sessionIdleDisconnectInMin: number;
-    awsRegion: string;
-    enableDcvLatency: boolean;
 }
 
 export function getHortaAppstreamConfig() : HortaCloudAppstreamConfig {
@@ -26,9 +24,6 @@ export function getHortaAppstreamConfig() : HortaCloudAppstreamConfig {
         appstreamComputeCapacity: parseInt(process.env.HORTA_APPSTREAM_FLEET_INSTANCES || '5'),
         sessionDisconnectInSecs: parseInt(process.env.HORTA_SESSION_DISCONNECT_IN_SECS || '600'),
         sessionDurationInMin: parseInt(process.env.HORTA_SESSION_DURATION_IN_MINS || '960'),
-        sessionIdleDisconnectInMin: parseInt(process.env.HORTA_SESSION_IDLE_DISCONNECT_IN_MINS || '5'),
-        awsRegion: process.env.AWS_REGION || 'us-east-1',
-        enableDcvLatency:
-            (process.env.HORTA_ENABLE_DCV_LATENCY || 'false').toLowerCase() === 'true',
+        sessionIdleDisconnectInMin: parseInt(process.env.HORTA_SESSION_IDLE_DISCONNECT_IN_MINS || '5')
     };
 }
