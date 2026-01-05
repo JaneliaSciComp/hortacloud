@@ -169,4 +169,59 @@ if(!(Get-Item -Path $RunScriptName -ErrorAction Ignore))
 {
     New-Item $RunScriptName
 }
+
 Set-Content $RunScriptName "$RunScriptContent"
+# -------------------------------
+# Create DCV Client Round Trip Latency Monitor
+# -------------------------------
+
+$enable = $env:HORTA_ENABLE_DCV_LATENCY
+if ($enable -ne "true") {
+    Write-Output "DCV latency monitoring disabled"
+    exit 0
+}
+
+$DcvLatencyScript = @"
+`$Region = `$env:AWS_REGION
+if (-not `$Region) { `$Region = "us-east-1" }
+
+`$Namespace = "HortaCloud/AppStream"
+`$MetricName = "ClientRoundTripLatency"
+
+`$SessionId = `$env:AppStream_SessionId
+if (-not `$SessionId) {
+    `$SessionId = "`$(`$env:COMPUTERNAME)-`$(`$env:USERNAME)"
+}
+
+while (`$true) {
+    try {
+        `$crt = (Get-Counter '\DCV Server\Client Round Trip Latency').CounterSamples.CookedValue
+
+        if (`$crt -gt 0) {
+            aws cloudwatch put-metric-data `
+                --namespace `$Namespace `
+                --metric-name `$MetricName `
+                --dimensions SessionID=`$SessionId `
+                --unit Milliseconds `
+                --value `$crt `
+                --region `$Region | Out-Null
+        }
+    }
+    catch {
+        # DCV counter not ready yet
+    }
+
+    Start-Sleep -Seconds 10
+}
+"@
+
+$DcvLatencyScriptPath = "C:\apps\monitorDcvLatency.ps1"
+Set-Content -Path $DcvLatencyScriptPath -Value $DcvLatencyScript -Encoding UTF8
+
+# Run DCV latency monitor at session logon
+schtasks /create /f `
+    /sc ONLOGON `
+    /tn "HortaDcvLatencyMonitor" `
+    /rl HIGHEST `
+    /ru "$env:USERNAME" `
+    /tr "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\apps\monitorDcvLatency.ps1"
