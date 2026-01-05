@@ -18,19 +18,24 @@ const handleCustomMessage = require('./customMessageHandler'); // 👈 new handl
 
 const server = awsServerlessExpress.createServer(app);
 
-exports.handler = (event, context) => {
+exports.handler = async (event) => {
+  console.log("Trigger source:", event.triggerSource);
+
   switch (event.triggerSource) {
     case "PostConfirmation_ConfirmSignUp":
-      return handlePostConfirmation(event);
+      return await handlePostConfirmation(event);
 
-    case "CustomMessage_SignUp": // 👈 signup confirmation emails
-    case "CustomMessage_ForgotPassword": // 👈 forgot password emails
-    case "CustomMessage_ResendCode": // 👈 resend signup code
-      return handleCustomMessage(event);
+    case "CustomMessage_SignUp":
+    case "CustomMessage_ForgotPassword":
+    case "CustomMessage_ResendCode":
+    case "CustomMessage_VerifyUserAttribute":
+    case "CustomMessage_UpdateUserAttribute":
+    case "CustomMessage_AdminCreateUser":
+      return await handleCustomMessage(event);
 
     default:
-      // Fall back to Express app
-      return awsServerlessExpress.proxy(server, event, context);
+      console.log("Unhandled trigger source, returning event unchanged.");
+      return event;
   }
 };
 
