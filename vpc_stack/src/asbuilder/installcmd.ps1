@@ -19,10 +19,14 @@ add-type @"
 
 Write-Output "Download scoop"
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://get.scoop.sh")
+# enable powershell
 Set-ExecutionPolicy unrestricted -s cu -f
+
+Write-Output "Set environment"
 
 Write-Output "Begin tool installation"
 scoop install sudo
+# install git
 sudo scoop install git -g
 sudo scoop bucket add java
 sudo scoop install zulu8-jdk -g
@@ -36,24 +40,53 @@ $AppExeName = "horta"
 $AppIconName = "horta48"
 
 Write-Output "Download certificate"
-Invoke-WebRequest -Uri "https://$ServerIP/SCSW/cert.crt" -OutFile $TmpDir\cert.crt
+$certRes = Invoke-WebRequest `
+   -Uri "https://$ServerIP/SCSW/cert.crt" `
+   -OutFile $TmpDir\cert.crt
+Write-Output "Downloaded cert: $certRes"
 
 Write-Output "Install certificate"
-sudo $env:JAVA_HOME\bin\keytool.exe -import -noprompt -alias mouse1selfcert -file $TmpDir\cert.crt -keystore "$env:JAVA_HOME\jre\lib\security\cacerts" -keypass changeit -storepass changeit
+sudo $env:JAVA_HOME\bin\keytool.exe -import `
+    -noprompt `
+    -alias mouse1selfcert -file $TmpDir\cert.crt `
+    -keystore "$env:JAVA_HOME\jre\lib\security\cacerts" `
+    -keypass changeit -storepass changeit
 
-Invoke-WebRequest -Uri https://$ServerIP/files/$AppFolderName-windows.exe -OutFile $TmpDir\jws-installer.exe
-Invoke-WebRequest -Uri https://$ServerIP/files/$AppIconName.png -OutFile $TmpDir\jws-icon.png
-Invoke-WebRequest -Uri "https://$ServerIP/SCSW/downloads/blosc.zip" -OutFile $TmpDir\blosc.zip
+Write-Output "Download workstation installer"
+$wsInstallerRes = Invoke-WebRequest `
+   -Uri https://$ServerIP/files/$AppFolderName-windows.exe `
+   -OutFile $TmpDir\jws-installer.exe
+Write-Output "Downloaded installer: $wsInstallerRes"
+
+Write-Output "Download application icon"
+$wsIconRes = Invoke-WebRequest `
+   -Uri https://$ServerIP/files/$AppIconName.png `
+   -OutFile $TmpDir\jws-icon.png
+Write-Output "Downloaded application icon: $wsIconRes"
+
+Write-Output "Download BLOSC Libraries"
+$bloscRes = Invoke-WebRequest `
+   -Uri "https://$ServerIP/SCSW/downloads/blosc.zip" `
+   -OutFile $TmpDir\blosc.zip
+Write-Output "Downloaded blosc libs result: $bloscRes"
 
 $vc2010RedistDownloadLink = "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe"
 $vc2010RedistPackage = "vc2010_redist.x64.exe"
 $vc2010RedistInstallFlags = "/passive /norestart"
 
-Invoke-WebRequest -Uri $vc2010RedistDownloadLink -OutFile "$TmpDir\$vc2010RedistPackage"
+Write-Output "VS redist installer"
+$vsRedistInstallerRes = Invoke-WebRequest `
+   -Uri $vc2010RedistDownloadLink `
+   -OutFile "$TmpDir\$vc2010RedistPackage"
+
+# Run the VS redist installer
+Write-Output "Install VS redist package"
 Start-Process -Wait -FilePath "$TmpDir\$vc2010RedistPackage" -ArgumentList $vc2010RedistInstallFlags
 
+# Generate the installer state for the silent install
 $InstallerStateContent = @"
-<state xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="state-file.xsd">
+<state xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xsi:noNamespaceSchemaLocation="state-file.xsd">
     <components>
         <product platform="generic" status="to-be-installed" uid="workstation" version="1.0.0.0.0">
             <properties>
@@ -70,17 +103,12 @@ $InstallerStateContent = @"
 "@
 
 $InstallerStateName = "$TmpDir\jws-installer.xml"
-New-Item -Path $InstallerStateName -Force | Out-Null
+if(!(Get-Item -Path $InstallerStateName -ErrorAction Ignore))
+{
+    New-Item $InstallerStateName
+}
 Set-Content $InstallerStateName "$InstallerStateContent"
 
-Start-Process -Wait -FilePath $TmpDir\jws-installer.exe -ArgumentList "--silent --state $InstallerStateName"
-
-$WSInstallDir = "C:\apps\$AppFolderName"
-Copy-Item $TmpDir\jws-icon.png "C:\apps" -Force
-
-New-Item -Path "C:\apps\blosc" -ItemType Directory -Force | Out-Null
-Expand-Archive -LiteralPath "$TmpDir\blosc.zip" -DestinationPath "C:\apps\blosc"
-$env:Path += [IO.Path]::PathSeparator + "C:\apps\blosc"
 
 # -------------------------------
 # DCV Latency Script (NEW)
@@ -110,9 +138,20 @@ while (`$true) {
 
 Set-Content "C:\apps\monitorDcvLatency.ps1" $DcvLatencyContent -Encoding UTF8
 
-# -------------------------------
-# runJaneliaWorkstation.ps1 (MINIMAL ADD)
-# -------------------------------
+
+# Run the installer
+Start-Process -Wait -FilePath $TmpDir\jws-installer.exe -ArgumentList "--silent --state $InstallerStateName"
+
+$WSInstallDir = "C:\apps\$AppFolderName"
+
+# Copy the icon
+Copy-Item $TmpDir\jws-icon.png "C:\apps" -Force
+
+# Unzip blosc
+New-Item -Path "C:\apps" -Name "blosc" -ItemType "directory"
+Expand-Archive -LiteralPath "$TmpDir\blosc.zip" -DestinationPath "C:\apps\blosc"
+# Add blosc dlls location to the path
+$env:Path += [IO.Path]::PathSeparator + "C:\apps\blosc"
 
 $RunScriptContent = @"
 Start-Process powershell.exe -WindowStyle Hidden -ArgumentList '-ExecutionPolicy Bypass -File C:\apps\monitorDcvLatency.ps1'
@@ -122,13 +161,16 @@ Start-Process powershell.exe -WindowStyle Hidden -ArgumentList '-ExecutionPolicy
 `$WSInstallDir = "$WSInstallDir"
 `$JavaDir = `$env:JAVA_HOME
 
+# get the appstream user
 `$UserName = `$env:AppStream_UserName
 `$WindowsUserName = `$env:USERNAME
+
+Write-Debug "AppUser: `$UserName, WindowsUser: `$WindowsUserName"
+
 `$DataDir = "C:\Users\`$WindowsUserName"
 
 `$WSArgs = "--jdkhome `$JavaDir "
 `$WSArgs += "-J``"-Dapi.gateway=https://`$ApiGateway``" "
-
 if (!`$UserName) {
     `$UserDir = `$DataDir
     `$WSArgs += "-J``"-Duser.home=`$UserDir``" "
@@ -141,14 +183,23 @@ if (!`$UserName) {
     `$WSArgs += "-J``"-DLogin.Disabled=true``" "
 }
 
+Write-Output "UserDir: `$UserDir"
+
+# Create user dir if needed
 if (!(Get-Item -Path `$UserDir -ErrorAction Ignore)) {
     New-Item `$UserDir -ItemType Directory
 }
-
-`$env:Path += [IO.Path]::PathSeparator + "C:\apps\blosc"
+# Add blosc dlls location to the path
+`$env:Path += [IO.Path]::PathSeparator + `"C:\apps\blosc`"
 
 Start-Process -Wait -FilePath $WSInstallDir\bin\$AppExeName -ArgumentList `$WSArgs
 "@
 
-Set-Content "C:\apps\runJaneliaWorkstation.ps1" "$RunScriptContent"
+$RunScriptName = "C:\apps\runJaneliaWorkstation.ps1"
+if(!(Get-Item -Path $RunScriptName -ErrorAction Ignore))
+{
+    New-Item $RunScriptName
+}
+Set-Content $RunScriptName "$RunScriptContent"
+
 
