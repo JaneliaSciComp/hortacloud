@@ -111,6 +111,7 @@ export class HortaCloudJACS extends Construct {
       role: serverRole,
       securityGroup: serverSG,
       instanceName: jacsNodeInstanceName,
+      propagateTagsToVolumeOnCreation: true,
       blockDevices: [
         {
           deviceName: '/dev/xvda',
