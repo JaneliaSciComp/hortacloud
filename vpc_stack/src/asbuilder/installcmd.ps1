@@ -154,7 +154,11 @@ Expand-Archive -LiteralPath "$TmpDir\blosc.zip" -DestinationPath "C:\apps\blosc"
 $env:Path += [IO.Path]::PathSeparator + "C:\apps\blosc"
 
 $RunScriptContent = @"
-Start-Process powershell.exe -WindowStyle Hidden -ArgumentList '-ExecutionPolicy Bypass -File C:\apps\monitorDcvLatency.ps1'
+# Give AppStream session time to finish initializing before DCV polling starts
+Start-Sleep -Seconds 10
+
+# Start DCV latency monitor in background
+Start-Process -WindowStyle Hidden -FilePath "powershell.exe" -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File C:\apps\monitorDcvLatency.ps1'
 
 # Set API Gateway
 `$ApiGateway = "$ServerIP"
