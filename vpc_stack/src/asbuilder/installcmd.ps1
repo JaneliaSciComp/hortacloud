@@ -109,36 +109,6 @@ if(!(Get-Item -Path $InstallerStateName -ErrorAction Ignore))
 }
 Set-Content $InstallerStateName "$InstallerStateContent"
 
-
-# -------------------------------
-# DCV Latency Script (NEW)
-# -------------------------------
-
-$DcvLatencyContent = @"
-# DCV Client Round Trip Latency Logger
-`$SessionId = `$env:APPSTREAM_SESSION_ID
-if (-not `$SessionId) { `$SessionId = "`$env:COMPUTERNAME-`$env:USERNAME" }
-
-`$HomeDir = Join-Path `$env:USERPROFILE "My Files\Home Folder"
-`$LogFile = Join-Path `$HomeDir "dcv_latency.log"
-`$CounterPath = "\DCV Server\Round-Trip Time ms"
-
-"`$(Get-Date -Format o) SESSION_START SessionId=`$SessionId" | Out-File -Append -Encoding UTF8 `$LogFile
-
-while (`$true) {
-    try {
-        `$v = (Get-Counter `$CounterPath).CounterSamples[0].CookedValue
-        "`$(Get-Date -Format o) RTT_MS=`$([math]::Round(`$v)) SessionId=`$SessionId" | Out-File -Append -Encoding UTF8 `$LogFile
-    } catch {
-        "`$(Get-Date -Format o) DCV_COUNTER_NOT_READY" | Out-File -Append -Encoding UTF8 `$LogFile
-    }
-    Start-Sleep -Seconds 10
-}
-"@
-
-Set-Content "C:\apps\monitorDcvLatency.ps1" $DcvLatencyContent -Encoding UTF8
-
-
 # Run the installer
 Start-Process -Wait -FilePath $TmpDir\jws-installer.exe -ArgumentList "--silent --state $InstallerStateName"
 
@@ -207,3 +177,30 @@ if(!(Get-Item -Path $RunScriptName -ErrorAction Ignore))
 Set-Content $RunScriptName "$RunScriptContent"
 
 
+# -------------------------------
+# DCV Latency Script (NEW)
+# -------------------------------
+
+$DcvLatencyContent = @"
+# DCV Client Round Trip Latency Logger
+`$SessionId = `$env:APPSTREAM_SESSION_ID
+if (-not `$SessionId) { `$SessionId = "`$env:COMPUTERNAME-`$env:USERNAME" }
+
+`$HomeDir = Join-Path `$env:USERPROFILE "My Files\Home Folder"
+`$LogFile = Join-Path `$HomeDir "dcv_latency.log"
+`$CounterPath = "\DCV Server\Round-Trip Time ms"
+
+"`$(Get-Date -Format o) SESSION_START SessionId=`$SessionId" | Out-File -Append -Encoding UTF8 `$LogFile
+
+while (`$true) {
+    try {
+        `$v = (Get-Counter `$CounterPath).CounterSamples[0].CookedValue
+        "`$(Get-Date -Format o) RTT_MS=`$([math]::Round(`$v)) SessionId=`$SessionId" | Out-File -Append -Encoding UTF8 `$LogFile
+    } catch {
+        "`$(Get-Date -Format o) DCV_COUNTER_NOT_READY" | Out-File -Append -Encoding UTF8 `$LogFile
+    }
+    Start-Sleep -Seconds 10
+}
+"@
+
+Set-Content "C:\apps\monitorDcvLatency.ps1" $DcvLatencyContent -Encoding UTF8
