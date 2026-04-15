@@ -1,6 +1,5 @@
 ![HortaCloud](https://github.com/user-attachments/assets/aff478aa-94c6-477e-a726-7e764888a467)
 
-[![DOI](https://zenodo.org/badge/428847631.svg)](https://zenodo.org/badge/latestdoi/428847631)
 
 HortaCloud is a streaming 3D annotation platform for large microscopy data that runs entirely in the cloud. It is based on the [Janelia Workstation](https://github.com/JaneliaSciComp/workstation) software and was originally developed in support of the [MouseLight Team Project](https://www.janelia.org/project-team/mouselight).
 
